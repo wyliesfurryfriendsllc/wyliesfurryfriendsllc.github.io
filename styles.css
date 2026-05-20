@@ -533,10 +533,7 @@ nav {
 .gallery-row {
     display: flex;
     gap: 12px;
-    opacity: 0;
-    transition: opacity 0.5s ease;
 }
-.gallery-row.visible { opacity: 1; }
 
 .gallery-item {
     flex-shrink: 0;
@@ -557,10 +554,7 @@ nav {
 .gallery-grid-tail {
     column-count: 3;
     column-gap: 12px;
-    opacity: 0;
-    transition: opacity 0.5s ease;
 }
-.gallery-grid-tail.visible { opacity: 1; }
 .gallery-grid-tail .gallery-item {
     break-inside: avoid;
     margin-bottom: 12px;

@@ -117,14 +117,16 @@ function renderGallery() {
 
             const onLoad = () => {
                 loaded++;
-                if (loaded === imgs.length) justifyRow(rowEl, imgs);
+                if (loaded === imgs.length) {
+                    justifyRow(rowEl, imgs);
+                    rowEl.classList.add('visible');
+                }
             };
             img.onload = onLoad;
             if (img.complete && img.naturalWidth) onLoad();
         });
 
         grid.appendChild(rowEl);
-        _revealObserver.observe(rowEl);
     });
 
     // ── 4-col grid for ungrouped tail photos ──
@@ -142,7 +144,7 @@ function renderGallery() {
         });
 
         grid.appendChild(tailEl);
-        _revealObserver.observe(tailEl);
+        setTimeout(() => tailEl.classList.add('visible'), 100);
     }
 }
 
