@@ -800,6 +800,7 @@ footer {
     .hero-title { font-size: 36px; }
 
     .hero-photo { order: -1; }
+    .hero-photo-placeholder { aspect-ratio: 1/1; }
 
     .hero-float-card { left: 0; right: 0; margin: 0 auto; bottom: -16px; }
 
@@ -812,7 +813,7 @@ footer {
 
     .about-section { padding: 64px 0; }
     .about-grid { grid-template-columns: 1fr; gap: 40px; }
-    .about-photo-box { aspect-ratio: 4/3; }
+    .about-photo-box { aspect-ratio: 1/1; }
     .about-rover-badge { right: 0; }
 
     .gallery-section { padding: 64px 0; }
