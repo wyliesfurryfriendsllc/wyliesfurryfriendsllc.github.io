@@ -80,6 +80,8 @@ const _revealObserver = new IntersectionObserver(entries => {
 // ─── RENDER ──────────────────────────────────────────────
 let _photos = [];
 let _lightboxIndex = 0;
+const MOBILE_STEP = 3;
+let _mobileVisible = MOBILE_STEP; // how many sections visible on mobile
 
 function makeItem(url, absoluteIndex) {
     const item = document.createElement('div');
@@ -92,8 +94,6 @@ function makeItem(url, absoluteIndex) {
     return { item, img };
 }
 
-const MOBILE_ROWS_SHOWN = 3;
-
 function renderGallery() {
     const grid = document.getElementById('galleryGrid');
     if (!grid) return;
@@ -101,16 +101,35 @@ function renderGallery() {
     grid.innerHTML = '';
 
     const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+        // ── Mobile: single flat 2-column grid, paginated ──
+        const PHOTOS_PER_PAGE = MOBILE_STEP * 2; // 3 rows × 2 cols = 6 photos per page
+        const visibleCount = _mobileVisible * 2;
+        const mobileGrid = document.createElement('div');
+        mobileGrid.className = 'gallery-mobile-grid visible';
+
+        _photos.forEach((url, i) => {
+            const { item, img } = makeItem(url, i);
+            item.appendChild(img);
+            if (i >= visibleCount) item.classList.add('gallery-hidden');
+            mobileGrid.appendChild(item);
+        });
+
+        grid.appendChild(mobileGrid);
+        grid.classList.add('visible');
+
+        const moreWrap = document.getElementById('galleryMoreWrap');
+        if (moreWrap) moreWrap.style.display = visibleCount < _photos.length ? 'block' : 'none';
+        return;
+    }
+
+    // ── Desktop: justified rows + masonry tail ──
     const groupedSet = new Set(GALLERY_GROUPS.flat());
 
-    // ── Justified rows for grouped photos ──
-    GALLERY_GROUPS.forEach((indices, rowIndex) => {
+    GALLERY_GROUPS.forEach(indices => {
         const rowEl = document.createElement('div');
         rowEl.className = 'gallery-row';
-
-        if (isMobile && rowIndex >= MOBILE_ROWS_SHOWN) {
-            rowEl.classList.add('gallery-hidden');
-        }
 
         const imgs = [];
         let loaded = 0;
@@ -131,20 +150,15 @@ function renderGallery() {
             };
             img.onload = onLoad;
             if (img.complete && img.naturalWidth) onLoad();
-            // fallback: show row after 2s even if images haven't loaded
-            setTimeout(() => { if (!rowEl.classList.contains('visible')) rowEl.classList.add('visible'); }, 2000);
         });
 
         grid.appendChild(rowEl);
     });
 
-    // ── Masonry tail for ungrouped photos ──
     const tailIndices = _photos.map((_, i) => i).filter(i => !groupedSet.has(i));
     if (tailIndices.length > 0) {
         const tailEl = document.createElement('div');
         tailEl.className = 'gallery-grid-tail';
-
-        if (isMobile) tailEl.classList.add('gallery-hidden');
 
         tailIndices.forEach(i => {
             const { item, img } = makeItem(_photos[i], i);
@@ -158,16 +172,20 @@ function renderGallery() {
         setTimeout(() => tailEl.classList.add('visible'), 100);
     }
 
-    // Show/hide "Show more" button
-    const moreWrap = document.getElementById('galleryMoreWrap');
-    if (moreWrap) moreWrap.style.display = isMobile ? 'block' : 'none';
-}
-
-function showMoreGallery() {
-    document.querySelectorAll('.gallery-hidden').forEach(el => el.classList.remove('gallery-hidden'));
+    grid.classList.add('visible');
     const moreWrap = document.getElementById('galleryMoreWrap');
     if (moreWrap) moreWrap.style.display = 'none';
 }
+
+function showMoreGallery() {
+    _mobileVisible += MOBILE_STEP;
+    renderGallery();
+}
+
+// Reset pagination when switching desktop ↔ mobile
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) _mobileVisible = MOBILE_STEP;
+});
 
 // Recalculate justified widths on resize
 let _resizeTimer;
