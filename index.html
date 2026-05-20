@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wylie Furry Friends — Pet Sitting & Dog Walking in Naperville</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400&family=Fraunces:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===================== NAV ===================== -->
+<nav id="top">
+    <a class="nav-logo" href="#top">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg>
+        Wylie Furry Friends
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">&#9776;</button>
+    <ul class="nav-links" id="navLinks">
+        <li><a href="#services">Services</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#reviews">Reviews</a></li>
+        <li><a href="booking.html" class="nav-book-btn">Book Now</a></li>
+    </ul>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero" id="hero">
+    <div class="hero-content reveal">
+        <p class="hero-eyebrow">Naperville, IL · Serving the surrounding area</p>
+        <h1 class="hero-title">Your pet deserves<br><em>the very best</em> care.</h1>
+        <p class="hero-sub">Professional, loving pet sitting & dog walking — where every pet gets treated like family. Star Sitter on Rover with 100% 5-star reviews.</p>
+        <div class="hero-actions">
+            <a href="booking.html" class="btn-primary">Book a Visit</a>
+            <a href="#services" class="btn-secondary">See Services</a>
+        </div>
+        <div class="hero-badges">
+            <div class="badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                5-Star Rated
+            </div>
+            <div class="badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                Rover Star Sitter
+            </div>
+            <div class="badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                Cats & Dogs
+            </div>
+        </div>
+    </div>
+    <div class="hero-photo reveal-right">
+        <div class="hero-photo-placeholder">
+            <img src="images/hero-photo.jpg" alt="Xiaotong with a pet" onerror="this.style.display='none'">
+            <div class="hero-photo-fallback">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg>
+            </div>
+        </div>
+        <div class="hero-float-card">
+            <span class="float-star">★★★★★</span>
+            <span class="float-text">"Looks like I finally found my permanent sitter for my cat!"</span>
+            <span class="float-name">— Maria P.</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== SERVICES ===================== -->
+<section class="services-section" id="services">
+    <div class="section-inner">
+        <div class="section-label reveal">What I Offer</div>
+        <h2 class="section-title reveal">Personalized care,<br>every single visit.</h2>
+
+        <div class="services-grid reveal">
+
+            <!-- Drop-In Visits -->
+            <div class="service-card">
+                <div class="service-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <h3>Drop-In Visits</h3>
+                <p class="service-desc">I come to your home to feed, play, and give your pet love and attention while you're away.</p>
+                <div class="service-price-main">$23 <span>/ visit</span></div>
+                <ul class="price-breakdown">
+                    <li><span>30-min visit</span><span class="price">$23</span></li>
+                    <li><span>60-min rate</span><span class="price">+$20</span></li>
+                    <li>
+                        <span>Holiday rate
+                            <details class="holiday-info">
+                                <summary>!</summary>
+                                <div class="holiday-info-body">
+                                    <p>Bookings that include any of the following dates are charged at holiday rate:</p>
+                                    <ul>
+                                        <li>May 22–25, 2026</li>
+                                        <li>Jun 19–21, 2026</li>
+                                        <li>Jul 3–5, 2026</li>
+                                        <li>Sep 4–7, 2026</li>
+                                        <li>Nov 26–29, 2026</li>
+                                        <li>Dec 24, 2026 – Jan 3, 2027</li>
+                                    </ul>
+                                </div>
+                            </details>
+                        </span>
+                        <span class="price">$31</span>
+                    </li>
+                    <li class="divider"></li>
+                    <li><span>Additional dog</span><span class="price">+$9 / visit</span></li>
+                    <li><span>Puppy rate</span><span class="price">$23</span></li>
+                    <li><span>Cat care</span><span class="price">$23</span></li>
+                    <li><span>Additional cat</span><span class="price">+$9 / visit</span></li>
+                </ul>
+                <a href="booking.html" class="service-book-btn">Book Drop-In</a>
+            </div>
+
+            <!-- Dog Walking -->
+            <div class="service-card service-card-accent">
+                <div class="service-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg>
+                </div>
+                <h3>Dog Walking</h3>
+                <p class="service-desc">A fun, safe 30 or 60-minute walk in your neighborhood, with photo and video updates along the way.</p>
+                <div class="service-price-main">$26 <span>/ walk</span></div>
+                <ul class="price-breakdown">
+                    <li><span>30-min walk</span><span class="price">$26</span></li>
+                    <li><span>60-min rate</span><span class="price">+$23</span></li>
+                    <li>
+                        <span>Holiday rate
+                            <details class="holiday-info">
+                                <summary>!</summary>
+                                <div class="holiday-info-body">
+                                    <p>Bookings that include any of the following dates are charged at holiday rate:</p>
+                                    <ul>
+                                        <li>May 22–25, 2026</li>
+                                        <li>Jun 19–21, 2026</li>
+                                        <li>Jul 3–5, 2026</li>
+                                        <li>Sep 4–7, 2026</li>
+                                        <li>Nov 26–29, 2026</li>
+                                        <li>Dec 24, 2026 – Jan 3, 2027</li>
+                                    </ul>
+                                </div>
+                            </details>
+                        </span>
+                        <span class="price">$34</span>
+                    </li>
+                    <li class="divider"></li>
+                    <li><span>Additional dog</span><span class="price">+$9 / walk</span></li>
+                    <li><span>Puppy rate</span><span class="price">$26</span></li>
+                </ul>
+                <a href="booking.html" class="service-book-btn">Book a Walk</a>
+            </div>
+
+        </div>
+
+        <p class="services-note reveal">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:4px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Serving Naperville and surrounding areas &nbsp;·&nbsp;
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:4px"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg>
+            Dogs, cats & other small pets welcome
+        </p>
+    </div>
+</section>
+
+<!-- ===================== ABOUT ===================== -->
+<section class="about-section" id="about">
+    <div class="section-inner about-grid">
+        <div class="about-photo-wrap reveal">
+            <div class="about-photo-box">
+                <img src="images/about-photo.jpg" alt="Xiaotong Shi" onerror="this.parentElement.style.background='#EDD5C8'">
+            </div>
+            <div class="about-rover-badge">
+                <span class="rover-star">★</span>
+                <div>
+                    <strong>Rover Star Sitter</strong>
+                    <p>Since 2023 · 100% 5-star reviews</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-text reveal-right">
+            <div class="section-label">About Me</div>
+            <h2 class="section-title">Hi, I'm Xiaotong —<br>and I love your pets.</h2>
+            <p>I have a deep fondness for animals and share my home with two cats. I also had a dog growing up, and have cared for hamsters from newborns. Every pet I've looked after has been happy to snuggle up to me — and that's something I'm truly proud of.</p>
+            <p>When I care for your pet, I don't just do the basics. I proactively clean food and water bowls, wipe paws after every walk, send photos and videos throughout each visit, and pay close attention to each pet's unique personality and habits.</p>
+            <div class="about-highlights">
+                <div class="highlight-item">
+                    <span class="highlight-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                    <span>Daily photos & video updates</span>
+                </div>
+                <div class="highlight-item">
+                    <span class="highlight-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 017 7c0 5-7 13-7 13S5 14 5 9a7 7 0 017-7z"/><circle cx="12" cy="9" r="2.5"/></svg></span>
+                    <span>Bowls cleaned every visit</span>
+                </div>
+                <div class="highlight-item">
+                    <span class="highlight-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg></span>
+                    <span>Paws wiped after every walk</span>
+                </div>
+                <div class="highlight-item">
+                    <span class="highlight-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></span>
+                    <span>Attentive to each pet's personality</span>
+                </div>
+            </div>
+            <a href="booking.html" class="btn-primary">Book with Xiaotong</a>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== GALLERY ===================== -->
+<section class="gallery-section" id="gallery">
+    <div class="section-inner">
+        <div class="section-label reveal">Gallery</div>
+        <h2 class="section-title reveal">Moments from my visits</h2>
+        <div class="gallery-masonry reveal" id="galleryGrid"></div>
+    </div>
+</section>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <button class="lightbox-nav lightbox-prev" onclick="event.stopPropagation();lightboxNav(-1)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <img class="lightbox-img" id="lightboxImg" src="" alt="">
+    <button class="lightbox-nav lightbox-next" onclick="event.stopPropagation();lightboxNav(1)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+</div>
+
+<!-- ===================== REVIEWS ===================== -->
+<section class="reviews-section" id="reviews">
+    <div class="section-inner">
+        <div class="section-label reveal">Reviews</div>
+        <h2 class="section-title reveal">What pet parents are saying</h2>
+        <div class="reviews-grid reveal">
+
+            <div class="review-card review-card-large rc-pink">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">"Xiaotong truly understands cats — it feels like she has a kind of magic that wins them over. My cat is extremely shy; whenever a stranger enters the house, she always hides under the bed. But Xiaotong completely surprised me. Not only did she handle all the basic tasks perfectly, but on her very first visit she was already able to gently pet my cat! Over the next few days, she even managed to play with her, and on the third day — Xiaotong was able to hold my cat in her arms. She is professional, patient, and truly caring. She will take excellent care of your cat and give you complete peace of mind."</p>
+                <div class="review-footer">
+                    <div class="review-author">
+                        <strong>Yiya D.</strong>
+                        <span>Drop-In Visits · Nov 2025</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-card rc-green">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">"Xiaotong was awesome!! She was on time, conscientious, and very loving to our cat! She sent tons of pictures and video. What impressed me was that she showed before and after of food and water bowls. She really allowed my husband and I to enjoy our trip knowing our pet was in good hands. I highly recommend Xiaotong and would give her more than 5 stars if I could 🙂"</p>
+                <div class="review-footer">
+                    <div class="review-author">
+                        <strong>Monica K.</strong>
+                        <span>Drop-In Visits · May 2024</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-card rc-peach">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">"I couldn't be more pleased with Xiaotong's service. She was always prompt and sent me texts on arrival and departure as well as some great photos of our Giant Schnoodle. This girl should be a pet photographer! We loved one of her photos so much that we used it to create an illuminated crystal. I surely will use her services again."</p>
+                <div class="review-footer">
+                    <div class="review-author">
+                        <strong>Lance S.</strong>
+                        <span>Dog Walking · Jan 2024</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-card rc-lavender">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">"Leaving your pets can be very nerve wracking but I had so much peace of mind with Xiaotong as our sitter! She took care of our three cats and pet rat while we were away for a week and met all of our expectations and then some! She also sent so many pictures and videos of our cats playing with her, eating, and enjoying her company. I can't recommend Xiaotong enough!"</p>
+                <div class="review-footer">
+                    <div class="review-author">
+                        <strong>Elaina E.</strong>
+                        <span>Drop-In Visits · Jun 2024</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-card rc-sage">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">"Truly the best pet sitter I have ever had and will be coming back again and again! I can't say enough good things. I tend to get very worried about my cat when I'm gone, but Xiaotong made every effort to make me feel at ease. Ten stars!!"</p>
+                <div class="review-footer">
+                    <div class="review-author">
+                        <strong>Rachel F.</strong>
+                        <span>Drop-In Visits · Apr 2024</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-card rc-rose">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">"Looks like I finally found my permanent sitter for my cat! Xiaotong is so caring and responsible! She always sends me many videos during each visit and my cat looks so content to be cared by her! She goes above and beyond standard care. She is also super responsive on text messages, which is a huge relief when you're away from your fur baby."</p>
+                <div class="review-footer">
+                    <div class="review-author">
+                        <strong>Maria P.</strong>
+                        <span>Drop-In Visits · Apr 2024</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ===================== CTA BANNER ===================== -->
+<section class="cta-section reveal">
+    <div class="cta-inner">
+        <h2>Ready to book?</h2>
+        <p>Your pet is in the best hands. Create your account and book your first visit today.</p>
+        <a href="booking.html" class="btn-primary btn-large">Book a Visit →</a>
+    </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-left">
+            <span class="footer-logo">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg>
+                Wylie Furry Friends
+            </span>
+            <p>Professional pet sitting & dog walking<br>in Naperville, IL and surrounding areas.</p>
+        </div>
+        <div class="footer-links">
+            <a href="#services">Services</a>
+            <a href="#about">About</a>
+            <a href="#reviews">Reviews</a>
+            <a href="booking.html">Book Now</a>
+        </div>
+        <div class="footer-right">
+            <p>© 2026 Wylie Furry Friends LLC</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    hamburger.addEventListener('click', () => navLinks.classList.toggle('open'));
+
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            const target = document.querySelector(a.getAttribute('href'));
+            if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+            navLinks.classList.remove('open');
+        });
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal, .reveal-right').forEach(el => observer.observe(el));
+</script>
+<script src="gallery.js"></script>
+
+</body>
+</html>
