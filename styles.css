@@ -411,6 +411,19 @@ nav {
 .holiday-info-body ul { padding-left: 14px; margin: 0; }
 .holiday-info-body li { margin-bottom: 3px; }
 
+@media (max-width: 768px) {
+    .holiday-info-body {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        bottom: auto;
+        transform: translate(-50%, -50%);
+        width: calc(100vw - 48px);
+        max-width: 320px;
+        z-index: 999;
+    }
+}
+
 .service-book-btn {
     display: block;
     text-align: center;
