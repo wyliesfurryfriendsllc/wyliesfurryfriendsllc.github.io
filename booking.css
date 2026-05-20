@@ -924,7 +924,6 @@ details.deposit-policy[open] summary { color: var(--pink); }
 
     .booking-summary-col {
         position: static;
-        order: -1;
     }
 
     .service-selector { grid-template-columns: 1fr 1fr; }

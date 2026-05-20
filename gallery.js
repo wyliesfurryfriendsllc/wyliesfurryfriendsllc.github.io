@@ -92,18 +92,25 @@ function makeItem(url, absoluteIndex) {
     return { item, img };
 }
 
+const MOBILE_ROWS_SHOWN = 3;
+
 function renderGallery() {
     const grid = document.getElementById('galleryGrid');
     if (!grid) return;
     _photos = getGalleryPhotos();
     grid.innerHTML = '';
 
+    const isMobile = window.innerWidth <= 768;
     const groupedSet = new Set(GALLERY_GROUPS.flat());
 
     // ── Justified rows for grouped photos ──
-    GALLERY_GROUPS.forEach(indices => {
+    GALLERY_GROUPS.forEach((indices, rowIndex) => {
         const rowEl = document.createElement('div');
         rowEl.className = 'gallery-row';
+
+        if (isMobile && rowIndex >= MOBILE_ROWS_SHOWN) {
+            rowEl.classList.add('gallery-hidden');
+        }
 
         const imgs = [];
         let loaded = 0;
@@ -124,16 +131,20 @@ function renderGallery() {
             };
             img.onload = onLoad;
             if (img.complete && img.naturalWidth) onLoad();
+            // fallback: show row after 2s even if images haven't loaded
+            setTimeout(() => { if (!rowEl.classList.contains('visible')) rowEl.classList.add('visible'); }, 2000);
         });
 
         grid.appendChild(rowEl);
     });
 
-    // ── 4-col grid for ungrouped tail photos ──
+    // ── Masonry tail for ungrouped photos ──
     const tailIndices = _photos.map((_, i) => i).filter(i => !groupedSet.has(i));
     if (tailIndices.length > 0) {
         const tailEl = document.createElement('div');
         tailEl.className = 'gallery-grid-tail';
+
+        if (isMobile) tailEl.classList.add('gallery-hidden');
 
         tailIndices.forEach(i => {
             const { item, img } = makeItem(_photos[i], i);
@@ -146,6 +157,16 @@ function renderGallery() {
         grid.appendChild(tailEl);
         setTimeout(() => tailEl.classList.add('visible'), 100);
     }
+
+    // Show/hide "Show more" button
+    const moreWrap = document.getElementById('galleryMoreWrap');
+    if (moreWrap) moreWrap.style.display = isMobile ? 'block' : 'none';
+}
+
+function showMoreGallery() {
+    document.querySelectorAll('.gallery-hidden').forEach(el => el.classList.remove('gallery-hidden'));
+    const moreWrap = document.getElementById('galleryMoreWrap');
+    if (moreWrap) moreWrap.style.display = 'none';
 }
 
 // Recalculate justified widths on resize
