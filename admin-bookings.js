@@ -446,22 +446,11 @@ async function markDepositReceived(bookingId) {
         status: 'deposit_received',
         depositDate
     });
-    const formatted = new Date(depositDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    await addDoc(collection(db, 'bookings', bookingId, 'messages'), {
-        sender: 'owner', senderName: 'Wylie',
-        text: `✅ Deposit received on ${formatted}. Your spot is reserved! The remaining balance is due before the service begins.`,
-        createdAt: serverTimestamp()
-    });
 }
 
 async function markPaidInFull(bookingId) {
     if (!confirm('Mark this booking as paid in full?')) return;
     await updateDoc(doc(db, 'bookings', bookingId), { status: 'paid' });
-    await addDoc(collection(db, 'bookings', bookingId, 'messages'), {
-        sender: 'owner', senderName: 'Wylie',
-        text: `💚 Full payment received. Thank you! See you soon 🐾`,
-        createdAt: serverTimestamp()
-    });
 }
 
 // ─── MESSAGES ─────────────────────────────────────────────
