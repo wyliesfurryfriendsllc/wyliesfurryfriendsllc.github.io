@@ -10,6 +10,7 @@ function login() {
         renderAdminGallery();
         window.AdminBookings?.init();
         window.AdminClients?.init();
+        window.AdminCalendar?.init();
     } else {
         document.getElementById('loginError').style.display = 'block';
     }
@@ -130,5 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderAdminGallery();
         window.AdminBookings?.init();
         window.AdminClients?.init();
+        window.AdminCalendar?.init();
     }
 });

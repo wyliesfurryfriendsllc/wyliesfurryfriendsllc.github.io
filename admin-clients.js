@@ -61,6 +61,7 @@ function renderClients() {
                     ${c.address? `<div class="client-detail client-address">${escHtml(c.address)}</div>` : ''}
                 </div>
                 <div class="client-card-actions">
+                    <button class="admin-btn-primary" onclick="AdminClients.bookClient('${c.id}')">+ Book</button>
                     <button class="admin-btn-secondary" onclick="AdminClients.openModal('${c.id}')">Edit</button>
                 </div>
             </div>
@@ -219,6 +220,12 @@ async function saveModal() {
     }
 }
 
+// ─── BOOK FROM CLIENT ────────────────────────────────────
+function bookClient(clientId) {
+    window.AdminCalendar?.openNewBookingModal();
+    setTimeout(() => window.AdminCalendar?.selectClient(clientId), 50);
+}
+
 // ─── ADDRESS AUTOCOMPLETE (Nominatim) ────────────────────
 let addrTimer = null;
 function searchAddress(q) {
@@ -283,5 +290,5 @@ function escHtml(s) {
 window.AdminClients = {
     init, openModal, closeModal, saveModal,
     addPet, removePet, updatePet, refreshPetPreview, getAllClients,
-    searchAddress, pickAddress, uploadPetPhoto, calcAge
+    searchAddress, pickAddress, uploadPetPhoto, calcAge, bookClient
 };
