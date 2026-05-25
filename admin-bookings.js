@@ -130,10 +130,46 @@ const PRICING = {
     walking: { base: 26, addon60: 23, holiday: 34, extraDog: 9 }
 };
 
+const HOLIDAY_RANGES = [
+    ['2026-05-22', '2026-05-25'],
+    ['2026-06-19', '2026-06-21'],
+    ['2026-07-03', '2026-07-05'],
+    ['2026-09-04', '2026-09-07'],
+    ['2026-11-26', '2026-11-29'],
+    ['2026-12-24', '2027-01-03'],
+];
+
+function isHolidayBooking(dates) {
+    return (dates || []).some(iso =>
+        HOLIDAY_RANGES.some(([s, e]) => iso >= s && iso <= e)
+    );
+}
+
 function fmt12(t) {
     if (!t) return 'TBD';
-    const [h, m] = t.split(':').map(Number);
+    const parts = t.split(':');
+    const h = Number(parts[0]);
+    const m = Number(parts[1]);
+    if (isNaN(h) || isNaN(m)) return t;
     return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
+}
+
+function fmtSlot(t) {
+    if (!t) return 'TBD';
+    if (t.includes('~')) {
+        const [s, e] = t.split('~');
+        if (!e) return `Arrive ${fmt12(s)}`;
+        const sH = Number(s.split(':')[0]);
+        const eH = Number(e.split(':')[0]);
+        const sMin = String(Number(s.split(':')[1])).padStart(2, '0');
+        const sAmPm = sH >= 12 ? 'PM' : 'AM';
+        const eFmt = fmt12(e);
+        const sFmt = `${sH % 12 || 12}:${sMin}`;
+        return sAmPm === (eH >= 12 ? 'PM' : 'AM')
+            ? `Arrive ${sFmt} – ${eFmt}`
+            : `Arrive ${sFmt} ${sAmPm} – ${eFmt}`;
+    }
+    return fmt12(t);
 }
 
 function renderScheduleHtml(b) {
@@ -144,7 +180,7 @@ function renderScheduleHtml(b) {
             const dateLabel = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
             const slots = [...(b.dateTimes[iso] || [])].filter(Boolean).sort();
             const timesHtml = slots.length
-                ? `<div class="detail-sched-times-row">${slots.map(t => `<span class="detail-sched-time">${fmt12(t)}</span>`).join('')}</div>`
+                ? `<div class="detail-sched-times-row">${slots.map(t => `<span class="detail-sched-time">${fmtSlot(t)}</span>`).join('')}</div>`
                 : '<div class="detail-sched-times-row"><span class="detail-sched-time">TBD</span></div>';
             return `<div class="detail-sched-block"><div class="detail-sched-date">${escHtml(dateLabel)}</div>${timesHtml}</div>`;
         }).join('');
@@ -194,6 +230,8 @@ function renderChargesHtml(b) {
     const duration = parseInt(b.duration) || 30;
     const p = service === 'Dog Walking' ? PRICING.walking : PRICING.dropin;
     const is60 = duration === 60;
+    const bookingDates = b.dates || Object.keys(b.dateTimes || {});
+    const isHoliday = isHolidayBooking(bookingDates);
     let numVisits = 0;
     if (b.dateTimes) {
         for (const slots of Object.values(b.dateTimes)) {
@@ -212,9 +250,9 @@ function renderChargesHtml(b) {
     pets.forEach((pet, idx) => {
         let rate, label;
         if (idx === 0) {
-            rate = (service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base;
-            if (is60) rate += p.addon60;
-            label = service;
+            const baseRate = isHoliday ? p.holiday : ((service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base);
+            rate = baseRate + (is60 ? p.addon60 : 0);
+            label = service + (isHoliday ? ' · Holiday Rate' : '');
         } else {
             rate = pet.type === 'cat' ? (p.extraCat || p.extraDog) : p.extraDog;
             label = 'Additional ' + (pet.type || 'pet');

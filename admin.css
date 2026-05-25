@@ -361,6 +361,7 @@
 .status-confirmed { background: var(--green-light); color: #2d6a2d; }
 .status-rejected  { background: #FCE8E8; color: #c0392b; }
 .status-completed { background: var(--cream-2); color: var(--brown-mid); }
+.holiday-rate-badge { display: inline-block; background: #FFF0D6; color: #8a5000; border-radius: 20px; font-size: 10px; font-weight: 700; padding: 0 7px; height: 20px; line-height: 20px; vertical-align: middle; margin-left: 4px; }
 
 /* Booking detail panel */
 .admin-booking-detail {

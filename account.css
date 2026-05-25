@@ -1003,3 +1003,232 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     gap: 8px;
     margin-top: 10px;
 }
+
+/* ─── BOOKING FILTER CHIPS ───────────────────────── */
+.acct-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.acct-filter-chip {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: #fff;
+    color: var(--brown-mid);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.acct-filter-chip.active {
+    background: var(--pink);
+    color: #fff;
+    border-color: var(--pink);
+}
+.acct-filter-chip:hover:not(.active) {
+    border-color: var(--pink);
+    color: var(--brown);
+}
+
+/* ─── BOOKING CARD PET AVATARS ───────────────────── */
+.bc-avatars {
+    display: flex;
+    align-items: center;
+}
+.bc-pet-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    object-fit: cover;
+    margin-left: -6px;
+    background: var(--cream-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.bc-pet-avatar:first-child { margin-left: 0; }
+.bc-pet-emoji {
+    background: var(--cream-2);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ─── ACCOUNT CALENDAR ───────────────────────────── */
+.acct-cal-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.acct-cal-box {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+}
+.acct-cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+.acct-cal-month-label {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--brown);
+    font-family: var(--serif);
+}
+.acct-cal-arrow {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--brown-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s;
+}
+.acct-cal-arrow:hover { border-color: var(--pink); color: var(--brown); }
+.acct-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+.acct-cal-dow {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--brown-mid);
+    padding: 4px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.acct-cal-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+    gap: 2px;
+}
+.acct-cal-cell:hover { background: var(--cream-2); }
+.acct-cal-empty { cursor: default; }
+.acct-cal-empty:hover { background: transparent; }
+.acct-cal-day {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--brown);
+}
+.acct-cal-today-num {
+    background: var(--pink);
+    color: #fff;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+.acct-cal-dot {
+    background: var(--pink);
+    color: #fff;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.acct-cal-today .acct-cal-dot {
+    background: var(--brown);
+}
+
+/* ─── CALENDAR DAY PANEL ─────────────────────────── */
+.acct-day-panel {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+}
+.acct-day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+.acct-day-date {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--brown);
+    font-family: var(--serif);
+}
+.acct-day-count {
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--cream-2);
+    color: var(--brown-mid);
+    border-radius: 20px;
+    padding: 4px 12px;
+}
+.acct-day-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.acct-day-item:last-child { margin-bottom: 0; }
+.acct-day-item:hover { border-color: var(--pink); box-shadow: var(--shadow); }
+.acct-day-item-service {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--brown);
+    margin-bottom: 4px;
+}
+.acct-day-item-time {
+    font-size: 13px;
+    color: var(--brown-mid);
+}
+.cday-avatars {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+.cday-pet-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    object-fit: cover;
+    margin-left: -8px;
+    background: var(--cream-2);
+    flex-shrink: 0;
+}
+.cday-pet-avatar:first-child { margin-left: 0; }
+.cday-pet-emoji {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -242,6 +242,21 @@ const PRICING = {
     walking: { base: 26, addon60: 23, holiday: 34, extraDog: 9 }
 };
 
+const HOLIDAY_RANGES = [
+    ['2026-05-22', '2026-05-25'],
+    ['2026-06-19', '2026-06-21'],
+    ['2026-07-03', '2026-07-05'],
+    ['2026-09-04', '2026-09-07'],
+    ['2026-11-26', '2026-11-29'],
+    ['2026-12-24', '2027-01-03'],
+];
+
+function isHolidayBooking(dates) {
+    return (dates || []).some(iso =>
+        HOLIDAY_RANGES.some(([s, e]) => iso >= s && iso <= e)
+    );
+}
+
 let nbSelectedClientId = null;
 let nbSelectedPets = new Set();
 let nbDateTimes = new Map(); // Map<isoDate, slot[]> — slot: { mode, start, end }
@@ -581,6 +596,8 @@ function calcNbTotal() {
 
     const p = service === 'Dog Walking' ? PRICING.walking : PRICING.dropin;
     const is60 = duration === 60;
+    const sortedDates = [...nbDateTimes.keys()].sort();
+    const isHoliday = isHolidayBooking(sortedDates);
 
     let pets = [];
     if (nbSelectedClientId) {
@@ -593,7 +610,7 @@ function calcNbTotal() {
     let perVisit = 0;
     pets.forEach((pet, idx) => {
         if (idx === 0) {
-            const base = (service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base;
+            const base = isHoliday ? p.holiday : ((service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base);
             perVisit += base + (is60 ? p.addon60 : 0);
         } else {
             perVisit += pet.type === 'cat' ? (p.extraCat || p.extraDog) : p.extraDog;
@@ -814,7 +831,11 @@ function openEditBookingModal(bookingId) {
 }
 
 function fmt12(t) {
-    const [h, m] = t.split(':').map(Number);
+    if (!t) return 'TBD';
+    const parts = t.split(':');
+    const h = Number(parts[0]);
+    const m = Number(parts[1]);
+    if (isNaN(h) || isNaN(m)) return t;
     return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
 }
 

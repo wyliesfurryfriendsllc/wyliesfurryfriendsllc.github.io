@@ -12,6 +12,10 @@ let bookingsUnsub  = null;
 let messagesUnsub  = null;
 let activeBookingId = null;
 let userPets       = [];
+let allBookings    = [];
+let acctFilter     = 'all';
+let acctCalYear    = new Date().getFullYear();
+let acctCalMonth   = new Date().getMonth();
 
 // ─── AUTH STATE ──────────────────────────────────────────
 onAuthStateChanged(auth, async user => {
@@ -150,10 +154,13 @@ function getFriendlyError(code) {
 
 // ─── TABS ─────────────────────────────────────────────────
 function showTab(tab) {
-    ['bookings', 'pets', 'profile'].forEach(t => {
-        document.getElementById(`tab${cap(t)}`).style.display = t === tab ? '' : 'none';
-        document.getElementById(`navBtn${cap(t)}`).classList.toggle('active', t === tab);
+    ['bookings', 'calendar', 'pets', 'profile'].forEach(t => {
+        const tabEl = document.getElementById(`tab${cap(t)}`);
+        const btnEl = document.getElementById(`navBtn${cap(t)}`);
+        if (tabEl) tabEl.style.display = t === tab ? '' : 'none';
+        if (btnEl) btnEl.classList.toggle('active', t === tab);
     });
+    if (tab === 'calendar') renderAccountCal();
 }
 
 // ─── MY BOOKINGS ─────────────────────────────────────────
@@ -161,15 +168,47 @@ function loadMyBookings(user) {
     if (bookingsUnsub) bookingsUnsub();
     const q = query(collection(db, 'bookings'), where('clientEmail', '==', user.email));
     bookingsUnsub = onSnapshot(q, snap => {
-        const bookings = snap.docs
-            .map(d => ({ id: d.id, ...d.data() }))
-            .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-        renderBookingsList(bookings);
+        allBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderBookingsList(allBookings);
+        const dayPanel = document.getElementById('acctDayPanel');
+        if (dayPanel && dayPanel.dataset.iso) showCalDay(dayPanel.dataset.iso);
+        renderAccountCal();
     }, err => {
         console.error('Bookings load error:', err);
         document.getElementById('bookingsList').innerHTML =
             '<p class="empty-msg">Unable to load bookings. Please try again later.</p>';
     });
+}
+
+function setBookingFilter(f) {
+    acctFilter = f;
+    document.querySelectorAll('.acct-filter-chip').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === f);
+    });
+    renderBookingsList(allBookings);
+}
+
+function parseBDates(b) {
+    if (b.dates && Array.isArray(b.dates)) return b.dates;
+    const result = new Set();
+    (b.datesText || '').split('\n').forEach(line => {
+        const t = line.trim();
+        if (!t) return;
+        const range = t.match(/^([A-Za-z]+ \d+,\s*\d{4})\s*[–-]\s*([A-Za-z]+ \d+,\s*\d{4})/);
+        if (range) {
+            const s = new Date(range[1]), e = new Date(range[2]);
+            for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1))
+                result.add(isoDate(d));
+            return;
+        }
+        const single = t.match(/^([A-Za-z]+ \d+,\s*\d{4})/);
+        if (single) { const d = new Date(single[1]); if (!isNaN(d)) result.add(isoDate(d)); }
+    });
+    return [...result];
+}
+
+function isoDate(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 const STATUS_LABELS = {
@@ -187,12 +226,29 @@ const STATUS_COLORS = {
 
 function renderBookingsList(bookings) {
     const container = document.getElementById('bookingsList');
-    if (bookings.length === 0) {
+    const todayISO = isoDate(new Date());
+
+    let filtered = acctFilter === 'all' ? bookings : bookings.filter(b => b.status === acctFilter);
+
+    // Sort: upcoming first (by earliest date), then past (most recent first)
+    filtered = [...filtered].sort((a, b) => {
+        const aDates = parseBDates(a).sort();
+        const bDates = parseBDates(b).sort();
+        const aFirst = aDates[0] || '';
+        const bFirst = bDates[0] || '';
+        const aFuture = aFirst >= todayISO;
+        const bFuture = bFirst >= todayISO;
+        if (aFuture && bFuture) return aFirst < bFirst ? -1 : 1;
+        if (!aFuture && !bFuture) return aFirst > bFirst ? -1 : 1;
+        return aFuture ? -1 : 1;
+    });
+
+    if (filtered.length === 0) {
         container.innerHTML = '<p class="empty-msg">No bookings yet. <a href="booking.html">Book a visit</a> to get started!</p>';
         return;
     }
     container.innerHTML = '';
-    bookings.forEach(b => {
+    filtered.forEach(b => {
         const card = document.createElement('div');
         card.className   = 'booking-card' + (b.id === activeBookingId ? ' active' : '');
         card.dataset.bid = b.id;
@@ -201,6 +257,14 @@ function renderBookingsList(bookings) {
             ? b.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
             : '';
         const firstLine = b.datesText ? b.datesText.trim().split('\n')[0] : '—';
+
+        const pets = b.pets || [];
+        const avatarsHtml = pets.slice(0, 3).map((p, i) => {
+            if (p.photoUrl) return `<img class="bc-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name||'')}" style="z-index:${3-i}">`;
+            const em = p.type === 'cat' ? '🐱' : '🐶';
+            return `<div class="bc-pet-avatar bc-pet-emoji" style="z-index:${3-i}">${em}</div>`;
+        }).join('');
+
         card.innerHTML = `
             <div class="booking-card-top">
                 <div class="booking-card-service">${escHtml(b.service || '—')} · ${b.duration || 30} min</div>
@@ -209,7 +273,7 @@ function renderBookingsList(bookings) {
             <div class="booking-card-dates">${escHtml(firstLine)}</div>
             <div class="booking-card-footer">
                 <span class="booking-card-total">$${b.total || 0} est.</span>
-                <span class="booking-card-date">${date}</span>
+                ${avatarsHtml ? `<div class="bc-avatars">${avatarsHtml}</div>` : `<span class="booking-card-date">${date}</span>`}
             </div>
         `;
         container.appendChild(card);
@@ -596,6 +660,126 @@ async function syncToClients(user, profile) {
     }, { merge: true });
 }
 
+// ─── ACCOUNT CALENDAR ─────────────────────────────────────
+function renderAccountCal() {
+    const grid = document.getElementById('acctCalGrid');
+    const label = document.getElementById('acctCalMonthLabel');
+    if (!grid || !label) return;
+
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    label.textContent = `${months[acctCalMonth]} ${acctCalYear}`;
+
+    // build date→bookings map
+    const dateMap = new Map();
+    allBookings.forEach(b => {
+        if (b.status === 'rejected') return;
+        parseBDates(b).forEach(iso => {
+            if (!dateMap.has(iso)) dateMap.set(iso, []);
+            dateMap.get(iso).push(b);
+        });
+    });
+
+    const todayISO = isoDate(new Date());
+    const firstDay = new Date(acctCalYear, acctCalMonth, 1).getDay();
+    const daysInMonth = new Date(acctCalYear, acctCalMonth + 1, 0).getDate();
+
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    let html = dayNames.map(d => `<div class="acct-cal-dow">${d}</div>`).join('');
+    for (let i = 0; i < firstDay; i++) html += `<div class="acct-cal-cell acct-cal-empty"></div>`;
+    for (let d = 1; d <= daysInMonth; d++) {
+        const iso = `${acctCalYear}-${String(acctCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const bks = dateMap.get(iso) || [];
+        const isToday = iso === todayISO;
+        html += `<div class="acct-cal-cell${isToday ? ' acct-cal-today' : ''}${bks.length ? ' acct-cal-has-bk' : ''}" onclick="showCalDay('${iso}')">
+            <span class="acct-cal-day${isToday ? ' acct-cal-today-num' : ''}">${d}</span>
+            ${bks.length ? `<span class="acct-cal-dot">${bks.length}</span>` : ''}
+        </div>`;
+    }
+    grid.innerHTML = html;
+}
+
+function acctCalPrev() {
+    acctCalMonth--;
+    if (acctCalMonth < 0) { acctCalMonth = 11; acctCalYear--; }
+    renderAccountCal();
+}
+
+function acctCalNext() {
+    acctCalMonth++;
+    if (acctCalMonth > 11) { acctCalMonth = 0; acctCalYear++; }
+    renderAccountCal();
+}
+
+function showCalDay(iso) {
+    const panel = document.getElementById('acctDayPanel');
+    if (!panel) return;
+    panel.dataset.iso = iso;
+
+    const d = new Date(iso + 'T12:00:00');
+    const dateLabel = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+
+    const bks = allBookings.filter(b => {
+        if (b.status === 'rejected') return false;
+        return parseBDates(b).includes(iso);
+    });
+
+    if (bks.length === 0) {
+        panel.innerHTML = `<div class="acct-day-header"><span class="acct-day-date">${escHtml(dateLabel)}</span></div><p class="empty-msg" style="padding:16px 0">No bookings this day.</p>`;
+        return;
+    }
+
+    const items = bks.map(b => {
+        const slots = b.dateTimes?.[iso] || [];
+        const timeStr = slots.length ? slots.map(t => fmtSlotAcc(t)).join(', ') : (b.datesText ? extractTimeFromText(b.datesText, iso) : 'TBD');
+        const pets = b.pets || [];
+        const avatars = pets.slice(0,4).map((p, i) => {
+            if (p.photoUrl) return `<img class="cday-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name||'')}" style="z-index:${4-i}">`;
+            return `<div class="cday-pet-avatar cday-pet-emoji" style="z-index:${4-i}">${p.type==='cat'?'🐱':'🐶'}</div>`;
+        }).join('');
+        const petNames = pets.map(p => escHtml(p.name||'?')).join(', ');
+        return `<div class="acct-day-item" onclick="showTab('bookings');openBookingDetail('${b.id}')">
+            <div class="acct-day-item-left">
+                <div class="acct-day-item-service">${escHtml(b.service||'Visit')}${petNames ? ': ' + petNames : ''}</div>
+                <div class="acct-day-item-time">${escHtml(timeStr)}</div>
+            </div>
+            <div class="cday-avatars">${avatars}</div>
+        </div>`;
+    }).join('');
+
+    panel.innerHTML = `
+        <div class="acct-day-header">
+            <span class="acct-day-date">${escHtml(dateLabel)}</span>
+            <span class="acct-day-count">${bks.length} visit${bks.length!==1?'s':''}</span>
+        </div>
+        ${items}`;
+}
+
+function fmtSlotAcc(t) {
+    if (!t) return 'TBD';
+    if (t.includes('~')) {
+        const [s, e] = t.split('~');
+        return `${fmt12Acc(s)} – ${fmt12Acc(e)}`;
+    }
+    return fmt12Acc(t);
+}
+
+function fmt12Acc(t) {
+    if (!t) return 'TBD';
+    const parts = t.split(':');
+    const h = Number(parts[0]), m = Number(parts[1]);
+    if (isNaN(h) || isNaN(m)) return t;
+    return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
+}
+
+function extractTimeFromText(datesText, iso) {
+    const d = new Date(iso + 'T12:00:00');
+    const label = d.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+    const line = (datesText || '').split('\n').find(l => l.includes(label));
+    if (!line) return 'TBD';
+    const m = line.match(/:\s*(.+)$/);
+    return m ? m[1].trim() : 'TBD';
+}
+
 // ─── HELPERS ─────────────────────────────────────────────
 function escHtml(s) {
     return String(s)
@@ -623,3 +807,7 @@ window.saveProfile       = saveProfile;
 window.togglePill        = togglePill;
 window.updatePhotoPreview   = updatePhotoPreview;
 window.handlePetPhotoUpload = handlePetPhotoUpload;
+window.setBookingFilter  = setBookingFilter;
+window.acctCalPrev       = acctCalPrev;
+window.acctCalNext       = acctCalNext;
+window.showCalDay        = showCalDay;
