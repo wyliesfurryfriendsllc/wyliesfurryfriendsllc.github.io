@@ -40,18 +40,29 @@ function renderClients() {
     allClients.forEach(c => {
         const card = document.createElement('div');
         card.className = 'client-card';
-        const petsText = (c.pets || []).map(p => p.name).join(', ') || '—';
+        const pets = c.pets || [];
+        const petsHtml = pets.slice(0, 3).map(p => {
+            const emoji = p.type === 'cat' ? '🐱' : '🐶';
+            const avatar = p.photoUrl
+                ? `<img class="cc-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name)}">`
+                : `<div class="cc-pet-avatar cc-pet-emoji">${emoji}</div>`;
+            return `<div class="cc-pet-item">${avatar}<span class="cc-pet-name">${escHtml(p.name || '—')}</span></div>`;
+        }).join('');
+
         card.innerHTML = `
-            <div class="client-card-main">
-                <div class="client-avatar">${escHtml((c.name || '?')[0].toUpperCase())}</div>
-                <div class="client-info">
-                    <div class="client-name">${escHtml(c.name || '—')}</div>
-                    <div class="client-meta">${[c.phone, c.email].filter(Boolean).map(escHtml).join(' · ')}</div>
-                    <div class="client-pets">🐾 ${escHtml(petsText)}</div>
+            <div class="client-card-layout">
+                <div class="client-card-left">
+                    ${petsHtml || '<span class="cc-no-pets">No pets</span>'}
                 </div>
-            </div>
-            <div class="client-card-actions">
-                <button class="admin-btn-secondary" onclick="AdminClients.openModal('${c.id}')">Edit</button>
+                <div class="client-card-right">
+                    <div class="client-name">${escHtml(c.name || '—')}</div>
+                    ${c.email  ? `<div class="client-detail">${escHtml(c.email)}</div>`  : ''}
+                    ${c.phone  ? `<div class="client-detail">${escHtml(c.phone)}</div>`  : ''}
+                    ${c.address? `<div class="client-detail client-address">${escHtml(c.address)}</div>` : ''}
+                </div>
+                <div class="client-card-actions">
+                    <button class="admin-btn-secondary" onclick="AdminClients.openModal('${c.id}')">Edit</button>
+                </div>
             </div>
         `;
         container.appendChild(card);
@@ -106,33 +117,38 @@ function renderModalPets() {
     list.innerHTML = '';
     petEntries.forEach((p, i) => {
         const ageDisplay = p.birthDate ? calcAge(p.birthDate) : (p.age || '');
+        const emoji = p.type === 'cat' ? '🐱' : '🐶';
+        const avatarHtml = p.photoUrl
+            ? `<img class="cpet-avatar" src="${escHtml(p.photoUrl)}" alt="">`
+            : `<div class="cpet-avatar cpet-avatar-emoji">${emoji}</div>`;
         const row = document.createElement('div');
         row.className = 'cpet-row';
         row.innerHTML = `
-            <div class="cpet-main-row">
-                <input class="cpet-input" type="text" placeholder="Pet name" value="${escHtml(p.name || '')}"
-                    oninput="AdminClients.updatePet(${i},'name',this.value)">
-                <select class="cpet-select" onchange="AdminClients.updatePet(${i},'type',this.value)">
-                    <option value="dog"   ${p.type==='dog'   ?'selected':''}>Dog</option>
-                    <option value="cat"   ${p.type==='cat'   ?'selected':''}>Cat</option>
-                    <option value="other" ${p.type==='other' ?'selected':''}>Other</option>
-                </select>
-                <div class="cpet-age-wrap">
-                    <input class="cpet-input" type="date" value="${escHtml(p.birthDate || '')}"
-                        onchange="AdminClients.updatePet(${i},'birthDate',this.value)"
-                        title="Birthday">
-                    ${ageDisplay ? `<span class="cpet-age-label">${ageDisplay}</span>` : ''}
+            <div class="cpet-top-row">
+                <div class="cpet-avatar-wrap">
+                    ${avatarHtml}
+                    <label class="cpet-avatar-upload" title="Upload photo">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <input type="file" accept="image/*" style="display:none" onchange="AdminClients.uploadPetPhoto(this,${i})">
+                    </label>
+                </div>
+                <div class="cpet-fields">
+                    <input class="cpet-input" type="text" placeholder="Pet name" value="${escHtml(p.name || '')}"
+                        oninput="AdminClients.updatePet(${i},'name',this.value)">
+                    <div class="cpet-fields-row2">
+                        <select class="cpet-select" onchange="AdminClients.updatePet(${i},'type',this.value)">
+                            <option value="dog"   ${p.type==='dog'   ?'selected':''}>🐶 Dog</option>
+                            <option value="cat"   ${p.type==='cat'   ?'selected':''}>🐱 Cat</option>
+                            <option value="other" ${p.type==='other' ?'selected':''}>🐾 Other</option>
+                        </select>
+                        <div class="cpet-bday-wrap">
+                            <input class="cpet-input" type="date" value="${escHtml(p.birthDate || '')}"
+                                onchange="AdminClients.updatePet(${i},'birthDate',this.value)" title="Birthday">
+                            ${ageDisplay ? `<span class="cpet-age-chip">${ageDisplay}</span>` : ''}
+                        </div>
+                    </div>
                 </div>
                 <button class="cpet-remove" onclick="AdminClients.removePet(${i})">×</button>
-            </div>
-            <div class="cpet-photo-row">
-                ${p.photoUrl ? `<img class="cpet-photo-preview" src="${escHtml(p.photoUrl)}" alt="">` : ''}
-                <input class="cpet-input" type="url" placeholder="Photo URL (optional)" value="${escHtml(p.photoUrl || '')}"
-                    oninput="AdminClients.updatePet(${i},'photoUrl',this.value);AdminClients.refreshPetPreview(this,${i})">
-                <label class="cpet-upload-btn" title="Upload from device">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    <input type="file" accept="image/*" style="display:none" onchange="AdminClients.uploadPetPhoto(this,${i})">
-                </label>
             </div>
         `;
         list.appendChild(row);

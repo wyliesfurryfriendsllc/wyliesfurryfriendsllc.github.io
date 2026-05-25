@@ -565,17 +565,27 @@
     transition: box-shadow 0.15s;
 }
 .client-card:hover { box-shadow: 0 2px 12px rgba(61,32,24,0.07); }
-.client-card-main { display: flex; align-items: center; gap: 14px; min-width: 0; }
-.client-avatar {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: var(--pink-light); color: var(--pink);
-    font-weight: 700; font-size: 18px; font-family: 'Fraunces', serif;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+.client-card-layout { display: flex; align-items: center; gap: 18px; width: 100%; }
+.client-card-left {
+    display: flex; flex-direction: column; gap: 8px;
+    min-width: 100px; flex-shrink: 0;
 }
-.client-info { min-width: 0; }
-.client-name { font-weight: 700; font-size: 15px; color: var(--brown); margin-bottom: 2px; }
-.client-meta { font-size: 13px; color: var(--brown-mid); margin-bottom: 3px; }
-.client-pets { font-size: 12px; color: var(--brown-mid); }
+.cc-pet-item { display: flex; align-items: center; gap: 7px; }
+.cc-pet-avatar {
+    width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+    border: 1.5px solid var(--border); flex-shrink: 0;
+}
+.cc-pet-emoji {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--pink-light); display: flex; align-items: center;
+    justify-content: center; font-size: 17px; flex-shrink: 0;
+}
+.cc-pet-name { font-size: 13px; font-weight: 600; color: var(--brown); }
+.cc-no-pets { font-size: 13px; color: var(--brown-mid); }
+.client-card-right { flex: 1; min-width: 0; border-left: 1.5px solid var(--border); padding-left: 18px; }
+.client-name { font-weight: 700; font-size: 15px; color: var(--brown); margin-bottom: 3px; }
+.client-detail { font-size: 13px; color: var(--brown-mid); margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.client-address { font-size: 12px; }
 .client-card-actions { flex-shrink: 0; }
 
 /* Pet rows inside client modal */
@@ -818,34 +828,38 @@
 .addr-option:hover { background: var(--cream-2); }
 
 /* ================================
-   CLIENT PET ROWS — photo support
+   CLIENT PET ROWS — redesigned
 ================================ */
-.cpet-main-row {
-    display: grid;
-    grid-template-columns: 1fr 80px 150px 28px;
-    gap: 6px; align-items: center;
+.cpet-top-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--cream); border-radius: 12px; padding: 10px;
 }
-.cpet-age-wrap { position: relative; }
-.cpet-age-label {
-    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-    font-size: 11px; color: var(--brown-mid); pointer-events: none;
-    background: #fff; padding: 0 2px;
+.cpet-avatar-wrap { position: relative; flex-shrink: 0; }
+.cpet-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    object-fit: cover; border: 1.5px solid var(--border); display: block;
 }
-.cpet-photo-row {
-    display: flex; align-items: center; gap: 8px;
-    padding: 4px 0 8px 0;
+.cpet-avatar-emoji {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--pink-light); display: flex; align-items: center;
+    justify-content: center; font-size: 24px;
 }
-.cpet-upload-btn {
-    flex-shrink: 0;
-    width: 32px; height: 32px;
+.cpet-avatar-upload {
+    position: absolute; bottom: -2px; right: -2px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--pink); color: #fff;
     display: flex; align-items: center; justify-content: center;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    color: var(--brown-mid);
-    cursor: pointer;
-    transition: border-color 0.15s, color 0.15s, background 0.15s;
+    cursor: pointer; border: 2px solid #fff;
 }
-.cpet-upload-btn:hover { border-color: var(--pink); color: var(--pink); background: var(--pink-light); }
+.cpet-fields { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.cpet-fields-row2 { display: flex; gap: 6px; }
+.cpet-bday-wrap { position: relative; flex: 1; }
+.cpet-age-chip {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    font-size: 11px; color: var(--pink); font-weight: 600;
+    background: var(--pink-light); padding: 2px 6px; border-radius: 20px;
+    pointer-events: none;
+}
 .cpet-photo-preview {
     width: 36px; height: 36px;
     border-radius: 50%;
