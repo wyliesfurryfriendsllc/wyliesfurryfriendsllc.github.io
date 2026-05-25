@@ -126,6 +126,15 @@ function selectDay(iso) {
     showDayBookings(iso);
 }
 
+function getEndTime(t, durationMin) {
+    if (!t) return '';
+    const [h, m] = t.split(':').map(Number);
+    const total = h * 60 + m + (durationMin || 30);
+    const eh = Math.floor(total / 60) % 24;
+    const em = total % 60;
+    return fmt12(`${String(eh).padStart(2,'0')}:${String(em).padStart(2,'0')}`);
+}
+
 function showDayBookings(iso) {
     const panel = document.getElementById('calDayPanel');
     if (!panel) return;
@@ -133,24 +142,90 @@ function showDayBookings(iso) {
     const label = new Date(iso + 'T12:00:00').toLocaleDateString('en-US',
         { weekday:'long', month:'long', day:'numeric', year:'numeric' });
 
+    // Expand each booking into one card per time slot
+    const visits = [];
+    bookings.forEach(b => {
+        let times = [];
+        if (b.dateTimes && b.dateTimes[iso]) {
+            times = [...b.dateTimes[iso]].filter(Boolean).sort();
+        } else if (b.times && Array.isArray(b.times)) {
+            times = [...b.times].filter(Boolean).sort();
+        }
+        if (times.length === 0) times = [''];
+        times.forEach(t => visits.push({ b, t }));
+    });
+
+    // Sort all visits chronologically
+    visits.sort((a, b) => {
+        if (!a.t && !b.t) return 0;
+        if (!a.t) return 1;
+        if (!b.t) return -1;
+        return a.t.localeCompare(b.t);
+    });
+
     panel.style.display = '';
     panel.innerHTML = `
         <div class="cal-day-header">
             <span class="cal-day-title">${label}</span>
-            <span class="cal-day-count">${bookings.length} booking${bookings.length !== 1 ? 's' : ''}</span>
+            <span class="cal-day-count">${visits.length} visit${visits.length !== 1 ? 's' : ''}</span>
         </div>
-        ${bookings.length === 0
+        ${visits.length === 0
             ? '<p class="empty-msg" style="padding:16px 0">No bookings on this day.</p>'
-            : `<div class="cal-day-list">${bookings.map(b => `
-                <div class="cal-booking-row">
-                    <div class="cal-booking-info">
-                        <span class="cal-booking-name">${escHtml(b.clientName || '—')}</span>
-                        <span class="cal-booking-svc">${escHtml(b.service || '')} · ${b.duration || 30} min</span>
-                    </div>
-                    <span class="status-badge ${STATUS_COLORS[b.status]||'status-pending'}">${STATUS_LABELS[b.status]||'Pending'}</span>
-                </div>`).join('')}</div>`
+            : '<div class="cal-day-list" id="calDayList"></div>'
         }
     `;
+
+    if (visits.length === 0) return;
+    const list = document.getElementById('calDayList');
+
+    visits.forEach(({ b, t }) => {
+        const pets = b.pets || [];
+        const petNames = pets.map(p => p.name).filter(Boolean).join(', ');
+        const svcLabel = `${b.service || 'Visit'}${petNames ? ': ' + petNames : ''}`;
+        const startLabel = t ? fmt12(t) : 'TBD';
+        const endLabel   = t ? getEndTime(t, b.duration || 30) : '';
+        const timeStr    = endLabel ? `${startLabel} – ${endLabel}` : startLabel;
+
+        const card = document.createElement('div');
+        card.className = 'cal-visit-card';
+        card.innerHTML = `
+            <div class="cal-visit-info">
+                <div class="cal-visit-svc">${escHtml(svcLabel)}</div>
+                <div class="cal-visit-time">${escHtml(timeStr)}</div>
+            </div>
+            <div class="cal-visit-avatars"></div>
+        `;
+
+        // Pet avatars via DOM (avoids base64 in innerHTML)
+        const avatarWrap = card.querySelector('.cal-visit-avatars');
+        const shown = pets.slice(0, 3);
+        if (shown.length === 0) {
+            const d = document.createElement('div');
+            d.className = 'cal-visit-avatar cal-visit-avatar-emoji';
+            d.textContent = '🐾';
+            avatarWrap.appendChild(d);
+        } else {
+            shown.forEach((p, idx) => {
+                const emoji = p.type === 'cat' ? '🐱' : '🐶';
+                let el;
+                if (p.photoUrl) {
+                    el = document.createElement('img');
+                    el.className = 'cal-visit-avatar';
+                    el.src = p.photoUrl;
+                    el.alt = p.name || '';
+                } else {
+                    el = document.createElement('div');
+                    el.className = 'cal-visit-avatar cal-visit-avatar-emoji';
+                    el.textContent = emoji;
+                }
+                if (idx > 0) el.style.marginLeft = '-10px';
+                el.style.zIndex = 3 - idx;
+                avatarWrap.appendChild(el);
+            });
+        }
+
+        list.appendChild(card);
+    });
 }
 
 // ─── NEW BOOKING MODAL ────────────────────────────────────
