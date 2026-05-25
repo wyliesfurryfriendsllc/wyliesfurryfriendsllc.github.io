@@ -1,6 +1,6 @@
 import {
     db, collection, query, orderBy, onSnapshot,
-    addDoc, serverTimestamp
+    addDoc, updateDoc, doc, serverTimestamp
 } from './firebase.js';
 
 let calUnsub = null;
@@ -246,6 +246,7 @@ let nbSelectedClientId = null;
 let nbSelectedPets = new Set();
 let nbDateTimes = new Map(); // Map<isoDate, slot[]> — slot: { mode, start, end }
 let nbSameTimeAll = false;
+let editingBookingId = null;
 let nbModalYear = new Date().getFullYear();
 let nbModalMonth = new Date().getMonth();
 
@@ -254,7 +255,12 @@ function openNewBookingModal() {
     nbSelectedPets = new Set();
     nbDateTimes = new Map();
     nbSameTimeAll = false;
+    editingBookingId = null;
     if (calSelectedDate) nbDateTimes.set(calSelectedDate, [emptySlot()]);
+    const titleEl = document.getElementById('nbModalTitle');
+    const saveBtn = document.getElementById('nbSaveBtn');
+    if (titleEl) titleEl.textContent = 'New Booking';
+    if (saveBtn) saveBtn.textContent = 'Save Booking';
     nbModalYear = new Date().getFullYear();
     nbModalMonth = new Date().getMonth();
 
@@ -718,21 +724,93 @@ async function saveNewBooking() {
     btn.disabled = true; btn.textContent = 'Saving…';
 
     try {
-        await addDoc(collection(db, 'bookings'), {
-            clientName: name, clientPhone: phone, clientEmail: email,
-            service, duration: parseInt(duration),
-            datesText, dates: sortedDates, dateTimes,
-            pets, notes, total,
-            status: 'confirmed', source: 'manual',
-            clientId: nbSelectedClientId || null,
-            createdAt: serverTimestamp()
-        });
-        closeNewBookingModal();
+        if (editingBookingId) {
+            await updateDoc(doc(db, 'bookings', editingBookingId), {
+                clientName: name, clientPhone: phone, clientEmail: email,
+                service, duration: parseInt(duration),
+                datesText, dates: sortedDates, dateTimes,
+                pets, notes, total,
+                clientId: nbSelectedClientId || null,
+                updatedAt: serverTimestamp()
+            });
+            const bid = editingBookingId;
+            closeNewBookingModal();
+            window.AdminBookings?.openDetail(bid);
+        } else {
+            await addDoc(collection(db, 'bookings'), {
+                clientName: name, clientPhone: phone, clientEmail: email,
+                service, duration: parseInt(duration),
+                datesText, dates: sortedDates, dateTimes,
+                pets, notes, total,
+                status: 'confirmed', source: 'manual',
+                clientId: nbSelectedClientId || null,
+                createdAt: serverTimestamp()
+            });
+            closeNewBookingModal();
+        }
     } catch(e) {
         errEl.textContent = 'Error: ' + e.message;
     } finally {
         btn.disabled = false; btn.textContent = 'Save Booking';
     }
+}
+
+// ─── EDIT EXISTING BOOKING ───────────────────────────────
+function openEditBookingModal(bookingId) {
+    const b = calBookings.find(x => x.id === bookingId);
+    if (!b) return;
+
+    // Open modal with clean state first
+    openNewBookingModal();
+    editingBookingId = bookingId;
+
+    // Change title and button
+    const titleEl = document.getElementById('nbModalTitle');
+    const saveBtn = document.getElementById('nbSaveBtn');
+    if (titleEl) titleEl.textContent = 'Edit Booking';
+    if (saveBtn) saveBtn.textContent = 'Update Booking';
+
+    // Pre-fill basic fields
+    document.getElementById('nbService').value  = b.service  || 'Drop-In Visit';
+    document.getElementById('nbDuration').value = String(b.duration || 30);
+    document.getElementById('nbTotal').value    = b.total != null ? b.total : '';
+    document.getElementById('nbNotes').value    = b.notes || '';
+
+    // Pre-fill client
+    if (b.clientId) {
+        selectClient(b.clientId);
+        // Re-check pet checkboxes matching saved pets
+        const clients = window.AdminClients?.getAllClients() || [];
+        const c = clients.find(x => x.id === b.clientId);
+        if (c && c.pets && b.pets) {
+            const savedNames = (b.pets).map(p => p.name);
+            nbSelectedPets = new Set();
+            c.pets.forEach((cp, i) => {
+                if (savedNames.includes(cp.name)) nbSelectedPets.add(i);
+            });
+            // Check corresponding checkboxes in DOM
+            document.querySelectorAll('#nbPetCheckboxes input[type=checkbox]').forEach((cb, i) => {
+                cb.checked = nbSelectedPets.has(i);
+            });
+        }
+    } else {
+        document.getElementById('nbName').value  = b.clientName  || '';
+        document.getElementById('nbPhone').value = b.clientPhone || '';
+        document.getElementById('nbEmail').value = b.clientEmail || '';
+    }
+
+    // Pre-fill dates/times
+    nbDateTimes = new Map();
+    if (b.dateTimes && Object.keys(b.dateTimes).length > 0) {
+        Object.entries(b.dateTimes).sort().forEach(([iso, slots]) => {
+            nbDateTimes.set(iso, (slots || []).map(t => parseSlotObj(t)));
+        });
+    } else if (b.dates && b.dates.length > 0) {
+        b.dates.forEach(iso => nbDateTimes.set(iso, [emptySlot()]));
+    }
+    renderNbCal();
+    renderNbVisitTimes();
+    calcNbTotal();
 }
 
 function fmt12(t) {
@@ -804,5 +882,6 @@ window.AdminCalendar = {
     addTimeToDate, removeTimeFromDate, updateDatetimeHour, updateDatetimeMin,
     toggleSameTime, setSlotMode,
     updateSlotStartHour, updateSlotStartMin,
-    updateSlotEndHour, updateSlotEndMin
+    updateSlotEndHour, updateSlotEndMin,
+    openEditBookingModal
 };
