@@ -188,13 +188,14 @@
         </div>
         <div class="pet-photo-preview-wrap" onclick="document.getElementById('petPhotoFileInput').click()" style="cursor:pointer">
             <img id="petModalPhotoPreview" class="pet-photo-preview-img" src="" alt="" style="display:none" onerror="this.style.display='none'">
-            <div id="petModalPhotoPlaceholder" class="pet-photo-placeholder">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Tap to upload photo
-            </div>
+            <div id="petModalPhotoPlaceholder" class="pet-photo-placeholder">No photo yet</div>
         </div>
         <input type="file" id="petPhotoFileInput" accept="image/*" style="display:none" onchange="handlePetPhotoUpload(this)">
-        <div class="form-group" style="margin-top:8px">
+        <button type="button" class="photo-upload-btn" onclick="document.getElementById('petPhotoFileInput').click()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Photo from Device
+        </button>
+        <div class="form-group" style="margin-top:10px">
             <label>Photo URL <span class="optional">(or paste a link)</span></label>
             <input type="url" id="petModalPhotoUrl" placeholder="https://..." oninput="updatePhotoPreview()">
         </div>
