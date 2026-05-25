@@ -380,7 +380,7 @@
     gap: 6px;
     margin-bottom: 8px;
 }
-.detail-header { margin-bottom: 20px; }
+.detail-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
 .detail-title { font-family: 'Fraunces', serif; font-size: 18px; color: var(--brown); margin-bottom: 6px; }
 .detail-header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .detail-close {
