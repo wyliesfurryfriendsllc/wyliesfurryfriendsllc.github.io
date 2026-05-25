@@ -167,11 +167,11 @@ function renderScheduleHtml(b) {
 
 function renderPetsHtml(pets) {
     if (!pets || pets.length === 0) return '<p style="color:var(--brown-mid);padding:8px 0">No pets listed.</p>';
-    return pets.map(p => {
+    const items = pets.map(p => {
         const emoji = p.type === 'cat' ? '🐱' : '🐶';
         const avatar = p.photoUrl
             ? `<img class="detail-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name || '')}">`
-            : `<div class="detail-pet-avatar detail-pet-emoji">${emoji}</div>`;
+            : `<div class="detail-pet-emoji">${emoji}</div>`;
         const metaParts = [
             p.gender,
             p.age || (p.ageYears ? p.ageYears + ' yr' + (p.ageMonths ? ' ' + p.ageMonths + ' mo' : '') : '') || '',
@@ -180,13 +180,12 @@ function renderPetsHtml(pets) {
         return `
             <div class="detail-pet-row">
                 ${avatar}
-                <div class="detail-pet-info">
-                    <div class="detail-pet-name">${escHtml(p.name || '—')}</div>
-                    ${p.breed ? `<div class="detail-pet-breed">${escHtml(p.breed)}</div>` : ''}
-                    ${metaParts.length ? `<div class="detail-pet-meta">${escHtml(metaParts.join(' · '))}</div>` : ''}
-                </div>
+                <div class="detail-pet-name">${escHtml(p.name || '—')}</div>
+                ${p.breed ? `<div class="detail-pet-breed">${escHtml(p.breed)}</div>` : ''}
+                ${metaParts.length ? `<div class="detail-pet-meta">${escHtml(metaParts.join(' · '))}</div>` : ''}
             </div>`;
     }).join('');
+    return `<div class="detail-pets-wrap">${items}</div>`;
 }
 
 function renderChargesHtml(b) {
