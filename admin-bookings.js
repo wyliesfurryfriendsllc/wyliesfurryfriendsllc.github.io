@@ -137,17 +137,31 @@ function fmt12(t) {
 }
 
 function renderScheduleHtml(b) {
-    // New format: dates[] + times[]
-    if (b.dates && b.dates.length > 0) {
-        const times = b.times && b.times.length ? b.times : [''];
-        return b.dates.map(iso => {
+    // Newest format: dateTimes object {iso: [time, ...]}
+    if (b.dateTimes && Object.keys(b.dateTimes).length > 0) {
+        return Object.keys(b.dateTimes).sort().map(iso => {
             const d = new Date(iso + 'T12:00:00');
-            const dateLabel = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
-            const timesHtml = times.map(t => `<div class="detail-sched-time">${fmt12(t)}</div>`).join('');
+            const dateLabel = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+            const slots = b.dateTimes[iso];
+            const timesHtml = slots && slots.length
+                ? slots.map(t => `<div class="detail-sched-time">${fmt12(t)}</div>`).join('')
+                : '<div class="detail-sched-time">TBD</div>';
             return `<div class="detail-sched-block"><div class="detail-sched-date">${escHtml(dateLabel)}</div>${timesHtml}</div>`;
         }).join('');
     }
-    // Old format: datesText
+    // Legacy: dates[] + times[]
+    if (b.dates && b.dates.length > 0) {
+        const times = b.times && b.times.length ? b.times : [];
+        return b.dates.map(iso => {
+            const d = new Date(iso + 'T12:00:00');
+            const dateLabel = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+            const timesHtml = times.length
+                ? times.map(t => `<div class="detail-sched-time">${fmt12(t)}</div>`).join('')
+                : '<div class="detail-sched-time">TBD</div>';
+            return `<div class="detail-sched-block"><div class="detail-sched-date">${escHtml(dateLabel)}</div>${timesHtml}</div>`;
+        }).join('');
+    }
+    // Oldest format: datesText
     return `<pre class="detail-dates">${escHtml((b.datesText || '—').trim())}</pre>`;
 }
 
@@ -181,9 +195,15 @@ function renderChargesHtml(b) {
     const duration = parseInt(b.duration) || 30;
     const p = service === 'Dog Walking' ? PRICING.walking : PRICING.dropin;
     const is60 = duration === 60;
-    const numDates = b.dates?.length || 1;
-    const numTimes = (b.times?.length) || 1;
-    const numVisits = numDates * numTimes;
+    let numVisits = 0;
+    if (b.dateTimes) {
+        for (const slots of Object.values(b.dateTimes)) {
+            numVisits += Math.max(1, (slots || []).filter(Boolean).length);
+        }
+    } else if (b.dates) {
+        numVisits = (b.dates.length || 1) * Math.max(1, b.times?.length || 1);
+    }
+    if (numVisits === 0) numVisits = 1;
 
     if (pets.length === 0) {
         return `<div class="detail-charge-total"><span>Total</span><span>$${b.total || 0}</span></div>`;
@@ -216,9 +236,15 @@ function renderDetail(b, panel) {
     const isPending   = b.status === 'pending';
     const isConfirmed = b.status === 'confirmed';
     const pets = b.pets || [];
-    const numDates = b.dates?.length || 1;
-    const numTimes = b.times?.length || 1;
-    const numVisits = numDates * numTimes;
+    let numVisits = 0;
+    if (b.dateTimes) {
+        for (const slots of Object.values(b.dateTimes)) {
+            numVisits += Math.max(1, (slots || []).filter(Boolean).length);
+        }
+    } else if (b.dates) {
+        numVisits = (b.dates.length || 1) * Math.max(1, b.times?.length || 1);
+    }
+    if (numVisits === 0) numVisits = 1;
     const petNames = pets.map(p => p.name).filter(Boolean).join(', ');
 
     panel.innerHTML = `

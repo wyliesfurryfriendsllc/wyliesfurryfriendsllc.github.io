@@ -284,12 +284,8 @@
                 </div>
             </div>
 
-            <!-- Time slots -->
-            <div class="form-group">
-                <label>Time <span style="font-weight:400;color:var(--brown-mid);font-size:12px">(per day, can add multiple)</span></label>
-                <div id="nbTimeSlots"></div>
-                <button type="button" class="nb-add-time-btn" onclick="AdminCalendar.addNbTimeSlot()">+ Add time slot</button>
-            </div>
+            <!-- Per-day visit times (rendered dynamically after date selection) -->
+            <div id="nbVisitTimes" style="display:none"></div>
 
             <!-- Total (auto-calculated) -->
             <div class="form-group">

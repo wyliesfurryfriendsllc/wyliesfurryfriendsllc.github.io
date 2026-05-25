@@ -161,15 +161,15 @@ const PRICING = {
 
 let nbSelectedClientId = null;
 let nbSelectedPets = new Set();
-let nbSelectedDates = new Set(); // ISO date strings
+let nbDateTimes = new Map(); // Map<isoDate, string[]> — each date has its own time slots
 let nbModalYear = new Date().getFullYear();
 let nbModalMonth = new Date().getMonth();
 
 function openNewBookingModal() {
     nbSelectedClientId = null;
     nbSelectedPets = new Set();
-    nbSelectedDates = new Set();
-    if (calSelectedDate) nbSelectedDates.add(calSelectedDate);
+    nbDateTimes = new Map();
+    if (calSelectedDate) nbDateTimes.set(calSelectedDate, ['']);
     nbModalYear = new Date().getFullYear();
     nbModalMonth = new Date().getMonth();
 
@@ -185,14 +185,14 @@ function openNewBookingModal() {
     document.getElementById('nbDuration').value = '30';
     document.getElementById('nbError').textContent = '';
 
-    initNbTimePicker();
     renderNbCal();
+    renderNbVisitTimes();
     calcNbTotal();
 
     document.getElementById('newBookingModal').style.display = 'flex';
 }
 
-// ─── TIME PICKER ─────────────────────────────────────────
+// ─── TIME OPTIONS ─────────────────────────────────────────
 function buildTimeOptions(selectedVal = '') {
     let html = '<option value="">TBD</option>';
     for (let h = 7; h <= 21; h++) {
@@ -206,27 +206,65 @@ function buildTimeOptions(selectedVal = '') {
     return html;
 }
 
-function initNbTimePicker() {
-    const wrap = document.getElementById('nbTimeSlots');
+// ─── VISIT TIMES (per-day) ────────────────────────────────
+function renderNbVisitTimes() {
+    const wrap = document.getElementById('nbVisitTimes');
     if (!wrap) return;
-    wrap.innerHTML = '';
-    addNbTimeSlot();
+    if (nbDateTimes.size === 0) { wrap.style.display = 'none'; return; }
+
+    wrap.style.display = '';
+    const sortedDates = [...nbDateTimes.keys()].sort();
+    wrap.innerHTML = '<div class="nb-visit-times-label">Pick visit times</div>' +
+        sortedDates.map(iso => {
+            const d = new Date(iso + 'T12:00:00');
+            const dateLabel = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+            const slots = nbDateTimes.get(iso);
+            const visitCount = slots.filter(Boolean).length || 1;
+            const slotsHtml = slots.map((t, idx) => `
+                <div class="nb-time-row">
+                    <select class="admin-select" onchange="AdminCalendar.updateDatetime('${iso}',${idx},this.value)">${buildTimeOptions(t)}</select>
+                    ${slots.length > 1 ? `<button type="button" class="nb-remove-time" onclick="AdminCalendar.removeTimeFromDate('${iso}',${idx})">×</button>` : ''}
+                </div>`).join('');
+            return `
+                <div class="nb-visit-date-block">
+                    <div class="nb-visit-date-header">
+                        <span class="nb-visit-date-name">${escHtml(dateLabel)}</span>
+                        <span class="nb-visit-count">${visitCount} visit${visitCount !== 1 ? 's' : ''}</span>
+                    </div>
+                    ${slotsHtml}
+                    <button type="button" class="nb-add-time-day" onclick="AdminCalendar.addTimeToDate('${iso}')">+ Add time</button>
+                </div>`;
+        }).join('');
 }
 
-function addNbTimeSlot() {
-    const wrap = document.getElementById('nbTimeSlots');
-    if (!wrap) return;
-    const row = document.createElement('div');
-    row.className = 'nb-time-row';
-    row.innerHTML = `
-        <select class="admin-select nb-time-sel" onchange="AdminCalendar.calcNbTotal()">${buildTimeOptions()}</select>
-        <button type="button" class="nb-remove-time" onclick="this.closest('.nb-time-row').remove(); AdminCalendar.calcNbTotal()">×</button>
-    `;
-    wrap.appendChild(row);
+function addTimeToDate(iso) {
+    if (!nbDateTimes.has(iso)) return;
+    nbDateTimes.get(iso).push('');
+    renderNbVisitTimes();
+    calcNbTotal();
 }
 
-function getSelectedTimes() {
-    return [...document.querySelectorAll('.nb-time-sel')].map(s => s.value).filter(Boolean);
+function removeTimeFromDate(iso, idx) {
+    if (!nbDateTimes.has(iso)) return;
+    const slots = nbDateTimes.get(iso);
+    slots.splice(idx, 1);
+    renderNbVisitTimes();
+    calcNbTotal();
+}
+
+function updateDatetime(iso, idx, val) {
+    if (!nbDateTimes.has(iso)) return;
+    nbDateTimes.get(iso)[idx] = val;
+    calcNbTotal();
+    // update visit count label without full re-render
+    const blocks = document.querySelectorAll('.nb-visit-date-block');
+    const sortedDates = [...nbDateTimes.keys()].sort();
+    const blockIdx = sortedDates.indexOf(iso);
+    if (blocks[blockIdx]) {
+        const countEl = blocks[blockIdx].querySelector('.nb-visit-count');
+        const count = nbDateTimes.get(iso).filter(Boolean).length || 1;
+        if (countEl) countEl.textContent = `${count} visit${count !== 1 ? 's' : ''}`;
+    }
 }
 
 // ─── MINI CALENDAR FOR NEW BOOKING ───────────────────────
@@ -241,7 +279,8 @@ function renderNbCal() {
     const today = toISO(new Date());
 
     label.textContent = first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    if (countEl) countEl.textContent = nbSelectedDates.size ? `(${nbSelectedDates.size} day${nbSelectedDates.size > 1 ? 's' : ''} selected)` : '';
+    const n = nbDateTimes.size;
+    if (countEl) countEl.textContent = n ? `(${n} day${n > 1 ? 's' : ''} selected)` : '';
 
     grid.innerHTML = '';
     for (let i = 0; i < first.getDay(); i++) {
@@ -252,7 +291,7 @@ function renderNbCal() {
         const cell = document.createElement('div');
         cell.className = 'nb-cal-day'
             + (iso === today ? ' nb-cal-today' : '')
-            + (nbSelectedDates.has(iso) ? ' nb-cal-selected' : '')
+            + (nbDateTimes.has(iso) ? ' nb-cal-selected' : '')
             + (iso < today ? ' nb-cal-past' : '');
         cell.textContent = d;
         if (iso >= today) cell.onclick = () => { nbToggleDate(iso); };
@@ -261,9 +300,10 @@ function renderNbCal() {
 }
 
 function nbToggleDate(iso) {
-    if (nbSelectedDates.has(iso)) nbSelectedDates.delete(iso);
-    else nbSelectedDates.add(iso);
+    if (nbDateTimes.has(iso)) nbDateTimes.delete(iso);
+    else nbDateTimes.set(iso, ['']);
     renderNbCal();
+    renderNbVisitTimes();
     calcNbTotal();
 }
 
@@ -282,9 +322,12 @@ function nbNextMonth() {
 function calcNbTotal() {
     const service  = document.getElementById('nbService')?.value || 'Drop-In Visit';
     const duration = parseInt(document.getElementById('nbDuration')?.value || '30');
-    const numDates = nbSelectedDates.size || 1;
-    const numTimes = Math.max(getSelectedTimes().length, 1);
-    const numVisits = numDates * numTimes;
+
+    let numVisits = 0;
+    for (const slots of nbDateTimes.values()) {
+        numVisits += Math.max(1, slots.filter(Boolean).length);
+    }
+    if (numVisits === 0) numVisits = 1;
 
     const p = service === 'Dog Walking' ? PRICING.walking : PRICING.dropin;
     const is60 = duration === 60;
@@ -395,25 +438,22 @@ async function saveNewBooking() {
     const errEl    = document.getElementById('nbError');
 
     if (!name) { errEl.textContent = 'Client name is required.'; return; }
-    if (nbSelectedDates.size === 0) { errEl.textContent = 'Please select at least one date.'; return; }
+    if (nbDateTimes.size === 0) { errEl.textContent = 'Please select at least one date.'; return; }
     errEl.textContent = '';
 
-    const times = getSelectedTimes();
-    const sortedDates = [...nbSelectedDates].sort();
+    const sortedDates = [...nbDateTimes.keys()].sort();
 
-    const timesLabel = times.length ? times.map(fmt12).join(', ') : 'TBD';
-    let datesText;
-    if (sortedDates.length === 1) {
-        const d = new Date(sortedDates[0] + 'T12:00:00');
+    // Build datesText and dateTimes object
+    const dateTimes = {};
+    let datesText = '';
+    sortedDates.forEach(iso => {
+        const slots = nbDateTimes.get(iso).filter(Boolean);
+        dateTimes[iso] = slots;
+        const d = new Date(iso + 'T12:00:00');
         const label = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-        datesText = `  ${label}: ${timesLabel}\n`;
-    } else {
-        datesText = sortedDates.map(iso => {
-            const d = new Date(iso + 'T12:00:00');
-            const label = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-            return `  ${label}: ${timesLabel}`;
-        }).join('\n') + '\n';
-    }
+        const timesLabel = slots.length ? slots.map(fmt12).join(', ') : 'TBD';
+        datesText += `  ${label}: ${timesLabel}\n`;
+    });
 
     let pets = [];
     if (nbSelectedClientId) {
@@ -429,7 +469,7 @@ async function saveNewBooking() {
         await addDoc(collection(db, 'bookings'), {
             clientName: name, clientPhone: phone, clientEmail: email,
             service, duration: parseInt(duration),
-            datesText, dates: sortedDates, times,
+            datesText, dates: sortedDates, dateTimes,
             pets, notes, total,
             status: 'confirmed', source: 'manual',
             clientId: nbSelectedClientId || null,
@@ -508,5 +548,6 @@ window.AdminCalendar = {
     openNewBookingModal, closeNewBookingModal,
     searchClients, selectClient, clearSelectedClient,
     togglePet, saveNewBooking,
-    nbPrevMonth, nbNextMonth, calcNbTotal, addNbTimeSlot
+    nbPrevMonth, nbNextMonth, calcNbTotal,
+    addTimeToDate, removeTimeFromDate, updateDatetime
 };
