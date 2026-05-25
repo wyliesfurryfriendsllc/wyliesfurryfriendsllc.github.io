@@ -867,3 +867,56 @@
     border: 1.5px solid var(--border);
     flex-shrink: 0;
 }
+
+/* ================================
+   NEW BOOKING — MINI CALENDAR
+================================ */
+.nb-cal-wrap {
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+}
+.nb-cal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+}
+.nb-cal-header span {
+    font-weight: 600; font-size: 14px; color: var(--brown);
+}
+.nb-cal-nav {
+    background: none; border: none; cursor: pointer;
+    font-size: 20px; line-height: 1; color: var(--brown-mid);
+    padding: 2px 6px; border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+}
+.nb-cal-nav:hover { background: var(--pink-light); color: var(--pink); }
+
+.nb-cal-weekdays {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    padding: 6px 8px 2px;
+    border-bottom: 1px solid var(--border);
+}
+.nb-cal-weekdays span {
+    text-align: center; font-size: 11px; font-weight: 600;
+    color: var(--brown-mid); padding: 2px 0;
+}
+.nb-cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 2px; padding: 6px 8px 10px;
+}
+.nb-cal-blank { /* empty leading cells */ }
+.nb-cal-day {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; border-radius: 50%;
+    cursor: pointer; color: var(--brown);
+    transition: background 0.12s, color 0.12s;
+}
+.nb-cal-day:hover { background: var(--pink-light); }
+.nb-cal-today { font-weight: 700; border: 1.5px solid var(--pink); }
+.nb-cal-selected { background: var(--pink) !important; color: #fff !important; }
+.nb-cal-past { color: #ccc; cursor: default; }
+.nb-cal-past:hover { background: none; }

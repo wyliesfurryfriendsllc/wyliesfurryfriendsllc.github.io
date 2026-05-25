@@ -154,12 +154,24 @@ function showDayBookings(iso) {
 }
 
 // ─── NEW BOOKING MODAL ────────────────────────────────────
+const PRICING = {
+    dropin:  { base: 23, addon60: 20, holiday: 31, extraDog: 9, cat: 23, extraCat: 9 },
+    walking: { base: 26, addon60: 23, holiday: 34, extraDog: 9 }
+};
+
 let nbSelectedClientId = null;
 let nbSelectedPets = new Set();
+let nbSelectedDates = new Set(); // ISO date strings
+let nbModalYear = new Date().getFullYear();
+let nbModalMonth = new Date().getMonth();
 
 function openNewBookingModal() {
     nbSelectedClientId = null;
     nbSelectedPets = new Set();
+    nbSelectedDates = new Set();
+    if (calSelectedDate) nbSelectedDates.add(calSelectedDate);
+    nbModalYear = new Date().getFullYear();
+    nbModalMonth = new Date().getMonth();
 
     ['nbName','nbPhone','nbEmail','nbTotal','nbNotes'].forEach(id => {
         const el = document.getElementById(id);
@@ -171,11 +183,110 @@ function openNewBookingModal() {
     document.getElementById('nbPetSection').style.display = 'none';
     document.getElementById('nbService').value = 'Drop-In Visit';
     document.getElementById('nbDuration').value = '30';
-    document.getElementById('nbDate').value = calSelectedDate || '';
-    document.getElementById('nbTime').value = '';
     document.getElementById('nbError').textContent = '';
 
+    initNbTimePicker();
+    renderNbCal();
+    calcNbTotal();
+
     document.getElementById('newBookingModal').style.display = 'flex';
+}
+
+// ─── TIME PICKER ─────────────────────────────────────────
+function initNbTimePicker() {
+    const sel = document.getElementById('nbTime');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">TBD</option>';
+    for (let h = 7; h <= 21; h++) {
+        for (let m = 0; m < 60; m += 15) {
+            if (h === 21 && m > 0) break;
+            const val = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+            const label = `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
+            sel.innerHTML += `<option value="${val}">${label}</option>`;
+        }
+    }
+}
+
+// ─── MINI CALENDAR FOR NEW BOOKING ───────────────────────
+function renderNbCal() {
+    const grid = document.getElementById('nbCalGrid');
+    const label = document.getElementById('nbCalLabel');
+    const countEl = document.getElementById('nbDateCount');
+    if (!grid) return;
+
+    const first = new Date(nbModalYear, nbModalMonth, 1);
+    const days  = new Date(nbModalYear, nbModalMonth + 1, 0).getDate();
+    const today = toISO(new Date());
+
+    label.textContent = first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    if (countEl) countEl.textContent = nbSelectedDates.size ? `(${nbSelectedDates.size} day${nbSelectedDates.size > 1 ? 's' : ''} selected)` : '';
+
+    grid.innerHTML = '';
+    for (let i = 0; i < first.getDay(); i++) {
+        const b = document.createElement('div'); b.className = 'nb-cal-blank'; grid.appendChild(b);
+    }
+    for (let d = 1; d <= days; d++) {
+        const iso = `${nbModalYear}-${String(nbModalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const cell = document.createElement('div');
+        cell.className = 'nb-cal-day'
+            + (iso === today ? ' nb-cal-today' : '')
+            + (nbSelectedDates.has(iso) ? ' nb-cal-selected' : '')
+            + (iso < today ? ' nb-cal-past' : '');
+        cell.textContent = d;
+        if (iso >= today) cell.onclick = () => { nbToggleDate(iso); };
+        grid.appendChild(cell);
+    }
+}
+
+function nbToggleDate(iso) {
+    if (nbSelectedDates.has(iso)) nbSelectedDates.delete(iso);
+    else nbSelectedDates.add(iso);
+    renderNbCal();
+    calcNbTotal();
+}
+
+function nbPrevMonth() {
+    nbModalMonth--;
+    if (nbModalMonth < 0) { nbModalMonth = 11; nbModalYear--; }
+    renderNbCal();
+}
+function nbNextMonth() {
+    nbModalMonth++;
+    if (nbModalMonth > 11) { nbModalMonth = 0; nbModalYear++; }
+    renderNbCal();
+}
+
+// ─── PRICE CALCULATION ───────────────────────────────────
+function calcNbTotal() {
+    const service  = document.getElementById('nbService')?.value || 'Drop-In Visit';
+    const duration = parseInt(document.getElementById('nbDuration')?.value || '30');
+    const numDates = nbSelectedDates.size || 1;
+
+    const p = service === 'Dog Walking' ? PRICING.walking : PRICING.dropin;
+    const is60 = duration === 60;
+
+    // get selected pets
+    let pets = [];
+    if (nbSelectedClientId) {
+        const clients = window.AdminClients?.getAllClients() || [];
+        const c = clients.find(x => x.id === nbSelectedClientId);
+        if (c && c.pets) pets = [...nbSelectedPets].map(i => c.pets[i]).filter(Boolean);
+    }
+    if (!pets.length) pets = [{ type: 'dog' }]; // default 1 dog
+
+    let perVisit = 0;
+    pets.forEach((pet, idx) => {
+        if (idx === 0) {
+            const base = (service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base;
+            perVisit += base + (is60 ? p.addon60 : 0);
+        } else {
+            perVisit += pet.type === 'cat' ? (p.extraCat || p.extraDog) : p.extraDog;
+        }
+    });
+
+    const total = perVisit * numDates;
+    const el = document.getElementById('nbTotal');
+    if (el) el.value = total;
 }
 
 function closeNewBookingModal() {
@@ -247,6 +358,7 @@ function clearSelectedClient() {
 function togglePet(i) {
     if (nbSelectedPets.has(i)) nbSelectedPets.delete(i);
     else nbSelectedPets.add(i);
+    calcNbTotal();
 }
 
 async function saveNewBooking() {
@@ -255,20 +367,30 @@ async function saveNewBooking() {
     const email    = document.getElementById('nbEmail').value.trim();
     const service  = document.getElementById('nbService').value;
     const duration = document.getElementById('nbDuration').value;
-    const date     = document.getElementById('nbDate').value;
     const time     = document.getElementById('nbTime').value;
     const total    = parseFloat(document.getElementById('nbTotal').value) || 0;
     const notes    = document.getElementById('nbNotes').value.trim();
     const errEl    = document.getElementById('nbError');
 
     if (!name) { errEl.textContent = 'Client name is required.'; return; }
-    if (!date) { errEl.textContent = 'Date is required.'; return; }
+    if (nbSelectedDates.size === 0) { errEl.textContent = 'Please select at least one date.'; return; }
     errEl.textContent = '';
 
-    const dateObj  = new Date(date + 'T12:00:00');
-    const dateLabel = dateObj.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
     const timeLabel = time ? fmt12(time) : 'TBD';
-    const datesText = `  ${dateLabel}: ${timeLabel}\n`;
+    const sortedDates = [...nbSelectedDates].sort();
+
+    let datesText;
+    if (sortedDates.length === 1) {
+        const d = new Date(sortedDates[0] + 'T12:00:00');
+        const label = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+        datesText = `  ${label}: ${timeLabel}\n`;
+    } else {
+        const first = new Date(sortedDates[0] + 'T12:00:00');
+        const last  = new Date(sortedDates[sortedDates.length - 1] + 'T12:00:00');
+        const fLabel = first.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+        const lLabel = last.toLocaleDateString('en-US',  { month:'short', day:'numeric', year:'numeric' });
+        datesText = `  ${fLabel} – ${lLabel}: ${timeLabel}\n`;
+    }
 
     let pets = [];
     if (nbSelectedClientId) {
@@ -284,7 +406,7 @@ async function saveNewBooking() {
         await addDoc(collection(db, 'bookings'), {
             clientName: name, clientPhone: phone, clientEmail: email,
             service, duration: parseInt(duration),
-            datesText, dates: [date],
+            datesText, dates: sortedDates,
             pets, notes, total,
             status: 'confirmed', source: 'manual',
             clientId: nbSelectedClientId || null,
@@ -362,5 +484,6 @@ window.AdminCalendar = {
     init, changeMonth, selectDay, setFilter, exportICS,
     openNewBookingModal, closeNewBookingModal,
     searchClients, selectClient, clearSelectedClient,
-    togglePet, saveNewBooking
+    togglePet, saveNewBooking,
+    nbPrevMonth, nbNextMonth, calcNbTotal
 };
