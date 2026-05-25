@@ -356,7 +356,7 @@
 .abc-footer { display: flex; justify-content: space-between; font-size: 12px; color: var(--brown-mid); }
 
 /* Status badges (shared with account.css) */
-.status-badge { display: inline-flex; align-items: center; line-height: 1; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+.status-badge { display: inline-block; height: 22px; line-height: 22px; padding: 0 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; flex-shrink: 0; vertical-align: middle; }
 .status-pending   { background: #FFF3CD; color: #856404; }
 .status-confirmed { background: var(--green-light); color: #2d6a2d; }
 .status-rejected  { background: #FCE8E8; color: #c0392b; }
