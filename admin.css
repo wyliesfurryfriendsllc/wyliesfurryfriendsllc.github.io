@@ -829,6 +829,17 @@
     display: flex; align-items: center; gap: 8px;
     padding: 4px 0 8px 0;
 }
+.cpet-upload-btn {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--brown-mid);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.cpet-upload-btn:hover { border-color: var(--pink); color: var(--pink); background: var(--pink-light); }
 .cpet-photo-preview {
     width: 36px; height: 36px;
     border-radius: 50%;

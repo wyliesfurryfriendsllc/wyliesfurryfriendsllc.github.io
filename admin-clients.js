@@ -112,6 +112,10 @@ function renderModalPets() {
                 ${p.photoUrl ? `<img class="cpet-photo-preview" src="${escHtml(p.photoUrl)}" alt="">` : ''}
                 <input class="cpet-input" type="url" placeholder="Photo URL (optional)" value="${escHtml(p.photoUrl || '')}"
                     oninput="AdminClients.updatePet(${i},'photoUrl',this.value);AdminClients.refreshPetPreview(this,${i})">
+                <label class="cpet-upload-btn" title="Upload from device">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <input type="file" accept="image/*" style="display:none" onchange="AdminClients.uploadPetPhoto(this,${i})">
+                </label>
             </div>
         `;
         list.appendChild(row);
@@ -210,6 +214,32 @@ function pickAddress(addr) {
 }
 
 // ─── HELPERS ─────────────────────────────────────────────
+function compressImage(file, maxW = 500, q = 0.85) {
+    return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = new Image();
+            img.onload = () => {
+                const s = Math.min(1, maxW / img.width);
+                const c = document.createElement('canvas');
+                c.width = img.width * s; c.height = img.height * s;
+                c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                resolve(c.toDataURL('image/jpeg', q));
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+async function uploadPetPhoto(input, i) {
+    const file = input.files[0];
+    if (!file) return;
+    const base64 = await compressImage(file);
+    if (petEntries[i]) petEntries[i].photoUrl = base64;
+    renderModalPets();
+}
+
 function getAllClients() { return allClients; }
 
 function escHtml(s) {
@@ -220,5 +250,5 @@ function escHtml(s) {
 window.AdminClients = {
     init, openModal, closeModal, saveModal,
     addPet, removePet, updatePet, refreshPetPreview, getAllClients,
-    searchAddress, pickAddress
+    searchAddress, pickAddress, uploadPetPhoto
 };

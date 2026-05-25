@@ -901,10 +901,15 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     object-fit: cover;
     display: block;
 }
-.pet-photo-placeholder {
-    font-size: 13px;
-    color: var(--brown-mid);
+.pet-photo-preview-wrap:hover {
+    border-color: var(--pink);
+    background: var(--pink-light);
 }
+.pet-photo-placeholder {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--brown-mid);
+}
+.pet-photo-preview-wrap:hover .pet-photo-placeholder { color: var(--pink); }
 
 /* ─── PET CARDS (updated) ────────────────────────── */
 .pets-grid {

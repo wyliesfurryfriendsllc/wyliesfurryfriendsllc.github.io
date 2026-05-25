@@ -407,6 +407,35 @@ function setPills(groupId, values) {
     });
 }
 
+function compressImage(file, maxW = 500, q = 0.85) {
+    return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = new Image();
+            img.onload = () => {
+                const s = Math.min(1, maxW / img.width);
+                const c = document.createElement('canvas');
+                c.width = img.width * s; c.height = img.height * s;
+                c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                resolve(c.toDataURL('image/jpeg', q));
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+async function handlePetPhotoUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const placeholder = document.getElementById('petModalPhotoPlaceholder');
+    if (placeholder) placeholder.textContent = 'Processing…';
+    const base64 = await compressImage(file);
+    document.getElementById('petModalPhotoUrl').value = base64;
+    updatePhotoPreview();
+    input.value = '';
+}
+
 function updatePhotoPreview() {
     const url     = document.getElementById('petModalPhotoUrl').value.trim();
     const preview = document.getElementById('petModalPhotoPreview');
@@ -571,4 +600,5 @@ window.savePetModal      = savePetModal;
 window.closePetModal     = closePetModal;
 window.saveProfile       = saveProfile;
 window.togglePill        = togglePill;
-window.updatePhotoPreview= updatePhotoPreview;
+window.updatePhotoPreview   = updatePhotoPreview;
+window.handlePetPhotoUpload = handlePetPhotoUpload;
