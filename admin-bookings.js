@@ -252,8 +252,14 @@ function renderDetail(b, panel) {
                 <h3 class="detail-title">${escHtml(b.clientName || '—')}</h3>
                 <span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}" id="detailStatusBadge">${STATUS_LABELS[b.status] || 'Pending'}</span>
             </div>
-            <button class="detail-close" onclick="AdminBookings.closeDetail()">×</button>
+            <div class="detail-header-actions">
+                <button class="detail-export-btn" onclick="AdminBookings.exportImage('${b.id}')" title="Save as image">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+                <button class="detail-close" onclick="AdminBookings.closeDetail()">×</button>
+            </div>
         </div>
+        <div id="detail-export-content">
 
         <div class="detail-section">
             <div class="detail-section-label">Service</div>
@@ -299,6 +305,7 @@ function renderDetail(b, panel) {
         <div class="detail-actions">
             <button class="admin-btn-secondary" onclick="AdminBookings.markCompleted('${b.id}')">Mark Completed</button>
         </div>` : ''}
+        </div>
 
         <div class="detail-section">
             <div class="detail-section-label">Messages</div>
@@ -404,9 +411,36 @@ function escHtml(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ─── EXPORT IMAGE ─────────────────────────────────────────
+async function exportImage(bookingId) {
+    const target = document.getElementById('detail-export-content');
+    if (!target || typeof html2canvas === 'undefined') return;
+    const btn = document.querySelector('.detail-export-btn');
+    if (btn) { btn.textContent = '…'; btn.disabled = true; }
+    try {
+        const canvas = await html2canvas(target, {
+            backgroundColor: '#fffaf7',
+            scale: 2,
+            useCORS: true,
+            logging: false
+        });
+        const b = allBookings.find(x => x.id === bookingId);
+        const name = (b?.clientName || 'booking').replace(/\s+/g, '-').toLowerCase();
+        const link = document.createElement('a');
+        link.download = `${name}-${new Date().toISOString().slice(0,10)}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+        }
+    }
+}
+
 // ─── EXPOSE ───────────────────────────────────────────────
 window.AdminBookings = {
     init, setFilter, openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
-    sendAdminMessage
+    sendAdminMessage, exportImage
 };
