@@ -592,6 +592,31 @@ function sendRequest() {
         client_email: clientEmail,
         message:      message
     }).then(() => {
+        // Save to Firestore
+        const wff = window.WFF;
+        if (wff && wff.db) {
+            const petsData = [];
+            document.querySelectorAll('.pet-entry').forEach(entry => {
+                const id = entry.id.replace('petEntry','');
+                petsData.push({
+                    name:  document.getElementById(`petName${id}`)?.value  || '',
+                    type:  document.getElementById(`petType${id}`)?.value  || 'dog',
+                    age:   document.getElementById(`petAge${id}`)?.value   || '',
+                    breed: document.getElementById(`petBreed${id}`)?.value || '',
+                    notes: document.getElementById(`petNotes${id}`)?.value || ''
+                });
+            });
+            wff.addDoc(wff.collection(wff.db, 'bookings'), {
+                clientName, clientEmail, clientPhone,
+                service, duration,
+                datesText: collectDatesText(),
+                pets: petsData,
+                notes: clientNotes,
+                total,
+                status: 'pending',
+                createdAt: wff.serverTimestamp()
+            }).catch(err => console.error('Firestore save failed:', err));
+        }
         document.getElementById('bookingConfirm').style.display = 'none';
         document.getElementById('bookingLayout').style.display  = '';
         document.getElementById('bookingForm').style.display    = 'none';

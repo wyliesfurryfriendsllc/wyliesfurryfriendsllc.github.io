@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account — Wylie Furry Friends</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="account.css">
+</head>
+<body class="account-page">
+
+<nav id="top">
+    <a class="nav-logo" href="index.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg>
+        Wylie Furry Friends
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">&#9776;</button>
+    <ul class="nav-links" id="navLinks">
+        <li><a href="index.html#services">Services</a></li>
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="index.html#reviews">Reviews</a></li>
+        <li><a href="account.html" class="nav-active">My Account</a></li>
+        <li><a href="booking.html" class="nav-book-btn">Book Now</a></li>
+    </ul>
+</nav>
+
+<!-- ===== AUTH SECTION ===== -->
+<div id="authSection" class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg>
+            Wylie Furry Friends
+        </div>
+        <div class="auth-tab-row">
+            <button class="auth-tab active" id="authTabLogin" onclick="switchAuthMode('login')">Sign In</button>
+            <button class="auth-tab" id="authTabRegister" onclick="switchAuthMode('register')">Create Account</button>
+        </div>
+
+        <p id="authError" class="auth-error"></p>
+
+        <!-- Login -->
+        <form id="loginForm" onsubmit="event.preventDefault(); doLogin()">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+            </div>
+            <button type="submit" id="loginBtn" class="btn-auth">Sign In</button>
+            <p class="auth-switch">New here? <button type="button" class="link-btn" onclick="switchAuthMode('register')">Create an account</button></p>
+        </form>
+
+        <!-- Register -->
+        <form id="registerForm" style="display:none" onsubmit="event.preventDefault(); doRegister()">
+            <div class="form-group">
+                <label>Your name</label>
+                <input type="text" id="registerName" placeholder="Full name" required>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="registerEmail" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="registerPassword" placeholder="At least 6 characters" required>
+            </div>
+            <button type="submit" id="registerBtn" class="btn-auth">Create Account</button>
+            <p class="auth-switch">Already have an account? <button type="button" class="link-btn" onclick="switchAuthMode('login')">Sign in</button></p>
+        </form>
+    </div>
+</div>
+
+<!-- ===== ACCOUNT SECTION ===== -->
+<div id="accountSection" class="account-layout" style="display:none">
+
+    <!-- Sidebar -->
+    <aside class="account-sidebar">
+        <div class="account-avatar-wrap">
+            <div class="account-avatar" id="accountAvatar">W</div>
+            <div class="account-id">
+                <div class="account-name" id="accountName">Loading...</div>
+                <div class="account-email" id="accountEmail"></div>
+            </div>
+        </div>
+
+        <nav class="account-nav">
+            <button class="account-nav-btn active" id="navBtnBookings" onclick="showTab('bookings')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                My Bookings
+            </button>
+            <button class="account-nav-btn" id="navBtnPets" onclick="showTab('pets')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg>
+                My Pets
+            </button>
+            <button class="account-nav-btn" id="navBtnProfile" onclick="showTab('profile')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Profile
+            </button>
+        </nav>
+
+        <button class="signout-btn" onclick="doSignOut()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign Out
+        </button>
+    </aside>
+
+    <!-- Main content -->
+    <main class="account-main">
+
+        <!-- Bookings Tab -->
+        <div id="tabBookings">
+            <div class="tab-header">
+                <h2 class="tab-title">My Bookings</h2>
+                <a href="booking.html" class="btn-new-booking">+ New Booking</a>
+            </div>
+            <div class="bookings-panel">
+                <div class="bookings-list" id="bookingsList">
+                    <p class="empty-msg">Loading bookings...</p>
+                </div>
+                <div class="booking-detail-panel" id="bookingDetail" style="display:none"></div>
+            </div>
+        </div>
+
+        <!-- Pets Tab -->
+        <div id="tabPets" style="display:none">
+            <div class="tab-header">
+                <h2 class="tab-title">My Pets</h2>
+                <button class="btn-add-pet" onclick="openAddPetModal()">+ Add a Pet</button>
+            </div>
+            <div class="pets-grid" id="petsGrid"></div>
+        </div>
+
+        <!-- Profile Tab -->
+        <div id="tabProfile" style="display:none">
+            <div class="tab-header">
+                <h2 class="tab-title">Profile</h2>
+            </div>
+            <div class="profile-form-wrap">
+                <div class="form-group">
+                    <label>Full name</label>
+                    <input type="text" id="profileName" placeholder="Your name">
+                </div>
+                <div class="form-group">
+                    <label>Email address</label>
+                    <p id="profileEmailDisplay" class="profile-email-static">—</p>
+                    <p class="form-hint">Email cannot be changed.</p>
+                </div>
+                <div class="form-group">
+                    <label>Phone number</label>
+                    <input type="tel" id="profilePhone" placeholder="(xxx) xxx-xxxx">
+                </div>
+                <div class="profile-footer">
+                    <button class="btn-save-profile" id="saveProfileBtn" onclick="saveProfile()">Save Changes</button>
+                    <span id="profileSaveStatus" class="save-ok-inline" style="display:none">Saved!</span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Pet Modal -->
+<div id="petModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closePetModal()">
+    <div class="modal-card modal-card-wide">
+        <div class="modal-header">
+            <h3 id="petModalTitle">Add a Pet</h3>
+            <button class="modal-close-btn" onclick="closePetModal()">×</button>
+        </div>
+        <input type="hidden" id="petModalIdx" value="-1">
+
+        <!-- Pet Photo -->
+        <div class="modal-section-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Pet Photo
+        </div>
+        <div class="pet-photo-preview-wrap">
+            <img id="petModalPhotoPreview" class="pet-photo-preview-img" src="" alt="" style="display:none" onerror="this.style.display='none'">
+            <div id="petModalPhotoPlaceholder" class="pet-photo-placeholder">No photo yet</div>
+        </div>
+        <div class="form-group">
+            <label>Photo URL <span class="optional">(optional — paste a link to a photo)</span></label>
+            <input type="url" id="petModalPhotoUrl" placeholder="https://..." oninput="updatePhotoPreview()">
+        </div>
+
+        <!-- Pet Details -->
+        <div class="modal-section-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg>
+            Pet Details
+        </div>
+        <div class="form-group">
+            <label>What type of pet?</label>
+            <div class="pet-type-cards" id="petTypeGroup">
+                <button type="button" class="pet-type-card active" data-value="dog" onclick="togglePill(this,'single')">🐶 Dog</button>
+                <button type="button" class="pet-type-card" data-value="cat" onclick="togglePill(this,'single')">🐱 Cat</button>
+                <button type="button" class="pet-type-card" data-value="other" onclick="togglePill(this,'single')">🐾 Other</button>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group" style="flex:2">
+                <label>Name <span class="req">*</span></label>
+                <input type="text" id="petModalName" placeholder="e.g. Luna">
+            </div>
+            <div class="form-group" style="flex:1">
+                <label>Weight (lbs)</label>
+                <input type="number" id="petModalWeight" placeholder="e.g. 12" min="0">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group" style="flex:1">
+                <label>Age (Yr.)</label>
+                <input type="number" id="petModalAgeYears" placeholder="Years" min="0">
+            </div>
+            <div class="form-group" style="flex:1">
+                <label>Age (Mo.)</label>
+                <input type="number" id="petModalAgeMonths" placeholder="Months" min="0" max="11">
+            </div>
+            <div class="form-group" style="flex:2">
+                <label>Sex</label>
+                <div class="pet-pills" id="petSexGroup">
+                    <button type="button" class="pet-pill" data-value="male" onclick="togglePill(this,'single')">Male</button>
+                    <button type="button" class="pet-pill" data-value="female" onclick="togglePill(this,'single')">Female</button>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Breed <span class="optional">(optional)</span></label>
+            <input type="text" id="petModalBreed" placeholder="e.g. Golden Retriever · Mixed breeds welcome">
+        </div>
+
+        <!-- Additional Details -->
+        <details class="modal-details" open>
+            <summary class="modal-section-header modal-section-toggle">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Additional Details
+            </summary>
+            <div class="modal-details-body">
+                <div class="form-group">
+                    <label>Spayed / Neutered?</label>
+                    <div class="pet-pills" id="petSpayedGroup">
+                        <button type="button" class="pet-pill" data-value="yes" onclick="togglePill(this,'single')">Is spayed/neutered</button>
+                        <button type="button" class="pet-pill" data-value="no" onclick="togglePill(this,'single')">Not spayed/neutered</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Microchipped?</label>
+                    <div class="pet-pills" id="petMicrochipGroup">
+                        <button type="button" class="pet-pill" data-value="yes" onclick="togglePill(this,'single')">Microchipped</button>
+                        <button type="button" class="pet-pill" data-value="no" onclick="togglePill(this,'single')">Not microchipped</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>House trained?</label>
+                    <div class="pet-pills" id="petHouseTrainedGroup">
+                        <button type="button" class="pet-pill" data-value="yes" onclick="togglePill(this,'single')">House trained</button>
+                        <button type="button" class="pet-pill" data-value="no" onclick="togglePill(this,'single')">Not house trained</button>
+                        <button type="button" class="pet-pill" data-value="unsure" onclick="togglePill(this,'single')">Unsure</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Friendly with children?</label>
+                    <div class="pet-pills" id="petFriendlyChildrenGroup">
+                        <button type="button" class="pet-pill" data-value="yes" onclick="togglePill(this,'single')">Friendly</button>
+                        <button type="button" class="pet-pill" data-value="no" onclick="togglePill(this,'single')">Not friendly</button>
+                        <button type="button" class="pet-pill" data-value="unsure" onclick="togglePill(this,'single')">Unsure</button>
+                        <button type="button" class="pet-pill" data-value="depends" onclick="togglePill(this,'single')">Depends</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Friendly with dogs?</label>
+                    <div class="pet-pills" id="petFriendlyDogsGroup">
+                        <button type="button" class="pet-pill" data-value="yes" onclick="togglePill(this,'single')">Friendly</button>
+                        <button type="button" class="pet-pill" data-value="no" onclick="togglePill(this,'single')">Not friendly</button>
+                        <button type="button" class="pet-pill" data-value="unsure" onclick="togglePill(this,'single')">Unsure</button>
+                        <button type="button" class="pet-pill" data-value="depends" onclick="togglePill(this,'single')">Depends</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Friendly with cats?</label>
+                    <div class="pet-pills" id="petFriendlyCatsGroup">
+                        <button type="button" class="pet-pill" data-value="yes" onclick="togglePill(this,'single')">Friendly</button>
+                        <button type="button" class="pet-pill" data-value="no" onclick="togglePill(this,'single')">Not friendly</button>
+                        <button type="button" class="pet-pill" data-value="unsure" onclick="togglePill(this,'single')">Unsure</button>
+                        <button type="button" class="pet-pill" data-value="depends" onclick="togglePill(this,'single')">Depends</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label>Adoption date <span class="optional">(optional)</span></label>
+                        <input type="date" id="petModalAdoptionDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>About your pet <span class="optional">(optional)</span></label>
+                    <textarea id="petModalAbout" rows="2" placeholder="Personality, quirks, anything Wylie should know..."></textarea>
+                </div>
+            </div>
+        </details>
+
+        <!-- Care Info -->
+        <details class="modal-details">
+            <summary class="modal-section-header modal-section-toggle">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                Care Info
+            </summary>
+            <div class="modal-details-body">
+                <div class="form-group">
+                    <label>Potty break</label>
+                    <div class="pet-pills" id="petPottyGroup">
+                        <button type="button" class="pet-pill" data-value="1hr" onclick="togglePill(this,'single')">Every 1 hr</button>
+                        <button type="button" class="pet-pill" data-value="2hrs" onclick="togglePill(this,'single')">Every 2 hrs</button>
+                        <button type="button" class="pet-pill" data-value="4hrs" onclick="togglePill(this,'single')">Every 4 hrs</button>
+                        <button type="button" class="pet-pill" data-value="8hrs" onclick="togglePill(this,'single')">Every 8 hrs</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Energy level</label>
+                    <div class="pet-pills" id="petEnergyGroup">
+                        <button type="button" class="pet-pill" data-value="high" onclick="togglePill(this,'single')">High energy</button>
+                        <button type="button" class="pet-pill" data-value="moderate" onclick="togglePill(this,'single')">Moderate</button>
+                        <button type="button" class="pet-pill" data-value="low" onclick="togglePill(this,'single')">Low energy</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Feeding schedule</label>
+                    <div class="pet-pills" id="petFeedingGroup">
+                        <button type="button" class="pet-pill" data-value="morning" onclick="togglePill(this,'single')">Morning only</button>
+                        <button type="button" class="pet-pill" data-value="twice" onclick="togglePill(this,'single')">Twice a day</button>
+                        <button type="button" class="pet-pill" data-value="special" onclick="togglePill(this,'single')">Special instructions</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Can be left alone</label>
+                    <div class="pet-pills" id="petAloneGroup">
+                        <button type="button" class="pet-pill" data-value="1hr" onclick="togglePill(this,'single')">1 hr or less</button>
+                        <button type="button" class="pet-pill" data-value="1-4hrs" onclick="togglePill(this,'single')">1–4 hrs</button>
+                        <button type="button" class="pet-pill" data-value="4-8hrs" onclick="togglePill(this,'single')">4–8 hrs</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Medication <span class="optional">(select all that apply)</span></label>
+                    <div class="pet-pills" id="petMedGroup">
+                        <button type="button" class="pet-pill" data-value="pill" onclick="togglePill(this,'multi')">Pill</button>
+                        <button type="button" class="pet-pill" data-value="topical" onclick="togglePill(this,'multi')">Topical</button>
+                        <button type="button" class="pet-pill" data-value="injection" onclick="togglePill(this,'multi')">Injection</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Anything else a sitter should know? <span class="optional">(optional)</span></label>
+                    <textarea id="petModalCareNotes" rows="2" placeholder="Feeding details, walking instructions, special care..."></textarea>
+                </div>
+            </div>
+        </details>
+
+        <!-- Health Info -->
+        <details class="modal-details">
+            <summary class="modal-section-header modal-section-toggle">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Health Info
+            </summary>
+            <div class="modal-details-body">
+                <div class="form-group">
+                    <label>Veterinary info <span class="optional">(optional)</span></label>
+                    <textarea id="petModalVetInfo" rows="3" placeholder="Vet name, address, phone number..."></textarea>
+                </div>
+            </div>
+        </details>
+
+        <div class="modal-footer">
+            <button class="btn-modal-cancel" onclick="closePetModal()">Cancel</button>
+            <button class="btn-modal-save" onclick="savePetModal()">Save Pet</button>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="account.js"></script>
+<script>
+    document.getElementById('hamburger').addEventListener('click', () =>
+        document.getElementById('navLinks').classList.toggle('open'));
+</script>
+</body>
+</html>

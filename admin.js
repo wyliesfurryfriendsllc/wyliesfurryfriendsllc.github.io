@@ -8,9 +8,23 @@ function login() {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminPanel').style.display  = 'block';
         renderAdminGallery();
+        window.AdminBookings?.init();
+        window.AdminClients?.init();
     } else {
         document.getElementById('loginError').style.display = 'block';
     }
+}
+
+function showAdminTab(tab) {
+    ['bookings','clients','calendar','gallery'].forEach(t => {
+        const el = document.getElementById('adminTab' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (el) el.style.display = t === tab ? '' : 'none';
+    });
+    document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+    });
+    if (tab === 'clients')  window.AdminClients?.init();
+    if (tab === 'calendar') window.AdminCalendar?.init();
 }
 
 function logout() {
@@ -114,5 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminPanel').style.display  = 'block';
         renderAdminGallery();
+        window.AdminBookings?.init();
+        window.AdminClients?.init();
     }
 });

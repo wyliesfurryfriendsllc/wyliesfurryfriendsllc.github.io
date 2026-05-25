@@ -2,10 +2,10 @@
    TOKENS
 ================================ */
 :root {
-    --cream:     #FDF8F3;
-    --cream-2:   #F5EDE4;
+    --cream:     #FFFDF8;
+    --cream-2:   #F7F2EC;
     --pink:      #C4788A;
-    --pink-light:#F2DDE4;
+    --pink-light:#FEF9F2;
     --green:     #7A9478;
     --green-light:#DDE8DA;
     --brown:     #3D2018;
@@ -738,7 +738,7 @@ nav {
    CTA BANNER
 ================================ */
 .cta-section {
-    background: var(--green);
+    background: var(--pink);
     padding: 80px 48px;
     text-align: center;
 }
@@ -760,7 +760,7 @@ nav {
 
 .cta-section .btn-primary {
     background: #fff;
-    color: var(--green);
+    color: var(--pink);
 }
 .cta-section .btn-primary:hover { background: var(--cream); }
 
@@ -768,7 +768,7 @@ nav {
    FOOTER
 ================================ */
 footer {
-    background: var(--brown);
+    background: #4a2535;
     color: rgba(255,255,255,0.8);
     padding: 48px 56px;
 }
