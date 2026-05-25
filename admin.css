@@ -356,7 +356,7 @@
 .abc-footer { display: flex; justify-content: space-between; font-size: 12px; color: var(--brown-mid); }
 
 /* Status badges (shared with account.css) */
-.status-badge { display: inline-block; height: 22px; line-height: 22px; padding: 0 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; flex-shrink: 0; vertical-align: middle; }
+.status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; vertical-align: middle; }
 .status-pending   { background: #FFF3CD; color: #856404; }
 .status-confirmed { background: var(--green-light); color: #2d6a2d; }
 .status-rejected  { background: #FCE8E8; color: #c0392b; }
@@ -380,7 +380,8 @@
     gap: 6px;
     margin-bottom: 8px;
 }
-.detail-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.detail-header { margin-bottom: 20px; }
+.detail-title { display: inline; margin-right: 10px; }
 .detail-title { font-family: 'Fraunces', serif; font-size: 18px; color: var(--brown); margin-bottom: 6px; }
 .detail-header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .detail-close {
