@@ -958,6 +958,39 @@
     display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
 }
 .nb-time-row .admin-select { flex: 1; }
+.nb-hour-input {
+    width: 64px;
+    padding: 11px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--cream);
+    color: var(--brown);
+    font-size: 15px;
+    font-family: inherit;
+    text-align: center;
+    box-sizing: border-box;
+    -moz-appearance: textfield;
+}
+.nb-hour-input::-webkit-inner-spin-button,
+.nb-hour-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.nb-hour-input:focus { outline: none; border-color: var(--pink); }
+.nb-time-colon {
+    font-size: 18px; font-weight: 700;
+    color: var(--brown); line-height: 1;
+}
+.nb-min-select {
+    width: 80px;
+    padding: 11px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--cream);
+    color: var(--brown);
+    font-size: 15px;
+    font-family: inherit;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+.nb-min-select:focus { outline: none; border-color: var(--pink); }
 .nb-remove-time {
     background: none; border: none; cursor: pointer;
     color: var(--brown-mid); font-size: 20px; line-height: 1;

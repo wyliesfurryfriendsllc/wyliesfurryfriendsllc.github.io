@@ -192,18 +192,11 @@ function openNewBookingModal() {
     document.getElementById('newBookingModal').style.display = 'flex';
 }
 
-// ─── TIME OPTIONS ─────────────────────────────────────────
-function buildTimeOptions(selectedVal = '') {
-    let html = '<option value="">TBD</option>';
-    for (let h = 7; h <= 21; h++) {
-        for (let m = 0; m < 60; m += 15) {
-            if (h === 21 && m > 0) break;
-            const val = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-            const label = `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
-            html += `<option value="${val}"${val === selectedVal ? ' selected' : ''}>${label}</option>`;
-        }
-    }
-    return html;
+// ─── TIME HELPERS ────────────────────────────────────────
+function parseSlot(t) {
+    if (!t) return { h: '', m: '00' };
+    const [hStr, mStr] = t.split(':');
+    return { h: parseInt(hStr) || '', m: mStr || '00' };
 }
 
 // ─── VISIT TIMES (per-day) ────────────────────────────────
@@ -220,11 +213,24 @@ function renderNbVisitTimes() {
             const dateLabel = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
             const slots = nbDateTimes.get(iso);
             const visitCount = slots.filter(Boolean).length || 1;
-            const slotsHtml = slots.map((t, idx) => `
+            const slotsHtml = slots.map((t, idx) => {
+                const { h, m } = parseSlot(t);
+                return `
                 <div class="nb-time-row">
-                    <select class="admin-select" onchange="AdminCalendar.updateDatetime('${iso}',${idx},this.value)">${buildTimeOptions(t)}</select>
+                    <input type="number" class="nb-hour-input" min="1" max="24" placeholder="Hr"
+                        value="${h}"
+                        onchange="AdminCalendar.updateDatetimeHour('${iso}',${idx},this.value)"
+                        oninput="AdminCalendar.updateDatetimeHour('${iso}',${idx},this.value)">
+                    <span class="nb-time-colon">:</span>
+                    <select class="nb-min-select" onchange="AdminCalendar.updateDatetimeMin('${iso}',${idx},this.value)">
+                        <option value="00" ${m==='00'?'selected':''}>00</option>
+                        <option value="15" ${m==='15'?'selected':''}>15</option>
+                        <option value="30" ${m==='30'?'selected':''}>30</option>
+                        <option value="45" ${m==='45'?'selected':''}>45</option>
+                    </select>
                     ${slots.length > 1 ? `<button type="button" class="nb-remove-time" onclick="AdminCalendar.removeTimeFromDate('${iso}',${idx})">×</button>` : ''}
-                </div>`).join('');
+                </div>`;
+            }).join('');
             return `
                 <div class="nb-visit-date-block">
                     <div class="nb-visit-date-header">
@@ -252,11 +258,32 @@ function removeTimeFromDate(iso, idx) {
     calcNbTotal();
 }
 
-function updateDatetime(iso, idx, val) {
+function updateDatetimeHour(iso, idx, val) {
     if (!nbDateTimes.has(iso)) return;
-    nbDateTimes.get(iso)[idx] = val;
+    const slots = nbDateTimes.get(iso);
+    const { m } = parseSlot(slots[idx]);
+    const raw = parseInt(val);
+    if (!val || isNaN(raw)) {
+        slots[idx] = '';
+    } else {
+        const h = Math.max(1, Math.min(24, raw));
+        slots[idx] = `${String(h).padStart(2,'0')}:${m}`;
+    }
     calcNbTotal();
-    // update visit count label without full re-render
+    _updateVisitCount(iso);
+}
+
+function updateDatetimeMin(iso, idx, val) {
+    if (!nbDateTimes.has(iso)) return;
+    const slots = nbDateTimes.get(iso);
+    const { h } = parseSlot(slots[idx]);
+    if (h !== '') {
+        slots[idx] = `${String(h).padStart(2,'0')}:${val}`;
+        calcNbTotal();
+    }
+}
+
+function _updateVisitCount(iso) {
     const blocks = document.querySelectorAll('.nb-visit-date-block');
     const sortedDates = [...nbDateTimes.keys()].sort();
     const blockIdx = sortedDates.indexOf(iso);
@@ -549,5 +576,5 @@ window.AdminCalendar = {
     searchClients, selectClient, clearSelectedClient,
     togglePet, saveNewBooking,
     nbPrevMonth, nbNextMonth, calcNbTotal,
-    addTimeToDate, removeTimeFromDate, updateDatetime
+    addTimeToDate, removeTimeFromDate, updateDatetimeHour, updateDatetimeMin
 };
