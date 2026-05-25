@@ -3,7 +3,8 @@ import {
     collection, addDoc, doc, updateDoc, setDoc, getDoc,
     query, where, onSnapshot, orderBy, serverTimestamp,
     createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    signOut, onAuthStateChanged, updateProfile
+    signOut, onAuthStateChanged, updateProfile,
+    GoogleAuthProvider, signInWithPopup
 } from './firebase.js';
 
 let currentUser    = null;
@@ -100,6 +101,30 @@ async function doRegister() {
         document.getElementById('authError').textContent = getFriendlyError(err.code);
         btn.disabled    = false;
         btn.textContent = 'Create Account';
+    }
+}
+
+async function doGoogleLogin() {
+    const btn = document.getElementById('googleLoginBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Signing in...'; }
+    try {
+        const provider = new GoogleAuthProvider();
+        const cred = await signInWithPopup(auth, provider);
+        const userRef = doc(db, 'users', cred.user.uid);
+        const snap = await getDoc(userRef);
+        if (!snap.exists()) {
+            await setDoc(userRef, {
+                name: cred.user.displayName || '',
+                email: cred.user.email,
+                phone: '', pets: [],
+                createdAt: serverTimestamp()
+            });
+        }
+    } catch (err) {
+        if (err.code !== 'auth/popup-closed-by-user') {
+            document.getElementById('authError').textContent = 'Google sign-in failed. Please try again.';
+        }
+        if (btn) { btn.disabled = false; btn.textContent = 'Continue with Google'; }
     }
 }
 
@@ -533,6 +558,7 @@ function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
 window.switchAuthMode    = switchAuthMode;
 window.doLogin           = doLogin;
 window.doRegister        = doRegister;
+window.doGoogleLogin     = doGoogleLogin;
 window.doSignOut         = doSignOut;
 window.showTab           = showTab;
 window.openBookingDetail = openBookingDetail;

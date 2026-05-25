@@ -6,7 +6,8 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import {
     getAuth, createUserWithEmailAndPassword,
-    signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile
+    signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile,
+    GoogleAuthProvider, signInWithPopup
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 const firebaseConfig = {
@@ -26,7 +27,8 @@ export {
     collection, addDoc, getDocs, doc, updateDoc, deleteDoc,
     query, orderBy, onSnapshot, where, serverTimestamp,
     getDoc, setDoc, createUserWithEmailAndPassword,
-    signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile
+    signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile,
+    GoogleAuthProvider, signInWithPopup
 };
 
 // Also expose via window for non-module scripts (booking.js, admin.js)
