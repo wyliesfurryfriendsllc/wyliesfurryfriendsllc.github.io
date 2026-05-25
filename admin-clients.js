@@ -319,10 +319,15 @@ function pickAddress(addr) {
 
 // ─── HELPERS ─────────────────────────────────────────────
 function compressImage(file, maxW = 500, q = 0.85) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
         const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Cannot read file.'));
         reader.onload = e => {
             const img = new Image();
+            img.onerror = () => reject(new Error(
+                'Cannot load this image format. Please use JPG or PNG.\n' +
+                '(iPhone tip: Settings → Camera → Formats → Most Compatible)'
+            ));
             img.onload = () => {
                 const s = Math.min(1, maxW / img.width);
                 const c = document.createElement('canvas');
@@ -339,9 +344,14 @@ function compressImage(file, maxW = 500, q = 0.85) {
 async function uploadPetPhoto(input, i) {
     const file = input.files[0];
     if (!file) return;
-    const base64 = await compressImage(file);
-    if (petEntries[i]) petEntries[i].photoUrl = base64;
-    renderModalPets();
+    try {
+        const base64 = await compressImage(file);
+        if (petEntries[i]) petEntries[i].photoUrl = base64;
+        renderModalPets();
+    } catch(e) {
+        alert(e.message);
+        input.value = '';
+    }
 }
 
 function getAllClients() { return allClients; }
