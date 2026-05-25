@@ -389,13 +389,13 @@
 }
 .detail-close:hover { color: var(--brown); }
 #detail-export-content { padding: 20px; border-radius: 12px; overflow: hidden; }
-.detail-export-btn {
+.detail-export-btn, .detail-edit-btn {
     background: none; border: 1.5px solid var(--border);
     border-radius: 8px; padding: 6px 8px; cursor: pointer;
     color: var(--brown-mid); display: flex; align-items: center;
     transition: border-color 0.15s, color 0.15s;
 }
-.detail-export-btn:hover { border-color: var(--pink); color: var(--pink); }
+.detail-export-btn:hover, .detail-edit-btn:hover { border-color: var(--pink); color: var(--pink); }
 
 .detail-section { margin-bottom: 18px; }
 .detail-section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--pink); margin-bottom: 8px; }
@@ -499,7 +499,17 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
+    margin-bottom: 12px;
 }
+.admin-form-row.full { grid-template-columns: 1fr; }
+.admin-form-label { font-size: 12px; font-weight: 600; color: var(--brown-mid); margin-bottom: 5px; display: block; }
+.admin-textarea {
+    width: 100%; padding: 10px 12px; border: 1.5px solid var(--border);
+    border-radius: 10px; font-size: 14px; font-family: inherit;
+    background: var(--cream); color: var(--brown); resize: vertical;
+    box-sizing: border-box;
+}
+.admin-textarea:focus { outline: none; border-color: var(--pink); }
 .admin-form-error { color: #c0392b; font-size: 13px; margin-bottom: 8px; min-height: 18px; }
 .admin-btn-full { width: 100%; justify-content: center; }
 .admin-add-pet-btn {
@@ -978,8 +988,12 @@
 .nb-visit-date-name { font-weight: 600; font-size: 14px; color: var(--brown); }
 .nb-visit-count { font-size: 12px; color: var(--brown-mid); }
 .nb-time-row {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;
+    display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;
 }
+.nb-time-line {
+    display: flex; align-items: center; gap: 8px;
+}
+.nb-time-end-line { padding-left: 2px; }
 .nb-time-row .admin-select { flex: 1; }
 .nb-hour-input {
     width: 64px;

@@ -249,6 +249,9 @@ function renderDetail(b, panel) {
     panel.innerHTML = `
         <div class="detail-top-bar">
             <div class="detail-header-actions">
+                <button class="detail-edit-btn" onclick="AdminBookings.openEditModal('${b.id}')" title="Edit booking">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
                 <button class="detail-export-btn" onclick="AdminBookings.exportImage('${b.id}')" title="Save as image">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 </button>
@@ -407,6 +410,64 @@ async function sendAdminMessage() {
     });
 }
 
+// ─── EDIT MODAL ──────────────────────────────────────────
+let editingBookingId = null;
+
+function openEditModal(bookingId) {
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b) return;
+    editingBookingId = bookingId;
+
+    document.getElementById('ebStatus').value   = b.status    || 'pending';
+    document.getElementById('ebService').value  = b.service   || 'Drop-In Visit';
+    document.getElementById('ebDuration').value = String(b.duration || 30);
+    document.getElementById('ebName').value     = b.clientName  || '';
+    document.getElementById('ebPhone').value    = b.clientPhone || '';
+    document.getElementById('ebEmail').value    = b.clientEmail || '';
+    document.getElementById('ebTotal').value    = b.total      != null ? b.total : '';
+    document.getElementById('ebNotes').value    = b.notes      || '';
+    document.getElementById('ebError').textContent = '';
+
+    document.getElementById('editBookingModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('editBookingModal').style.display = 'none';
+    editingBookingId = null;
+}
+
+async function saveEditModal() {
+    if (!editingBookingId) return;
+    const errEl = document.getElementById('ebError');
+    errEl.textContent = '';
+
+    const data = {
+        status:      document.getElementById('ebStatus').value,
+        service:     document.getElementById('ebService').value,
+        duration:    parseInt(document.getElementById('ebDuration').value) || 30,
+        clientName:  document.getElementById('ebName').value.trim(),
+        clientPhone: document.getElementById('ebPhone').value.trim(),
+        clientEmail: document.getElementById('ebEmail').value.trim(),
+        total:       parseFloat(document.getElementById('ebTotal').value) || 0,
+        notes:       document.getElementById('ebNotes').value.trim(),
+        updatedAt:   serverTimestamp()
+    };
+
+    if (!data.clientName) { errEl.textContent = 'Name is required.'; return; }
+
+    const btn = document.getElementById('ebSaveBtn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+        await updateDoc(doc(db, 'bookings', editingBookingId), data);
+        closeEditModal();
+        openDetail(editingBookingId);
+    } catch(e) {
+        errEl.textContent = 'Error: ' + e.message;
+    } finally {
+        btn.disabled = false; btn.textContent = 'Save';
+    }
+}
+
 // ─── HELPERS ─────────────────────────────────────────────
 function escHtml(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -475,5 +536,6 @@ async function exportImage(bookingId) {
 window.AdminBookings = {
     init, setFilter, openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
-    sendAdminMessage, exportImage
+    sendAdminMessage, exportImage,
+    openEditModal, closeEditModal, saveEditModal
 };

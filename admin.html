@@ -203,6 +203,84 @@
     </div>
 </div>
 
+<!-- ══ EDIT BOOKING MODAL ══ -->
+<div id="editBookingModal" class="admin-modal-overlay" style="display:none"
+     onclick="if(event.target===this)AdminBookings.closeEditModal()">
+    <div class="admin-modal-card">
+        <div class="admin-modal-header">
+            <h3>Edit Booking</h3>
+            <button class="admin-modal-close" onclick="AdminBookings.closeEditModal()">×</button>
+        </div>
+
+        <div class="admin-modal-body">
+            <div class="admin-form-row full">
+                <div>
+                    <label class="admin-form-label">Status</label>
+                    <select id="ebStatus" class="admin-select">
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="completed">Completed</option>
+                        <option value="rejected">Declined</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="admin-form-row">
+                <div>
+                    <label class="admin-form-label">Service</label>
+                    <select id="ebService" class="admin-select">
+                        <option value="Drop-In Visit">Drop-In Visit</option>
+                        <option value="Dog Walking">Dog Walking</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="admin-form-label">Duration</label>
+                    <select id="ebDuration" class="admin-select">
+                        <option value="30">30 min</option>
+                        <option value="60">60 min</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="admin-form-row">
+                <div>
+                    <label class="admin-form-label">Client Name</label>
+                    <input id="ebName" type="text" class="admin-input" placeholder="Name">
+                </div>
+                <div>
+                    <label class="admin-form-label">Total ($)</label>
+                    <input id="ebTotal" type="number" class="admin-input" placeholder="0">
+                </div>
+            </div>
+
+            <div class="admin-form-row">
+                <div>
+                    <label class="admin-form-label">Phone</label>
+                    <input id="ebPhone" type="text" class="admin-input" placeholder="Phone">
+                </div>
+                <div>
+                    <label class="admin-form-label">Email</label>
+                    <input id="ebEmail" type="text" class="admin-input" placeholder="Email">
+                </div>
+            </div>
+
+            <div class="admin-form-row full">
+                <div>
+                    <label class="admin-form-label">Notes</label>
+                    <textarea id="ebNotes" class="admin-textarea" rows="3" placeholder="Special instructions..."></textarea>
+                </div>
+            </div>
+
+            <p id="ebError" class="admin-form-error"></p>
+        </div>
+
+        <div class="admin-modal-footer">
+            <button class="admin-btn-secondary" onclick="AdminBookings.closeEditModal()">Cancel</button>
+            <button id="ebSaveBtn" class="admin-btn-primary" onclick="AdminBookings.saveEditModal()">Save</button>
+        </div>
+    </div>
+</div>
+
 <!-- ══ NEW BOOKING MODAL ══ -->
 <div id="newBookingModal" class="admin-modal-overlay" style="display:none"
      onclick="if(event.target===this)AdminCalendar.closeNewBookingModal()">
