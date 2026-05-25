@@ -419,25 +419,41 @@ async function exportImage(bookingId) {
     const target = document.getElementById('detail-export-content');
     if (!target || typeof html2canvas === 'undefined') return;
     const btn = document.querySelector('.detail-export-btn');
+    const svgIcon = btn?.innerHTML;
     if (btn) { btn.textContent = '…'; btn.disabled = true; }
     try {
+        const w = target.scrollWidth;
         const canvas = await html2canvas(target, {
             backgroundColor: '#fffaf7',
-            scale: 2,
+            scale: window.devicePixelRatio || 2,
+            width: w,
+            windowWidth: w,
             useCORS: true,
             logging: false
         });
         const b = allBookings.find(x => x.id === bookingId);
         const name = (b?.clientName || 'booking').replace(/\s+/g, '-').toLowerCase();
-        const link = document.createElement('a');
-        link.download = `${name}-${new Date().toISOString().slice(0,10)}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+        const filename = `${name}-${new Date().toISOString().slice(0,10)}.png`;
+
+        canvas.toBlob(async blob => {
+            const file = new File([blob], filename, { type: 'image/png' });
+            if (navigator.canShare?.({ files: [file] })) {
+                // iOS/Android: share sheet → user can save to Photos
+                await navigator.share({ files: [file], title: filename });
+            } else {
+                // Desktop fallback: download link
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = url;
+                link.click();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }
+        }, 'image/png');
+    } catch(e) {
+        if (e.name !== 'AbortError') alert('Export failed: ' + e.message);
     } finally {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
-        }
+        if (btn) { btn.disabled = false; btn.innerHTML = svgIcon; }
     }
 }
 
