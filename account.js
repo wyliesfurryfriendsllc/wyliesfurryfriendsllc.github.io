@@ -32,6 +32,7 @@ onAuthStateChanged(auth, async user => {
         userPets = profile.pets || [];
         showAccountUI(user, profile);
         loadMyBookings(user);
+        syncToClients(user, profile).catch(() => {});
     } else {
         showAuthUI();
     }
@@ -97,6 +98,7 @@ async function doRegister() {
         await setDoc(doc(db, 'users', cred.user.uid), {
             name, email, phone: '', pets: [], createdAt: serverTimestamp()
         });
+        await syncToClients(cred.user, { name, email, phone: '', pets: [] });
     } catch (err) {
         document.getElementById('authError').textContent = getFriendlyError(err.code);
         btn.disabled    = false;
@@ -119,6 +121,7 @@ async function doGoogleLogin() {
                 phone: '', pets: [],
                 createdAt: serverTimestamp()
             });
+            await syncToClients(cred.user, { name: cred.user.displayName || '', email: cred.user.email, phone: '', pets: [] });
         }
     } catch (err) {
         if (err.code !== 'auth/popup-closed-by-user') {
@@ -537,6 +540,7 @@ async function savePetModal() {
     if (!pet.name) { alert("Please enter your pet's name."); return; }
     if (idx === -1) { userPets.push(pet); } else { userPets[idx] = pet; }
     await updateDoc(doc(db, 'users', currentUser.uid), { pets: userPets });
+    await syncToClients(currentUser, { name: currentUser.displayName || '', email: currentUser.email, phone: '', pets: userPets });
     closePetModal();
     renderPets();
 }
@@ -545,6 +549,7 @@ async function deletePet(idx) {
     if (!confirm('Remove this pet?') || !currentUser) return;
     userPets.splice(idx, 1);
     await updateDoc(doc(db, 'users', currentUser.uid), { pets: userPets });
+    await syncToClients(currentUser, { name: currentUser.displayName || '', email: currentUser.email, phone: '', pets: userPets });
     renderPets();
 }
 
@@ -563,6 +568,7 @@ async function saveProfile() {
     try {
         await updateDoc(doc(db, 'users', currentUser.uid), { name, phone });
         if (name) await updateProfile(currentUser, { displayName: name });
+        await syncToClients(currentUser, { name, phone, email: currentUser.email, pets: userPets });
         document.getElementById('accountName').textContent   = name || currentUser.email.split('@')[0];
         document.getElementById('accountAvatar').textContent = (name || currentUser.email).charAt(0).toUpperCase();
         const statusEl = document.getElementById('profileSaveStatus');
@@ -573,6 +579,21 @@ async function saveProfile() {
     }
     btn.disabled    = false;
     btn.textContent = 'Save Changes';
+}
+
+// ─── SYNC TO ADMIN CLIENTS ───────────────────────────────
+async function syncToClients(user, profile) {
+    const pets = (profile.pets || []).map(p => ({
+        name: p.name || '', type: p.type || 'dog', photoUrl: p.photoUrl || '',
+        age: [p.ageYears && p.ageYears + 'yr', p.ageMonths && p.ageMonths + 'mo'].filter(Boolean).join(' ')
+    }));
+    await setDoc(doc(db, 'clients', user.uid), {
+        name: profile.name || user.displayName || '',
+        email: user.email,
+        phone: profile.phone || '',
+        pets, uid: user.uid, source: 'account',
+        updatedAt: serverTimestamp()
+    }, { merge: true });
 }
 
 // ─── HELPERS ─────────────────────────────────────────────
