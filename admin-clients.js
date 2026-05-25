@@ -43,10 +43,11 @@ function renderClients() {
         const pets = c.pets || [];
         const petsHtml = pets.slice(0, 3).map(p => {
             const emoji = p.type === 'cat' ? '🐱' : '🐶';
-            const avatar = p.photoUrl
-                ? `<img class="cc-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name)}">`
+            // Use placeholder; set src via JS to avoid base64-in-innerHTML issues
+            const avatarSlot = p.photoUrl
+                ? `<img class="cc-pet-avatar cc-pet-avatar-img" alt="${escHtml(p.name || '')}">`
                 : `<div class="cc-pet-avatar cc-pet-emoji">${emoji}</div>`;
-            return `<div class="cc-pet-item">${avatar}<span class="cc-pet-name">${escHtml(p.name || '—')}</span></div>`;
+            return `<div class="cc-pet-item" data-photo="${p.photoUrl ? '1' : ''}">${avatarSlot}<span class="cc-pet-name">${escHtml(p.name || '—')}</span></div>`;
         }).join('');
 
         card.innerHTML = `
@@ -66,6 +67,13 @@ function renderClients() {
                 </div>
             </div>
         `;
+        // Set pet avatar src via DOM to avoid base64 in innerHTML
+        pets.slice(0, 3).forEach((p, idx) => {
+            if (p.photoUrl) {
+                const imgEl = card.querySelectorAll('.cc-pet-avatar-img')[idx];
+                if (imgEl) imgEl.src = p.photoUrl;
+            }
+        });
         container.appendChild(card);
     });
 }
@@ -117,17 +125,41 @@ function renderModalPets() {
     const list = document.getElementById('cModalPetList');
     list.innerHTML = '';
     petEntries.forEach((p, i) => {
-        const ageDisplay = p.birthDate ? calcAge(p.birthDate) : (p.age || '');
+        // Determine mode: 'date' or 'age'
+        const mode = p.birthMode || (p.birthDate ? 'date' : ((p.ageYears || p.ageMonths) ? 'age' : 'date'));
+
+        // Age display
+        let ageDisplay = '';
+        if (mode === 'date' && p.birthDate) {
+            ageDisplay = calcAge(p.birthDate);
+        } else if (mode === 'age') {
+            const parts = [];
+            if (p.ageYears) parts.push(p.ageYears + ' yr');
+            if (p.ageMonths) parts.push(p.ageMonths + ' mo');
+            ageDisplay = parts.join(' ');
+        }
+
+        const bdayContent = mode === 'date'
+            ? `<div class="cpet-bday-input-wrap">
+                <input class="cpet-input" type="date" value="${escHtml(p.birthDate || '')}"
+                    onchange="AdminClients.updatePet(${i},'birthDate',this.value)">
+                ${ageDisplay ? `<span class="cpet-age-chip">${ageDisplay}</span>` : ''}
+               </div>`
+            : `<div class="cpet-age-input-wrap">
+                <input class="cpet-input cpet-age-num" type="number" min="0" max="30" placeholder="Yrs"
+                    value="${escHtml(String(p.ageYears || ''))}" onchange="AdminClients.updatePet(${i},'ageYears',+this.value)">
+                <input class="cpet-input cpet-age-num" type="number" min="0" max="11" placeholder="Mo"
+                    value="${escHtml(String(p.ageMonths || ''))}" onchange="AdminClients.updatePet(${i},'ageMonths',+this.value)">
+                ${ageDisplay ? `<span class="cpet-age-chip-inline">${ageDisplay}</span>` : ''}
+               </div>`;
+
         const emoji = p.type === 'cat' ? '🐱' : '🐶';
-        const avatarHtml = p.photoUrl
-            ? `<img class="cpet-avatar" src="${escHtml(p.photoUrl)}" alt="">`
-            : `<div class="cpet-avatar cpet-avatar-emoji">${emoji}</div>`;
         const row = document.createElement('div');
         row.className = 'cpet-row';
         row.innerHTML = `
             <div class="cpet-top-row">
                 <div class="cpet-avatar-wrap">
-                    ${avatarHtml}
+                    <div class="cpet-avatar-slot"></div>
                     <label class="cpet-avatar-upload" title="Upload photo">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                         <input type="file" accept="image/*" style="display:none" onchange="AdminClients.uploadPetPhoto(this,${i})">
@@ -136,28 +168,52 @@ function renderModalPets() {
                 <div class="cpet-fields">
                     <input class="cpet-input" type="text" placeholder="Pet name" value="${escHtml(p.name || '')}"
                         oninput="AdminClients.updatePet(${i},'name',this.value)">
-                    <div class="cpet-fields-row2">
-                        <select class="cpet-select" onchange="AdminClients.updatePet(${i},'type',this.value)">
-                            <option value="dog"   ${p.type==='dog'   ?'selected':''}>🐶 Dog</option>
-                            <option value="cat"   ${p.type==='cat'   ?'selected':''}>🐱 Cat</option>
-                            <option value="other" ${p.type==='other' ?'selected':''}>🐾 Other</option>
-                        </select>
-                        <div class="cpet-bday-wrap">
-                            <input class="cpet-input" type="date" value="${escHtml(p.birthDate || '')}"
-                                onchange="AdminClients.updatePet(${i},'birthDate',this.value)" title="Birthday">
-                            ${ageDisplay ? `<span class="cpet-age-chip">${ageDisplay}</span>` : ''}
+                    <select class="cpet-select" onchange="AdminClients.updatePet(${i},'type',this.value)">
+                        <option value="dog"   ${p.type==='dog'   ?'selected':''}>🐶 Dog</option>
+                        <option value="cat"   ${p.type==='cat'   ?'selected':''}>🐱 Cat</option>
+                        <option value="other" ${p.type==='other' ?'selected':''}>🐾 Other</option>
+                    </select>
+                    <div class="cpet-bday-section">
+                        <div class="cpet-bday-tabs">
+                            <button type="button" class="cpet-bday-tab ${mode==='date'?'active':''}"
+                                onclick="AdminClients.setBdayMode(${i},'date')">📅 Date</button>
+                            <button type="button" class="cpet-bday-tab ${mode==='age'?'active':''}"
+                                onclick="AdminClients.setBdayMode(${i},'age')">🎂 Age</button>
                         </div>
+                        ${bdayContent}
                     </div>
                 </div>
                 <button class="cpet-remove" onclick="AdminClients.removePet(${i})">×</button>
             </div>
         `;
+
+        // Set avatar via DOM (avoids base64 escaping issues in innerHTML)
+        const slot = row.querySelector('.cpet-avatar-slot');
+        if (p.photoUrl) {
+            const img = document.createElement('img');
+            img.className = 'cpet-avatar';
+            img.alt = '';
+            img.src = p.photoUrl;
+            slot.replaceWith(img);
+        } else {
+            const div = document.createElement('div');
+            div.className = 'cpet-avatar cpet-avatar-emoji';
+            div.textContent = emoji;
+            slot.replaceWith(div);
+        }
+
         list.appendChild(row);
     });
 }
 
+function setBdayMode(i, mode) {
+    if (!petEntries[i]) return;
+    petEntries[i].birthMode = mode;
+    renderModalPets();
+}
+
 function addPet() {
-    petEntries.push({ name: '', type: 'dog', birthDate: '', photoUrl: '' });
+    petEntries.push({ name: '', type: 'dog', birthDate: '', photoUrl: '', birthMode: 'date', ageYears: '', ageMonths: '' });
     renderModalPets();
 }
 
@@ -298,5 +354,5 @@ function escHtml(s) {
 window.AdminClients = {
     init, openModal, closeModal, saveModal,
     addPet, removePet, updatePet, refreshPetPreview, getAllClients,
-    searchAddress, pickAddress, uploadPetPhoto, calcAge, bookClient
+    searchAddress, pickAddress, uploadPetPhoto, calcAge, bookClient, setBdayMode
 };

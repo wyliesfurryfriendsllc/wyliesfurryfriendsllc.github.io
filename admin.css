@@ -852,13 +852,29 @@
     cursor: pointer; border: 2px solid #fff;
 }
 .cpet-fields { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.cpet-fields-row2 { display: flex; gap: 6px; }
-.cpet-bday-wrap { position: relative; flex: 1; }
+/* Birthday section */
+.cpet-bday-section { display: flex; flex-direction: column; gap: 6px; }
+.cpet-bday-tabs { display: flex; gap: 4px; }
+.cpet-bday-tab {
+    padding: 4px 12px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: none; font-size: 12px; color: var(--brown-mid); cursor: pointer;
+    font-family: inherit; transition: all 0.15s; line-height: 1.4;
+}
+.cpet-bday-tab.active { background: var(--pink); border-color: var(--pink); color: #fff; }
+.cpet-bday-tab:hover:not(.active) { border-color: var(--pink); color: var(--pink); }
+.cpet-bday-input-wrap { position: relative; }
+.cpet-age-input-wrap { display: flex; gap: 6px; align-items: center; }
+.cpet-age-num { width: 72px !important; flex-shrink: 0; }
 .cpet-age-chip {
     position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
     font-size: 11px; color: var(--pink); font-weight: 600;
     background: var(--pink-light); padding: 2px 6px; border-radius: 20px;
     pointer-events: none;
+}
+.cpet-age-chip-inline {
+    font-size: 11px; color: var(--pink); font-weight: 600;
+    background: var(--pink-light); padding: 2px 6px; border-radius: 20px;
+    white-space: nowrap; flex-shrink: 0;
 }
 .cpet-photo-preview {
     width: 36px; height: 36px;
