@@ -390,7 +390,7 @@
     color: var(--brown-mid); cursor: pointer; padding: 0 4px; line-height: 1;
 }
 .detail-close:hover { color: var(--brown); }
-#detail-export-content { padding: 20px; border-radius: 12px; }
+#detail-export-content { padding: 20px; border-radius: 12px; overflow: hidden; }
 .detail-export-btn {
     background: none; border: 1.5px solid var(--border);
     border-radius: 8px; padding: 6px 8px; cursor: pointer;
