@@ -822,8 +822,14 @@
 ================================ */
 .cpet-main-row {
     display: grid;
-    grid-template-columns: 1fr 80px 110px 28px;
+    grid-template-columns: 1fr 80px 150px 28px;
     gap: 6px; align-items: center;
+}
+.cpet-age-wrap { position: relative; }
+.cpet-age-label {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    font-size: 11px; color: var(--brown-mid); pointer-events: none;
+    background: #fff; padding: 0 2px;
 }
 .cpet-photo-row {
     display: flex; align-items: center; gap: 8px;

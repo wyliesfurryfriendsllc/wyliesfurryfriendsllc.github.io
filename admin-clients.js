@@ -89,10 +89,23 @@ function closeModal() {
     document.getElementById('clientModal').style.display = 'none';
 }
 
+function calcAge(birthDate) {
+    if (!birthDate) return '';
+    const now = new Date(), birth = new Date(birthDate);
+    let months = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+    if (now.getDate() < birth.getDate()) months--;
+    if (months < 0) return '';
+    const y = Math.floor(months / 12), m = months % 12;
+    if (y === 0) return `${m} mo`;
+    if (m === 0) return `${y} yr${y > 1 ? 's' : ''}`;
+    return `${y} yr${y > 1 ? 's' : ''} ${m} mo`;
+}
+
 function renderModalPets() {
     const list = document.getElementById('cModalPetList');
     list.innerHTML = '';
     petEntries.forEach((p, i) => {
+        const ageDisplay = p.birthDate ? calcAge(p.birthDate) : (p.age || '');
         const row = document.createElement('div');
         row.className = 'cpet-row';
         row.innerHTML = `
@@ -104,8 +117,12 @@ function renderModalPets() {
                     <option value="cat"   ${p.type==='cat'   ?'selected':''}>Cat</option>
                     <option value="other" ${p.type==='other' ?'selected':''}>Other</option>
                 </select>
-                <input class="cpet-input" type="text" placeholder="Age (e.g. 2 yrs)" value="${escHtml(p.age || '')}"
-                    oninput="AdminClients.updatePet(${i},'age',this.value)" style="max-width:110px">
+                <div class="cpet-age-wrap">
+                    <input class="cpet-input" type="date" value="${escHtml(p.birthDate || '')}"
+                        onchange="AdminClients.updatePet(${i},'birthDate',this.value)"
+                        title="Birthday">
+                    ${ageDisplay ? `<span class="cpet-age-label">${ageDisplay}</span>` : ''}
+                </div>
                 <button class="cpet-remove" onclick="AdminClients.removePet(${i})">×</button>
             </div>
             <div class="cpet-photo-row">
@@ -123,7 +140,7 @@ function renderModalPets() {
 }
 
 function addPet() {
-    petEntries.push({ name: '', type: 'dog', age: '', photoUrl: '' });
+    petEntries.push({ name: '', type: 'dog', birthDate: '', photoUrl: '' });
     renderModalPets();
 }
 
@@ -250,5 +267,5 @@ function escHtml(s) {
 window.AdminClients = {
     init, openModal, closeModal, saveModal,
     addPet, removePet, updatePet, refreshPetPreview, getAllClients,
-    searchAddress, pickAddress, uploadPetPhoto
+    searchAddress, pickAddress, uploadPetPhoto, calcAge
 };
