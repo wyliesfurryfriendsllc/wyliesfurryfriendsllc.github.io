@@ -362,6 +362,22 @@
 .status-rejected  { background: #FCE8E8; color: #c0392b; }
 .status-completed { background: var(--cream-2); color: var(--brown-mid); }
 .holiday-rate-badge { display: inline-block; background: #FFF0D6; color: #8a5000; border-radius: 20px; font-size: 10px; font-weight: 700; padding: 0 7px; height: 20px; line-height: 20px; vertical-align: middle; margin-left: 4px; }
+.status-deposit { background: #D6EAF8; color: #1a5276; }
+.status-paid    { background: #D5F5E3; color: #1e8449; }
+
+/* Deposit action UI */
+.deposit-action-wrap { width: 100%; margin-bottom: 6px; }
+.deposit-action-label { font-size: 12px; font-weight: 600; color: var(--brown-mid); margin-bottom: 6px; }
+.deposit-action-row { display: flex; align-items: center; gap: 8px; }
+.deposit-action-row input[type=date] { border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 13px; color: var(--brown); background: #fff; flex: 1; }
+.admin-btn-deposit { background: #2e86c1; color: #fff; border: none; border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.admin-btn-deposit:hover { background: #1a5276; }
+.admin-btn-paid { background: #1e8449; color: #fff; border: none; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.admin-btn-paid:hover { background: #145a32; }
+.deposit-info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 6px 0 10px; width: 100%; }
+.deposit-info-label { color: var(--brown-mid); font-weight: 600; }
+.deposit-info-date { color: var(--brown); font-weight: 700; }
+.paid-full-notice { font-size: 14px; font-weight: 700; color: #1e8449; padding: 6px 0; width: 100%; }
 
 /* Booking detail panel */
 .admin-booking-detail {

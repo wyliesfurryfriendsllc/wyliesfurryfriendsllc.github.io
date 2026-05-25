@@ -212,16 +212,20 @@ function isoDate(d) {
 }
 
 const STATUS_LABELS = {
-    pending:   'Pending Review',
-    confirmed: 'Confirmed',
-    rejected:  'Declined',
-    completed: 'Completed'
+    pending:          'Pending Review',
+    confirmed:        'Confirmed',
+    deposit_received: 'Spot Reserved',
+    paid:             'Paid in Full',
+    rejected:         'Declined',
+    completed:        'Completed'
 };
 const STATUS_COLORS = {
-    pending:   'status-pending',
-    confirmed: 'status-confirmed',
-    rejected:  'status-rejected',
-    completed: 'status-completed'
+    pending:          'status-pending',
+    confirmed:        'status-confirmed',
+    deposit_received: 'status-deposit',
+    paid:             'status-paid',
+    rejected:         'status-rejected',
+    completed:        'status-completed'
 };
 
 function renderBookingsList(bookings) {
@@ -334,7 +338,17 @@ function renderBookingDetail(b, panel) {
         ${b.status === 'confirmed' ? `
         <div class="detail-section detail-payment-notice">
             <div class="detail-section-label">Payment Required</div>
-            <p>Please send a <strong>$${Math.round((b.total || 0) / 2)} deposit</strong> via Zelle to <strong>wyliesfurryfriendsllc@gmail.com</strong> to secure your spot.</p>
+            <p>Please send a <strong>$${Math.round((b.total || 0) / 2)} deposit</strong> via Zelle to <strong>wyliesfurryfriendsllc@gmail.com</strong> to secure your spot. The remaining balance is due before the service begins.</p>
+        </div>` : ''}
+        ${b.status === 'deposit_received' ? `
+        <div class="detail-section detail-payment-notice detail-payment-reserved">
+            <div class="detail-section-label">Spot Reserved 🐾</div>
+            <p>Your deposit has been received${b.depositDate ? ' on ' + new Date(b.depositDate + 'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : ''}. Your spot is reserved! The remaining balance of <strong>$${Math.round((b.total || 0) / 2)}</strong> is due before the service begins.</p>
+        </div>` : ''}
+        ${b.status === 'paid' ? `
+        <div class="detail-section detail-payment-notice detail-payment-paid">
+            <div class="detail-section-label">Payment Complete 💚</div>
+            <p>Full payment received. Thank you! We look forward to caring for your pet 🐾</p>
         </div>` : ''}
         <div class="detail-section">
             <div class="detail-section-label">Messages with Wylie</div>

@@ -1232,3 +1232,20 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     align-items: center;
     justify-content: center;
 }
+
+/* ─── NEW PAYMENT STATUS BADGES ──────────────────── */
+.status-deposit { background: #D6EAF8; color: #1a5276; }
+.status-paid    { background: #D5F5E3; color: #1e8449; }
+
+/* ─── PAYMENT NOTICE VARIANTS ────────────────────── */
+.detail-payment-reserved {
+    background: #EBF5FB;
+    border-color: #AED6F1;
+}
+.detail-payment-reserved .detail-section-label { color: #1a5276; }
+
+.detail-payment-paid {
+    background: #EAFAF1;
+    border-color: #A9DFBF;
+}
+.detail-payment-paid .detail-section-label { color: #1e8449; }

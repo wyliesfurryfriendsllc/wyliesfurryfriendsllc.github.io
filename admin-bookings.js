@@ -10,16 +10,20 @@ let activeFilter   = 'all';
 let activeBookingId = null;
 
 const STATUS_LABELS = {
-    pending:   'Pending',
-    confirmed: 'Confirmed',
-    rejected:  'Declined',
-    completed: 'Completed'
+    pending:          'Pending',
+    confirmed:        'Confirmed',
+    deposit_received: 'Deposit Received',
+    paid:             'Paid in Full',
+    rejected:         'Declined',
+    completed:        'Completed'
 };
 const STATUS_COLORS = {
-    pending:   'status-pending',
-    confirmed: 'status-confirmed',
-    rejected:  'status-rejected',
-    completed: 'status-completed'
+    pending:          'status-pending',
+    confirmed:        'status-confirmed',
+    deposit_received: 'status-deposit',
+    paid:             'status-paid',
+    rejected:         'status-rejected',
+    completed:        'status-completed'
 };
 
 // ─── INIT ─────────────────────────────────────────────────
@@ -270,8 +274,11 @@ function renderChargesHtml(b) {
 }
 
 function renderDetail(b, panel) {
-    const isPending   = b.status === 'pending';
-    const isConfirmed = b.status === 'confirmed';
+    const isPending         = b.status === 'pending';
+    const isConfirmed       = b.status === 'confirmed';
+    const isDepositReceived = b.status === 'deposit_received';
+    const isPaid            = b.status === 'paid';
+    const todayISO = new Date().toISOString().slice(0, 10);
     const pets = b.pets || [];
     let numVisits = 0;
     if (b.dateTimes) {
@@ -346,6 +353,37 @@ function renderDetail(b, panel) {
         </div>` : ''}
         ${isConfirmed ? `
         <div class="detail-actions">
+            <div class="deposit-action-wrap">
+                <div class="deposit-action-label">Mark deposit received:</div>
+                <div class="deposit-action-row">
+                    <input type="date" id="depositDateInput" value="${todayISO}">
+                    <button class="admin-btn-deposit" onclick="AdminBookings.markDepositReceived('${b.id}')">
+                        ✓ Deposit Received
+                    </button>
+                </div>
+            </div>
+            <button class="admin-btn-secondary" onclick="AdminBookings.markCompleted('${b.id}')">Mark Completed</button>
+            <button class="admin-btn-danger" onclick="AdminBookings.rejectBooking('${b.id}')">✕ Decline</button>
+        </div>` : ''}
+        ${isDepositReceived ? `
+        <div class="detail-actions">
+            <div class="deposit-info-row">
+                <span class="deposit-info-label">Deposit received:</span>
+                <span class="deposit-info-date">${b.depositDate || '—'}</span>
+            </div>
+            <button class="admin-btn-paid" onclick="AdminBookings.markPaidInFull('${b.id}')">
+                💚 Mark Paid in Full
+            </button>
+            <button class="admin-btn-secondary" onclick="AdminBookings.markCompleted('${b.id}')">Mark Completed</button>
+            <button class="admin-btn-danger" onclick="AdminBookings.rejectBooking('${b.id}')">✕ Decline</button>
+        </div>` : ''}
+        ${isPaid ? `
+        <div class="detail-actions">
+            <div class="deposit-info-row">
+                <span class="deposit-info-label">Deposit received:</span>
+                <span class="deposit-info-date">${b.depositDate || '—'}</span>
+            </div>
+            <div class="paid-full-notice">💚 Paid in Full</div>
             <button class="admin-btn-secondary" onclick="AdminBookings.markCompleted('${b.id}')">Mark Completed</button>
         </div>` : ''}
 
@@ -398,6 +436,32 @@ async function rejectBooking(bookingId) {
 async function markCompleted(bookingId) {
     if (!confirm('Mark this booking as completed?')) return;
     await updateDoc(doc(db, 'bookings', bookingId), { status: 'completed' });
+}
+
+async function markDepositReceived(bookingId) {
+    const dateInput = document.getElementById('depositDateInput');
+    const depositDate = dateInput ? dateInput.value : new Date().toISOString().slice(0, 10);
+    if (!confirm(`Mark deposit received on ${depositDate}?`)) return;
+    await updateDoc(doc(db, 'bookings', bookingId), {
+        status: 'deposit_received',
+        depositDate
+    });
+    const formatted = new Date(depositDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    await addDoc(collection(db, 'bookings', bookingId, 'messages'), {
+        sender: 'owner', senderName: 'Wylie',
+        text: `✅ Deposit received on ${formatted}. Your spot is reserved! The remaining balance is due before the service begins.`,
+        createdAt: serverTimestamp()
+    });
+}
+
+async function markPaidInFull(bookingId) {
+    if (!confirm('Mark this booking as paid in full?')) return;
+    await updateDoc(doc(db, 'bookings', bookingId), { status: 'paid' });
+    await addDoc(collection(db, 'bookings', bookingId, 'messages'), {
+        sender: 'owner', senderName: 'Wylie',
+        text: `💚 Full payment received. Thank you! See you soon 🐾`,
+        createdAt: serverTimestamp()
+    });
 }
 
 // ─── MESSAGES ─────────────────────────────────────────────
@@ -516,5 +580,6 @@ async function exportImage(bookingId) {
 window.AdminBookings = {
     init, setFilter, openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
+    markDepositReceived, markPaidInFull,
     sendAdminMessage, exportImage
 };
