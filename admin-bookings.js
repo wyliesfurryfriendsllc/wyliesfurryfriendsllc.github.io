@@ -292,6 +292,8 @@ function renderDetail(b, panel) {
             ${b.notes ? `<div class="detail-row"><span>Notes</span><span>${escHtml(b.notes)}</span></div>` : ''}
         </div>
 
+        </div>
+
         ${isPending ? `
         <div class="detail-actions">
             <button class="admin-btn-primary" onclick="AdminBookings.acceptBooking('${b.id}','${escHtml(b.clientName||'')}',${b.total||0})">
@@ -305,7 +307,6 @@ function renderDetail(b, panel) {
         <div class="detail-actions">
             <button class="admin-btn-secondary" onclick="AdminBookings.markCompleted('${b.id}')">Mark Completed</button>
         </div>` : ''}
-        </div>
 
         <div class="detail-section">
             <div class="detail-section-label">Messages</div>
