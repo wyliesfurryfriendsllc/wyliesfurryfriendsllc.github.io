@@ -356,31 +356,45 @@ function renderNbVisitTimes() {
             const minOpts = cur => ['00','15','30','45'].map(v =>
                 `<option value="${v}" ${cur===v?'selected':''}>${v}</option>`).join('');
 
+            const removeBtn = slots.length > 1 ? `<button type="button" class="nb-remove-time" onclick="AdminCalendar.removeTimeFromDate('${iso}',${idx})">×</button>` : '';
             return `
             <div class="nb-time-row">
-                <div class="nb-mode-pills">
-                    <button type="button" class="nb-mode-pill ${!isRange?'active':''}"
-                        onclick="AdminCalendar.setSlotMode('${iso}',${idx},'time')">Time</button>
-                    <button type="button" class="nb-mode-pill ${isRange?'active':''}"
-                        onclick="AdminCalendar.setSlotMode('${iso}',${idx},'range')">Range</button>
+                <div class="nb-time-line">
+                    <div class="nb-mode-pills">
+                        <button type="button" class="nb-mode-pill ${!isRange?'active':''}"
+                            onclick="AdminCalendar.setSlotMode('${iso}',${idx},'time')">Time</button>
+                        <button type="button" class="nb-mode-pill ${isRange?'active':''}"
+                            onclick="AdminCalendar.setSlotMode('${iso}',${idx},'range')">Range</button>
+                    </div>
+                    ${!isRange ? `
+                    <input type="number" class="nb-hour-input" min="1" max="24" placeholder="Hr" value="${sh.h}"
+                        onchange="AdminCalendar.updateSlotStartHour('${iso}',${idx},this.value)"
+                        oninput="AdminCalendar.updateSlotStartHour('${iso}',${idx},this.value)">
+                    <span class="nb-time-colon">:</span>
+                    <select class="nb-min-select" onchange="AdminCalendar.updateSlotStartMin('${iso}',${idx},this.value)">
+                        ${minOpts(sh.m)}
+                    </select>
+                    ${removeBtn}` : ''}
                 </div>
-                <input type="number" class="nb-hour-input" min="1" max="24" placeholder="Hr" value="${sh.h}"
-                    onchange="AdminCalendar.updateSlotStartHour('${iso}',${idx},this.value)"
-                    oninput="AdminCalendar.updateSlotStartHour('${iso}',${idx},this.value)">
-                <span class="nb-time-colon">:</span>
-                <select class="nb-min-select" onchange="AdminCalendar.updateSlotStartMin('${iso}',${idx},this.value)">
-                    ${minOpts(sh.m)}
-                </select>
                 ${isRange ? `
-                <span class="nb-range-arrow">→</span>
-                <input type="number" class="nb-hour-input" min="1" max="24" placeholder="Hr" value="${eh.h}"
-                    onchange="AdminCalendar.updateSlotEndHour('${iso}',${idx},this.value)"
-                    oninput="AdminCalendar.updateSlotEndHour('${iso}',${idx},this.value)">
-                <span class="nb-time-colon">:</span>
-                <select class="nb-min-select" onchange="AdminCalendar.updateSlotEndMin('${iso}',${idx},this.value)">
-                    ${minOpts(eh.m)}
-                </select>` : ''}
-                ${slots.length > 1 ? `<button type="button" class="nb-remove-time" onclick="AdminCalendar.removeTimeFromDate('${iso}',${idx})">×</button>` : ''}
+                <div class="nb-time-line">
+                    <input type="number" class="nb-hour-input" min="1" max="24" placeholder="Hr" value="${sh.h}"
+                        onchange="AdminCalendar.updateSlotStartHour('${iso}',${idx},this.value)"
+                        oninput="AdminCalendar.updateSlotStartHour('${iso}',${idx},this.value)">
+                    <span class="nb-time-colon">:</span>
+                    <select class="nb-min-select" onchange="AdminCalendar.updateSlotStartMin('${iso}',${idx},this.value)">
+                        ${minOpts(sh.m)}
+                    </select>
+                    <span class="nb-range-arrow">→</span>
+                    <input type="number" class="nb-hour-input" min="1" max="24" placeholder="Hr" value="${eh.h}"
+                        onchange="AdminCalendar.updateSlotEndHour('${iso}',${idx},this.value)"
+                        oninput="AdminCalendar.updateSlotEndHour('${iso}',${idx},this.value)">
+                    <span class="nb-time-colon">:</span>
+                    <select class="nb-min-select" onchange="AdminCalendar.updateSlotEndMin('${iso}',${idx},this.value)">
+                        ${minOpts(eh.m)}
+                    </select>
+                    ${removeBtn}
+                </div>` : ''}
             </div>`;
         }).join('');
 
