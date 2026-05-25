@@ -1017,8 +1017,9 @@
 /* Schedule */
 .detail-sched-block { margin-bottom: 14px; }
 .detail-sched-block:last-child { margin-bottom: 0; }
-.detail-sched-date { font-weight: 700; font-size: 15px; color: var(--brown); margin-bottom: 3px; }
-.detail-sched-time { font-size: 14px; color: var(--brown-mid); padding-left: 2px; line-height: 1.8; }
+.detail-sched-date { font-weight: 700; font-size: 15px; color: var(--brown); margin-bottom: 4px; }
+.detail-sched-times-row { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.detail-sched-time { font-size: 14px; color: var(--brown-mid); }
 
 /* Pets (Rover style) */
 .detail-pet-row {

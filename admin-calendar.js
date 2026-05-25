@@ -473,7 +473,7 @@ async function saveNewBooking() {
     const dateTimes = {};
     let datesText = '';
     sortedDates.forEach(iso => {
-        const slots = nbDateTimes.get(iso).filter(Boolean);
+        const slots = nbDateTimes.get(iso).filter(Boolean).sort();
         dateTimes[iso] = slots;
         const d = new Date(iso + 'T12:00:00');
         const label = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });

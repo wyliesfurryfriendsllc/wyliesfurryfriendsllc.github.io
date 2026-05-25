@@ -142,10 +142,10 @@ function renderScheduleHtml(b) {
         return Object.keys(b.dateTimes).sort().map(iso => {
             const d = new Date(iso + 'T12:00:00');
             const dateLabel = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
-            const slots = b.dateTimes[iso];
-            const timesHtml = slots && slots.length
-                ? slots.map(t => `<div class="detail-sched-time">${fmt12(t)}</div>`).join('')
-                : '<div class="detail-sched-time">TBD</div>';
+            const slots = [...(b.dateTimes[iso] || [])].filter(Boolean).sort();
+            const timesHtml = slots.length
+                ? `<div class="detail-sched-times-row">${slots.map(t => `<span class="detail-sched-time">${fmt12(t)}</span>`).join('')}</div>`
+                : '<div class="detail-sched-times-row"><span class="detail-sched-time">TBD</span></div>';
             return `<div class="detail-sched-block"><div class="detail-sched-date">${escHtml(dateLabel)}</div>${timesHtml}</div>`;
         }).join('');
     }
