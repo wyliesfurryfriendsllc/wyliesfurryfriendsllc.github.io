@@ -182,9 +182,17 @@ function showDayBookings(iso) {
         const pets = b.pets || [];
         const petNames = pets.map(p => p.name).filter(Boolean).join(', ');
         const svcLabel = `${b.service || 'Visit'}${petNames ? ': ' + petNames : ''}`;
-        const startLabel = t ? fmt12(t) : 'TBD';
-        const endLabel   = t ? getEndTime(t, b.duration || 30) : '';
-        const timeStr    = endLabel ? `${startLabel} – ${endLabel}` : startLabel;
+        let timeStr;
+        if (!t) {
+            timeStr = 'TBD';
+        } else if (t.includes('~')) {
+            const [ts, te] = t.split('~');
+            timeStr = `${fmt12(ts)} – ${fmt12(te)}`;
+        } else {
+            const startLabel = fmt12(t);
+            const endLabel   = getEndTime(t, b.duration || 30);
+            timeStr = `${startLabel} – ${endLabel}`;
+        }
 
         const card = document.createElement('div');
         card.className = 'cal-visit-card';
@@ -236,7 +244,8 @@ const PRICING = {
 
 let nbSelectedClientId = null;
 let nbSelectedPets = new Set();
-let nbDateTimes = new Map(); // Map<isoDate, string[]> — each date has its own time slots
+let nbDateTimes = new Map(); // Map<isoDate, slot[]> — slot: { mode, start, end }
+let nbSameTimeAll = false;
 let nbModalYear = new Date().getFullYear();
 let nbModalMonth = new Date().getMonth();
 
@@ -244,7 +253,8 @@ function openNewBookingModal() {
     nbSelectedClientId = null;
     nbSelectedPets = new Set();
     nbDateTimes = new Map();
-    if (calSelectedDate) nbDateTimes.set(calSelectedDate, ['']);
+    nbSameTimeAll = false;
+    if (calSelectedDate) nbDateTimes.set(calSelectedDate, [emptySlot()]);
     nbModalYear = new Date().getFullYear();
     nbModalMonth = new Date().getMonth();
 
@@ -268,10 +278,34 @@ function openNewBookingModal() {
 }
 
 // ─── TIME HELPERS ────────────────────────────────────────
-function parseSlot(t) {
-    if (!t) return { h: '', m: '00' };
-    const [hStr, mStr] = t.split(':');
+function emptySlot() { return { mode: 'time', start: '', end: '' }; }
+
+function parseSlotObj(t) {
+    if (!t) return emptySlot();
+    if (typeof t === 'object') return t;
+    if (t.includes('~')) {
+        const [start, end] = t.split('~');
+        return { mode: 'range', start, end };
+    }
+    return { mode: 'time', start: t, end: '' };
+}
+
+function serializeSlot(s) {
+    if (!s || !s.start) return '';
+    if (s.mode === 'range' && s.end) return `${s.start}~${s.end}`;
+    return s.start;
+}
+
+function parseHrMin(hhmm) {
+    if (!hhmm) return { h: '', m: '00' };
+    const [hStr, mStr] = hhmm.split(':');
     return { h: parseInt(hStr) || '', m: mStr || '00' };
+}
+
+function buildHHMM(h, m) {
+    const raw = parseInt(h);
+    if (!h || isNaN(raw)) return '';
+    return `${String(Math.max(1, Math.min(24, raw))).padStart(2,'0')}:${m || '00'}`;
 }
 
 // ─── VISIT TIMES (per-day) ────────────────────────────────
@@ -282,45 +316,92 @@ function renderNbVisitTimes() {
 
     wrap.style.display = '';
     const sortedDates = [...nbDateTimes.keys()].sort();
-    wrap.innerHTML = '<div class="nb-visit-times-label">Pick visit times</div>' +
-        sortedDates.map(iso => {
-            const d = new Date(iso + 'T12:00:00');
-            const dateLabel = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
-            const slots = nbDateTimes.get(iso);
-            const visitCount = slots.filter(Boolean).length || 1;
-            const slotsHtml = slots.map((t, idx) => {
-                const { h, m } = parseSlot(t);
-                return `
-                <div class="nb-time-row">
-                    <input type="number" class="nb-hour-input" min="1" max="24" placeholder="Hr"
-                        value="${h}"
-                        onchange="AdminCalendar.updateDatetimeHour('${iso}',${idx},this.value)"
-                        oninput="AdminCalendar.updateDatetimeHour('${iso}',${idx},this.value)">
-                    <span class="nb-time-colon">:</span>
-                    <select class="nb-min-select" onchange="AdminCalendar.updateDatetimeMin('${iso}',${idx},this.value)">
-                        <option value="00" ${m==='00'?'selected':''}>00</option>
-                        <option value="15" ${m==='15'?'selected':''}>15</option>
-                        <option value="30" ${m==='30'?'selected':''}>30</option>
-                        <option value="45" ${m==='45'?'selected':''}>45</option>
-                    </select>
-                    ${slots.length > 1 ? `<button type="button" class="nb-remove-time" onclick="AdminCalendar.removeTimeFromDate('${iso}',${idx})">×</button>` : ''}
-                </div>`;
-            }).join('');
-            return `
+    const firstIso = sortedDates[0];
+
+    const toggleChecked = nbSameTimeAll ? 'checked' : '';
+    let html = `
+        <div class="nb-visit-times-label">Pick visit times</div>
+        <div class="nb-same-time-row">
+            <span class="nb-same-time-label">Same time for all days</span>
+            <label class="nb-toggle-switch">
+                <input type="checkbox" ${toggleChecked} onchange="AdminCalendar.toggleSameTime(this.checked)">
+                <span class="nb-toggle-track"><span class="nb-toggle-thumb"></span></span>
+            </label>
+        </div>
+    `;
+
+    sortedDates.forEach((iso, dateIdx) => {
+        const d = new Date(iso + 'T12:00:00');
+        const dateLabel = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+        const slots = nbDateTimes.get(iso);
+        const isFirst = dateIdx === 0;
+
+        if (nbSameTimeAll && !isFirst) {
+            html += `
                 <div class="nb-visit-date-block">
                     <div class="nb-visit-date-header">
                         <span class="nb-visit-date-name">${escHtml(dateLabel)}</span>
-                        <span class="nb-visit-count">${visitCount} visit${visitCount !== 1 ? 's' : ''}</span>
                     </div>
-                    ${slotsHtml}
-                    <button type="button" class="nb-add-time-day" onclick="AdminCalendar.addTimeToDate('${iso}')">+ Add time</button>
+                    <div class="nb-same-time-note">Same time as above</div>
                 </div>`;
+            return;
+        }
+
+        const visitCount = slots.filter(s => s.start).length || 1;
+        const slotsHtml = slots.map((s, idx) => {
+            const slot = parseSlotObj(s);
+            const sh = parseHrMin(slot.start);
+            const eh = parseHrMin(slot.end);
+            const isRange = slot.mode === 'range';
+            const minOpts = cur => ['00','15','30','45'].map(v =>
+                `<option value="${v}" ${cur===v?'selected':''}>${v}</option>`).join('');
+
+            return `
+            <div class="nb-time-row">
+                <div class="nb-mode-pills">
+                    <button type="button" class="nb-mode-pill ${!isRange?'active':''}"
+                        onclick="AdminCalendar.setSlotMode('${iso}',${idx},'time')">Time</button>
+                    <button type="button" class="nb-mode-pill ${isRange?'active':''}"
+                        onclick="AdminCalendar.setSlotMode('${iso}',${idx},'range')">Range</button>
+                </div>
+                <input type="number" class="nb-hour-input" min="1" max="24" placeholder="Hr" value="${sh.h}"
+                    onchange="AdminCalendar.updateSlotStartHour('${iso}',${idx},this.value)"
+                    oninput="AdminCalendar.updateSlotStartHour('${iso}',${idx},this.value)">
+                <span class="nb-time-colon">:</span>
+                <select class="nb-min-select" onchange="AdminCalendar.updateSlotStartMin('${iso}',${idx},this.value)">
+                    ${minOpts(sh.m)}
+                </select>
+                ${isRange ? `
+                <span class="nb-range-arrow">→</span>
+                <input type="number" class="nb-hour-input" min="1" max="24" placeholder="Hr" value="${eh.h}"
+                    onchange="AdminCalendar.updateSlotEndHour('${iso}',${idx},this.value)"
+                    oninput="AdminCalendar.updateSlotEndHour('${iso}',${idx},this.value)">
+                <span class="nb-time-colon">:</span>
+                <select class="nb-min-select" onchange="AdminCalendar.updateSlotEndMin('${iso}',${idx},this.value)">
+                    ${minOpts(eh.m)}
+                </select>` : ''}
+                ${slots.length > 1 ? `<button type="button" class="nb-remove-time" onclick="AdminCalendar.removeTimeFromDate('${iso}',${idx})">×</button>` : ''}
+            </div>`;
         }).join('');
+
+        html += `
+            <div class="nb-visit-date-block">
+                <div class="nb-visit-date-header">
+                    <span class="nb-visit-date-name">${escHtml(dateLabel)}</span>
+                    <span class="nb-visit-count">${visitCount} visit${visitCount !== 1 ? 's' : ''}</span>
+                </div>
+                ${slotsHtml}
+                <button type="button" class="nb-add-time-day" onclick="AdminCalendar.addTimeToDate('${iso}')">+ Add time</button>
+            </div>`;
+    });
+
+    wrap.innerHTML = html;
 }
 
 function addTimeToDate(iso) {
     if (!nbDateTimes.has(iso)) return;
-    nbDateTimes.get(iso).push('');
+    nbDateTimes.get(iso).push(emptySlot());
+    if (nbSameTimeAll) _syncSameTime();
     renderNbVisitTimes();
     calcNbTotal();
 }
@@ -329,45 +410,85 @@ function removeTimeFromDate(iso, idx) {
     if (!nbDateTimes.has(iso)) return;
     const slots = nbDateTimes.get(iso);
     slots.splice(idx, 1);
+    if (nbSameTimeAll) _syncSameTime();
     renderNbVisitTimes();
     calcNbTotal();
 }
 
-function updateDatetimeHour(iso, idx, val) {
-    if (!nbDateTimes.has(iso)) return;
-    const slots = nbDateTimes.get(iso);
-    const { m } = parseSlot(slots[idx]);
-    const raw = parseInt(val);
-    if (!val || isNaN(raw)) {
-        slots[idx] = '';
-    } else {
-        const h = Math.max(1, Math.min(24, raw));
-        slots[idx] = `${String(h).padStart(2,'0')}:${m}`;
-    }
-    calcNbTotal();
-    _updateVisitCount(iso);
+function toggleSameTime(on) {
+    nbSameTimeAll = on;
+    if (on) _syncSameTime();
+    renderNbVisitTimes();
 }
 
-function updateDatetimeMin(iso, idx, val) {
-    if (!nbDateTimes.has(iso)) return;
-    const slots = nbDateTimes.get(iso);
-    const { h } = parseSlot(slots[idx]);
-    if (h !== '') {
-        slots[idx] = `${String(h).padStart(2,'0')}:${val}`;
-        calcNbTotal();
-    }
-}
-
-function _updateVisitCount(iso) {
-    const blocks = document.querySelectorAll('.nb-visit-date-block');
+function _syncSameTime() {
     const sortedDates = [...nbDateTimes.keys()].sort();
-    const blockIdx = sortedDates.indexOf(iso);
-    if (blocks[blockIdx]) {
-        const countEl = blocks[blockIdx].querySelector('.nb-visit-count');
-        const count = nbDateTimes.get(iso).filter(Boolean).length || 1;
-        if (countEl) countEl.textContent = `${count} visit${count !== 1 ? 's' : ''}`;
+    if (sortedDates.length < 2) return;
+    const firstSlots = nbDateTimes.get(sortedDates[0]);
+    for (let i = 1; i < sortedDates.length; i++) {
+        nbDateTimes.set(sortedDates[i], firstSlots.map(s => ({ ...s })));
     }
 }
+
+function setSlotMode(iso, idx, mode) {
+    if (!nbDateTimes.has(iso)) return;
+    const slot = parseSlotObj(nbDateTimes.get(iso)[idx]);
+    slot.mode = mode;
+    nbDateTimes.get(iso)[idx] = slot;
+    if (nbSameTimeAll) _syncSameTime();
+    renderNbVisitTimes();
+}
+
+function _updateSlotField(iso, idx, field, val) {
+    if (!nbDateTimes.has(iso)) return;
+    const slot = parseSlotObj(nbDateTimes.get(iso)[idx]);
+    slot[field] = val;
+    nbDateTimes.get(iso)[idx] = slot;
+    if (nbSameTimeAll) _syncSameTime();
+    calcNbTotal();
+}
+
+function updateSlotStartHour(iso, idx, val) {
+    if (!nbDateTimes.has(iso)) return;
+    const slot = parseSlotObj(nbDateTimes.get(iso)[idx]);
+    const m = parseHrMin(slot.start).m;
+    slot.start = buildHHMM(val, m);
+    nbDateTimes.get(iso)[idx] = slot;
+    if (nbSameTimeAll) _syncSameTime();
+    calcNbTotal();
+}
+
+function updateSlotStartMin(iso, idx, val) {
+    if (!nbDateTimes.has(iso)) return;
+    const slot = parseSlotObj(nbDateTimes.get(iso)[idx]);
+    const h = parseHrMin(slot.start).h;
+    if (h !== '') slot.start = buildHHMM(h, val);
+    nbDateTimes.get(iso)[idx] = slot;
+    if (nbSameTimeAll) _syncSameTime();
+    calcNbTotal();
+}
+
+function updateSlotEndHour(iso, idx, val) {
+    if (!nbDateTimes.has(iso)) return;
+    const slot = parseSlotObj(nbDateTimes.get(iso)[idx]);
+    const m = parseHrMin(slot.end).m;
+    slot.end = buildHHMM(val, m);
+    nbDateTimes.get(iso)[idx] = slot;
+    if (nbSameTimeAll) _syncSameTime();
+}
+
+function updateSlotEndMin(iso, idx, val) {
+    if (!nbDateTimes.has(iso)) return;
+    const slot = parseSlotObj(nbDateTimes.get(iso)[idx]);
+    const h = parseHrMin(slot.end).h;
+    if (h !== '') slot.end = buildHHMM(h, val);
+    nbDateTimes.get(iso)[idx] = slot;
+    if (nbSameTimeAll) _syncSameTime();
+}
+
+// Keep old names as aliases for backwards compat with any existing HTML
+function updateDatetimeHour(iso, idx, val) { updateSlotStartHour(iso, idx, val); }
+function updateDatetimeMin(iso, idx, val)  { updateSlotStartMin(iso, idx, val); }
 
 // ─── MINI CALENDAR FOR NEW BOOKING ───────────────────────
 function renderNbCal() {
@@ -403,7 +524,14 @@ function renderNbCal() {
 
 function nbToggleDate(iso) {
     if (nbDateTimes.has(iso)) nbDateTimes.delete(iso);
-    else nbDateTimes.set(iso, ['']);
+    else {
+        if (nbSameTimeAll && nbDateTimes.size > 0) {
+            const firstSlots = [...nbDateTimes.values()][0];
+            nbDateTimes.set(iso, firstSlots.map(s => ({ ...s })));
+        } else {
+            nbDateTimes.set(iso, [emptySlot()]);
+        }
+    }
     renderNbCal();
     renderNbVisitTimes();
     calcNbTotal();
@@ -427,7 +555,7 @@ function calcNbTotal() {
 
     let numVisits = 0;
     for (const slots of nbDateTimes.values()) {
-        numVisits += Math.max(1, slots.filter(Boolean).length);
+        numVisits += Math.max(1, slots.filter(s => s && s.start).length);
     }
     if (numVisits === 0) numVisits = 1;
 
@@ -548,11 +676,20 @@ async function saveNewBooking() {
     const dateTimes = {};
     let datesText = '';
     sortedDates.forEach(iso => {
-        const slots = nbDateTimes.get(iso).filter(Boolean).sort();
-        dateTimes[iso] = slots;
+        const serialized = nbDateTimes.get(iso)
+            .map(s => serializeSlot(parseSlotObj(s)))
+            .filter(Boolean)
+            .sort();
+        dateTimes[iso] = serialized;
         const d = new Date(iso + 'T12:00:00');
         const label = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-        const timesLabel = slots.length ? slots.map(fmt12).join(', ') : 'TBD';
+        const timesLabel = serialized.length ? serialized.map(t => {
+            if (t.includes('~')) {
+                const [s, e] = t.split('~');
+                return `${fmt12(s)} – ${fmt12(e)}`;
+            }
+            return fmt12(t);
+        }).join(', ') : 'TBD';
         datesText += `  ${label}: ${timesLabel}\n`;
     });
 
@@ -650,5 +787,8 @@ window.AdminCalendar = {
     searchClients, selectClient, clearSelectedClient,
     togglePet, saveNewBooking,
     nbPrevMonth, nbNextMonth, calcNbTotal,
-    addTimeToDate, removeTimeFromDate, updateDatetimeHour, updateDatetimeMin
+    addTimeToDate, removeTimeFromDate, updateDatetimeHour, updateDatetimeMin,
+    toggleSameTime, setSlotMode,
+    updateSlotStartHour, updateSlotStartMin,
+    updateSlotEndHour, updateSlotEndMin
 };

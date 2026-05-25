@@ -978,7 +978,7 @@
 .nb-visit-date-name { font-weight: 600; font-size: 14px; color: var(--brown); }
 .nb-visit-count { font-size: 12px; color: var(--brown-mid); }
 .nb-time-row {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;
 }
 .nb-time-row .admin-select { flex: 1; }
 .nb-hour-input {
@@ -1028,6 +1028,50 @@
     font-family: inherit;
 }
 .nb-add-time-day:hover { border-color: var(--pink); color: var(--pink); }
+
+/* Same-time toggle row */
+.nb-same-time-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 4px 0 14px;
+}
+.nb-same-time-label { font-size: 13px; color: var(--brown); font-weight: 500; }
+.nb-toggle-switch {
+    position: relative; display: inline-block;
+    width: 42px; height: 24px; flex-shrink: 0;
+}
+.nb-toggle-switch input { opacity: 0; width: 0; height: 0; }
+.nb-toggle-track {
+    position: absolute; inset: 0;
+    background: #ddd; border-radius: 24px; cursor: pointer; transition: background 0.25s;
+}
+.nb-toggle-switch input:checked + .nb-toggle-track { background: var(--pink); }
+.nb-toggle-thumb {
+    position: absolute; left: 3px; top: 3px;
+    width: 18px; height: 18px; background: #fff;
+    border-radius: 50%; transition: transform 0.25s;
+    pointer-events: none;
+}
+.nb-toggle-switch input:checked + .nb-toggle-track .nb-toggle-thumb { transform: translateX(18px); }
+
+/* Mode pills (Time / Range) */
+.nb-mode-pills {
+    display: flex; border: 1.5px solid var(--border);
+    border-radius: 8px; overflow: hidden; margin-right: 8px; flex-shrink: 0;
+}
+.nb-mode-pill {
+    padding: 5px 10px; font-size: 11px; font-weight: 600;
+    background: #fff; color: var(--brown-mid); border: none;
+    cursor: pointer; font-family: inherit; white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+}
+.nb-mode-pill.active { background: var(--pink-light, #fce8ef); color: var(--brown); }
+.nb-mode-pill:not(:last-child) { border-right: 1.5px solid var(--border); }
+
+/* Range arrow separator */
+.nb-range-arrow { color: var(--brown-mid); font-size: 13px; margin: 0 4px; flex-shrink: 0; }
+
+/* Same-time placeholder for non-first dates */
+.nb-same-time-note { font-size: 12px; color: var(--brown-mid); font-style: italic; padding: 4px 0 8px; }
 
 /* ================================
    BOOKING DETAIL — REDESIGN
