@@ -240,9 +240,17 @@ function searchAddress(q) {
             );
             const data = await res.json();
             if (!data.length) { dropdown.style.display = 'none'; return; }
-            dropdown.innerHTML = data.map(r =>
-                `<div class="addr-option" onclick="AdminClients.pickAddress(${JSON.stringify(r.display_name).replace(/'/g,"&#39;")})">${escHtml(r.display_name)}</div>`
-            ).join('');
+            dropdown.innerHTML = '';
+            data.forEach(r => {
+                const div = document.createElement('div');
+                div.className = 'addr-option';
+                div.textContent = r.display_name;
+                div.addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    pickAddress(r.display_name);
+                });
+                dropdown.appendChild(div);
+            });
             dropdown.style.display = '';
         } catch { dropdown.style.display = 'none'; }
     }, 350);
