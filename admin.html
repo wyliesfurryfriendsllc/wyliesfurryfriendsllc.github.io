@@ -254,35 +254,46 @@
             <div class="admin-form-row">
                 <div class="form-group">
                     <label>Service</label>
-                    <select id="nbService" class="admin-select">
+                    <select id="nbService" class="admin-select" onchange="AdminCalendar.calcNbTotal()">
                         <option>Drop-In Visit</option>
                         <option>Dog Walking</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Duration</label>
-                    <select id="nbDuration" class="admin-select">
+                    <select id="nbDuration" class="admin-select" onchange="AdminCalendar.calcNbTotal()">
                         <option value="30">30 min</option>
                         <option value="60">60 min</option>
                     </select>
                 </div>
             </div>
 
-            <!-- Date & Time -->
-            <div class="admin-form-row">
-                <div class="form-group">
-                    <label>Date *</label>
-                    <input type="date" id="nbDate">
-                </div>
-                <div class="form-group">
-                    <label>Time</label>
-                    <input type="time" id="nbTime">
+            <!-- Date picker -->
+            <div class="form-group">
+                <label>Dates * <span id="nbDateCount" style="font-weight:400;color:var(--brown-mid)"></span></label>
+                <div class="nb-cal-wrap">
+                    <div class="nb-cal-header">
+                        <button type="button" class="nb-cal-nav" onclick="AdminCalendar.nbPrevMonth()">&#8249;</button>
+                        <span id="nbCalLabel"></span>
+                        <button type="button" class="nb-cal-nav" onclick="AdminCalendar.nbNextMonth()">&#8250;</button>
+                    </div>
+                    <div class="nb-cal-weekdays">
+                        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                    </div>
+                    <div class="nb-cal-grid" id="nbCalGrid"></div>
                 </div>
             </div>
 
-            <!-- Total -->
+            <!-- Time slots -->
             <div class="form-group">
-                <label>Total ($)</label>
+                <label>Time <span style="font-weight:400;color:var(--brown-mid);font-size:12px">(per day, can add multiple)</span></label>
+                <div id="nbTimeSlots"></div>
+                <button type="button" class="nb-add-time-btn" onclick="AdminCalendar.addNbTimeSlot()">+ Add time slot</button>
+            </div>
+
+            <!-- Total (auto-calculated) -->
+            <div class="form-group">
+                <label>Total ($) <span style="font-weight:400;color:var(--brown-mid);font-size:12px">(auto-calculated)</span></label>
                 <input type="number" id="nbTotal" placeholder="0" min="0" step="0.01">
             </div>
 

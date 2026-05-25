@@ -125,15 +125,101 @@ function closeDetail() {
     renderAdminBookings();
 }
 
-function renderDetail(b, panel) {
-    let petsHtml = '';
-    (b.pets || []).forEach(p => {
-        petsHtml += `<div class="detail-row"><span>${escHtml(p.name || '—')}</span><span>${escHtml(p.type || '')}${p.breed ? ' · ' + escHtml(p.breed) : ''}${p.age ? ', ' + escHtml(p.age) : ''}</span></div>`;
-    });
-    if (!petsHtml) petsHtml = '<div class="detail-row"><span>—</span></div>';
+const PRICING = {
+    dropin:  { base: 23, addon60: 20, holiday: 31, extraDog: 9, cat: 23, extraCat: 9 },
+    walking: { base: 26, addon60: 23, holiday: 34, extraDog: 9 }
+};
 
+function fmt12(t) {
+    if (!t) return 'TBD';
+    const [h, m] = t.split(':').map(Number);
+    return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
+}
+
+function renderScheduleHtml(b) {
+    // New format: dates[] + times[]
+    if (b.dates && b.dates.length > 0) {
+        const times = b.times && b.times.length ? b.times : [''];
+        return b.dates.map(iso => {
+            const d = new Date(iso + 'T12:00:00');
+            const dateLabel = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+            const timesHtml = times.map(t => `<div class="detail-sched-time">${fmt12(t)}</div>`).join('');
+            return `<div class="detail-sched-block"><div class="detail-sched-date">${escHtml(dateLabel)}</div>${timesHtml}</div>`;
+        }).join('');
+    }
+    // Old format: datesText
+    return `<pre class="detail-dates">${escHtml((b.datesText || '—').trim())}</pre>`;
+}
+
+function renderPetsHtml(pets) {
+    if (!pets || pets.length === 0) return '<p style="color:var(--brown-mid);padding:8px 0">No pets listed.</p>';
+    return pets.map(p => {
+        const emoji = p.type === 'cat' ? '🐱' : '🐶';
+        const avatar = p.photoUrl
+            ? `<img class="detail-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name || '')}">`
+            : `<div class="detail-pet-avatar detail-pet-emoji">${emoji}</div>`;
+        const metaParts = [
+            p.gender,
+            p.age || (p.ageYears ? p.ageYears + ' yr' + (p.ageMonths ? ' ' + p.ageMonths + ' mo' : '') : '') || '',
+            p.weight ? p.weight + ' lbs' : ''
+        ].filter(Boolean);
+        return `
+            <div class="detail-pet-row">
+                ${avatar}
+                <div class="detail-pet-info">
+                    <div class="detail-pet-name">${escHtml(p.name || '—')}</div>
+                    ${p.breed ? `<div class="detail-pet-breed">${escHtml(p.breed)}</div>` : ''}
+                    ${metaParts.length ? `<div class="detail-pet-meta">${escHtml(metaParts.join(' · '))}</div>` : ''}
+                </div>
+            </div>`;
+    }).join('');
+}
+
+function renderChargesHtml(b) {
+    const pets = b.pets || [];
+    const service = b.service || 'Drop-In Visit';
+    const duration = parseInt(b.duration) || 30;
+    const p = service === 'Dog Walking' ? PRICING.walking : PRICING.dropin;
+    const is60 = duration === 60;
+    const numDates = b.dates?.length || 1;
+    const numTimes = (b.times?.length) || 1;
+    const numVisits = numDates * numTimes;
+
+    if (pets.length === 0) {
+        return `<div class="detail-charge-total"><span>Total</span><span>$${b.total || 0}</span></div>`;
+    }
+
+    let rows = '';
+    pets.forEach((pet, idx) => {
+        let rate, label;
+        if (idx === 0) {
+            rate = (service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base;
+            if (is60) rate += p.addon60;
+            label = service;
+        } else {
+            rate = pet.type === 'cat' ? (p.extraCat || p.extraDog) : p.extraDog;
+            label = 'Additional ' + (pet.type || 'pet');
+        }
+        rows += `
+            <div class="detail-charge-row">
+                <div>
+                    <div class="detail-charge-label">${escHtml(pet.name || '—')}</div>
+                    <div class="detail-charge-sub">${escHtml(label)} · $${rate} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}</div>
+                </div>
+                <div class="detail-charge-amount">$${rate * numVisits}</div>
+            </div>`;
+    });
+    return rows + `<div class="detail-charge-total"><span>Total</span><span>$${b.total || 0}</span></div>`;
+}
+
+function renderDetail(b, panel) {
     const isPending   = b.status === 'pending';
     const isConfirmed = b.status === 'confirmed';
+    const pets = b.pets || [];
+    const numDates = b.dates?.length || 1;
+    const numTimes = b.times?.length || 1;
+    const numVisits = numDates * numTimes;
+    const petNames = pets.map(p => p.name).filter(Boolean).join(', ');
 
     panel.innerHTML = `
         <div class="detail-header">
@@ -146,16 +232,27 @@ function renderDetail(b, panel) {
 
         <div class="detail-section">
             <div class="detail-section-label">Service</div>
-            <div class="detail-row"><span>${escHtml(b.service || '')} · ${b.duration || 30} min</span><span>$${b.total || 0} est.</span></div>
+            <div class="detail-service-summary">
+                <strong>${escHtml(b.service || '')}</strong><br>
+                ${numVisits} visit${numVisits !== 1 ? 's' : ''} · ${b.duration || 30} min each${petNames ? ' · ' + escHtml(petNames) : ''}
+            </div>
         </div>
+
         <div class="detail-section">
-            <div class="detail-section-label">Dates</div>
-            <pre class="detail-dates">${escHtml((b.datesText || '—').trim())}</pre>
+            <div class="detail-section-label">Service schedule</div>
+            ${renderScheduleHtml(b)}
         </div>
+
         <div class="detail-section">
-            <div class="detail-section-label">Pets</div>
-            ${petsHtml}
+            <div class="detail-section-label">Pets (${pets.length})</div>
+            ${renderPetsHtml(pets)}
         </div>
+
+        <div class="detail-section">
+            <div class="detail-section-label">Services &amp; Charges</div>
+            ${renderChargesHtml(b)}
+        </div>
+
         <div class="detail-section">
             <div class="detail-section-label">Contact</div>
             <div class="detail-row"><span>Name</span><span>${escHtml(b.clientName || '—')}</span></div>

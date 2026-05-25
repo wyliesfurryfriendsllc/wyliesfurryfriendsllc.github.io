@@ -193,18 +193,40 @@ function openNewBookingModal() {
 }
 
 // ─── TIME PICKER ─────────────────────────────────────────
-function initNbTimePicker() {
-    const sel = document.getElementById('nbTime');
-    if (!sel) return;
-    sel.innerHTML = '<option value="">TBD</option>';
+function buildTimeOptions(selectedVal = '') {
+    let html = '<option value="">TBD</option>';
     for (let h = 7; h <= 21; h++) {
         for (let m = 0; m < 60; m += 15) {
             if (h === 21 && m > 0) break;
             const val = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
             const label = `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
-            sel.innerHTML += `<option value="${val}">${label}</option>`;
+            html += `<option value="${val}"${val === selectedVal ? ' selected' : ''}>${label}</option>`;
         }
     }
+    return html;
+}
+
+function initNbTimePicker() {
+    const wrap = document.getElementById('nbTimeSlots');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    addNbTimeSlot();
+}
+
+function addNbTimeSlot() {
+    const wrap = document.getElementById('nbTimeSlots');
+    if (!wrap) return;
+    const row = document.createElement('div');
+    row.className = 'nb-time-row';
+    row.innerHTML = `
+        <select class="admin-select nb-time-sel" onchange="AdminCalendar.calcNbTotal()">${buildTimeOptions()}</select>
+        <button type="button" class="nb-remove-time" onclick="this.closest('.nb-time-row').remove(); AdminCalendar.calcNbTotal()">×</button>
+    `;
+    wrap.appendChild(row);
+}
+
+function getSelectedTimes() {
+    return [...document.querySelectorAll('.nb-time-sel')].map(s => s.value).filter(Boolean);
 }
 
 // ─── MINI CALENDAR FOR NEW BOOKING ───────────────────────
@@ -261,18 +283,19 @@ function calcNbTotal() {
     const service  = document.getElementById('nbService')?.value || 'Drop-In Visit';
     const duration = parseInt(document.getElementById('nbDuration')?.value || '30');
     const numDates = nbSelectedDates.size || 1;
+    const numTimes = Math.max(getSelectedTimes().length, 1);
+    const numVisits = numDates * numTimes;
 
     const p = service === 'Dog Walking' ? PRICING.walking : PRICING.dropin;
     const is60 = duration === 60;
 
-    // get selected pets
     let pets = [];
     if (nbSelectedClientId) {
         const clients = window.AdminClients?.getAllClients() || [];
         const c = clients.find(x => x.id === nbSelectedClientId);
         if (c && c.pets) pets = [...nbSelectedPets].map(i => c.pets[i]).filter(Boolean);
     }
-    if (!pets.length) pets = [{ type: 'dog' }]; // default 1 dog
+    if (!pets.length) pets = [{ type: 'dog' }];
 
     let perVisit = 0;
     pets.forEach((pet, idx) => {
@@ -284,9 +307,8 @@ function calcNbTotal() {
         }
     });
 
-    const total = perVisit * numDates;
     const el = document.getElementById('nbTotal');
-    if (el) el.value = total;
+    if (el) el.value = perVisit * numVisits;
 }
 
 function closeNewBookingModal() {
@@ -376,20 +398,21 @@ async function saveNewBooking() {
     if (nbSelectedDates.size === 0) { errEl.textContent = 'Please select at least one date.'; return; }
     errEl.textContent = '';
 
-    const timeLabel = time ? fmt12(time) : 'TBD';
+    const times = getSelectedTimes();
     const sortedDates = [...nbSelectedDates].sort();
 
+    const timesLabel = times.length ? times.map(fmt12).join(', ') : 'TBD';
     let datesText;
     if (sortedDates.length === 1) {
         const d = new Date(sortedDates[0] + 'T12:00:00');
         const label = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-        datesText = `  ${label}: ${timeLabel}\n`;
+        datesText = `  ${label}: ${timesLabel}\n`;
     } else {
-        const first = new Date(sortedDates[0] + 'T12:00:00');
-        const last  = new Date(sortedDates[sortedDates.length - 1] + 'T12:00:00');
-        const fLabel = first.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-        const lLabel = last.toLocaleDateString('en-US',  { month:'short', day:'numeric', year:'numeric' });
-        datesText = `  ${fLabel} – ${lLabel}: ${timeLabel}\n`;
+        datesText = sortedDates.map(iso => {
+            const d = new Date(iso + 'T12:00:00');
+            const label = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+            return `  ${label}: ${timesLabel}`;
+        }).join('\n') + '\n';
     }
 
     let pets = [];
@@ -406,7 +429,7 @@ async function saveNewBooking() {
         await addDoc(collection(db, 'bookings'), {
             clientName: name, clientPhone: phone, clientEmail: email,
             service, duration: parseInt(duration),
-            datesText, dates: sortedDates,
+            datesText, dates: sortedDates, times,
             pets, notes, total,
             status: 'confirmed', source: 'manual',
             clientId: nbSelectedClientId || null,
@@ -485,5 +508,5 @@ window.AdminCalendar = {
     openNewBookingModal, closeNewBookingModal,
     searchClients, selectClient, clearSelectedClient,
     togglePet, saveNewBooking,
-    nbPrevMonth, nbNextMonth, calcNbTotal
+    nbPrevMonth, nbNextMonth, calcNbTotal, addNbTimeSlot
 };
