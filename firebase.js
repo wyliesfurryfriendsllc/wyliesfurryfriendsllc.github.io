@@ -7,7 +7,7 @@ import {
 import {
     getAuth, createUserWithEmailAndPassword,
     signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile,
-    GoogleAuthProvider, signInWithPopup
+    GoogleAuthProvider, signInWithPopup, signInAnonymously
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 const firebaseConfig = {
@@ -33,7 +33,7 @@ export {
 
 // Also expose via window for non-module scripts (booking.js, admin.js)
 window.WFF = {
-    db, auth,
+    db, auth, signInAnonymously,
     collection, addDoc, getDocs, doc, updateDoc,
     query, orderBy, onSnapshot, where, serverTimestamp,
     getDoc, setDoc

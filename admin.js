@@ -5,6 +5,11 @@ function login() {
     const pw = document.getElementById('adminPassword').value;
     if (pw === ADMIN_PASSWORD) {
         sessionStorage.setItem('wff_admin', '1');
+        // Sign in anonymously so Firestore auth rules are satisfied
+        const wff = window.WFF;
+        if (wff?.signInAnonymously && wff?.auth) {
+            wff.signInAnonymously(wff.auth).catch(e => console.warn('Anon sign-in:', e));
+        }
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminPanel').style.display  = 'block';
         renderAdminGallery();
@@ -126,6 +131,10 @@ function resetOrder() {
 // ─── INIT ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     if (sessionStorage.getItem('wff_admin')) {
+        const wff = window.WFF;
+        if (wff?.signInAnonymously && wff?.auth) {
+            wff.signInAnonymously(wff.auth).catch(e => console.warn('Anon sign-in:', e));
+        }
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminPanel').style.display  = 'block';
         renderAdminGallery();
