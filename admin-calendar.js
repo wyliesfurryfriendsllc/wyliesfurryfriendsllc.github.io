@@ -459,7 +459,6 @@ async function saveNewBooking() {
     const email    = document.getElementById('nbEmail').value.trim();
     const service  = document.getElementById('nbService').value;
     const duration = document.getElementById('nbDuration').value;
-    const time     = document.getElementById('nbTime').value;
     const total    = parseFloat(document.getElementById('nbTotal').value) || 0;
     const notes    = document.getElementById('nbNotes').value.trim();
     const errEl    = document.getElementById('nbError');
