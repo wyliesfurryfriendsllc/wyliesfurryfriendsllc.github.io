@@ -138,6 +138,7 @@ function renderGallery() {
         indices.forEach(i => {
             if (i >= _photos.length) return;
             const { item, img } = makeItem(_photos[i], i);
+            img.loading = 'eager';
             item.appendChild(img);
             rowEl.appendChild(item);
             imgs.push(img);
@@ -181,16 +182,33 @@ function showMoreGallery() {
     renderGallery();
 }
 
-// Reset pagination when switching desktop ↔ mobile
-window.addEventListener('resize', () => {
-    if (window.innerWidth > 768) _mobileVisible = MOBILE_STEP;
-});
+// Recalculate justified widths on existing DOM (no img recreation)
+function recalcRowWidths() {
+    const grid = document.getElementById('galleryGrid');
+    if (!grid) return;
+    grid.querySelectorAll('.gallery-row').forEach(rowEl => {
+        const imgs = [...rowEl.querySelectorAll('img')];
+        if (imgs.every(img => img.naturalWidth > 0)) {
+            justifyRow(rowEl, imgs);
+        }
+    });
+}
 
-// Recalculate justified widths on resize
+// Single resize handler: full re-render only when crossing the mobile/desktop breakpoint
 let _resizeTimer;
+let _lastWasMobile = window.innerWidth <= 768;
 window.addEventListener('resize', () => {
+    const isMobile = window.innerWidth <= 768;
+    const crossedBreakpoint = isMobile !== _lastWasMobile;
+    _lastWasMobile = isMobile;
+    if (!isMobile) _mobileVisible = MOBILE_STEP;
     clearTimeout(_resizeTimer);
-    _resizeTimer = setTimeout(renderGallery, 150);
+    if (crossedBreakpoint) {
+        _resizeTimer = setTimeout(renderGallery, 150);
+    } else if (!isMobile) {
+        _resizeTimer = setTimeout(recalcRowWidths, 150);
+    }
+    // mobile→mobile: CSS handles 2-col grid, nothing to do
 });
 
 // ─── LIGHTBOX ────────────────────────────────────────────
