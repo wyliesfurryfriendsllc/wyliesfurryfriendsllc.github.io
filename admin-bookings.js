@@ -37,7 +37,11 @@ function init() {
         renderAdminBookings();
         if (activeBookingId) {
             const updated = allBookings.find(b => b.id === activeBookingId);
-            if (updated) refreshDetailStatus(updated.status);
+            const panel   = document.getElementById('adminBookingDetail');
+            if (updated && panel && panel.style.display !== 'none') {
+                renderDetail(updated, panel);
+                loadAdminMessages(activeBookingId);
+            }
         }
     }, err => {
         document.getElementById('adminBookingsList').innerHTML =
