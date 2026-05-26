@@ -906,8 +906,14 @@ function showCalDay(iso) {
     }
 
     const items = bks.map(b => {
-        const slots = b.dateTimes?.[iso] || [];
-        const timeStr = slots.length ? slots.map(t => fmtSlotAcc(t)).join(', ') : (b.datesText ? extractTimeFromText(b.datesText, iso) : 'TBD');
+        const rawSlots = (b.dateTimes?.[iso] || []).slice().sort();
+        let timesHtml;
+        if (rawSlots.length) {
+            timesHtml = rawSlots.map(t => `<div class="acct-day-item-time">${escHtml(fmtSlotAcc(t))}</div>`).join('');
+        } else {
+            const fallback = extractTimesFromText(b.datesText, iso);
+            timesHtml = fallback.map(t => `<div class="acct-day-item-time">${escHtml(t)}</div>`).join('');
+        }
         const pets = b.pets || [];
         const avatars = pets.slice(0,4).map((p, i) => {
             if (p.photoUrl) return `<img class="cday-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name||'')}" style="z-index:${4-i}">`;
@@ -917,7 +923,7 @@ function showCalDay(iso) {
         return `<div class="acct-day-item" onclick="showTab('bookings');openBookingDetail('${b.id}')">
             <div class="acct-day-item-left">
                 <div class="acct-day-item-service">${escHtml(b.service||'Visit')}${petNames ? ': ' + petNames : ''}</div>
-                <div class="acct-day-item-time">${escHtml(timeStr)}</div>
+                ${timesHtml}
             </div>
             <div class="cday-avatars">${avatars}</div>
         </div>`;
@@ -948,13 +954,22 @@ function fmt12Acc(t) {
     return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
 }
 
-function extractTimeFromText(datesText, iso) {
+function extractTimesFromText(datesText, iso) {
+    const lines = (datesText || '').split('\n').map(l => l.trim()).filter(Boolean);
     const d = new Date(iso + 'T12:00:00');
     const label = d.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
-    const line = (datesText || '').split('\n').find(l => l.includes(label));
-    if (!line) return 'TBD';
+    const line = lines.find(l => l.includes(label));
+    if (!line) return ['TBD'];
     const m = line.match(/:\s*(.+)$/);
-    return m ? m[1].trim() : 'TBD';
+    if (!m) return ['TBD'];
+    const val = m[1].trim();
+    if (val === 'Same as Day 1') {
+        const first = lines[0];
+        const fm = first?.match(/:\s*(.+)$/);
+        if (!fm) return ['TBD'];
+        return fm[1].trim().split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return val.split(',').map(s => s.trim()).filter(Boolean);
 }
 
 // ─── HELPERS ─────────────────────────────────────────────

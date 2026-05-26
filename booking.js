@@ -800,10 +800,42 @@ function reviewOrder(e) {
         <span class="total-amount">$${total}</span>
     `;
 
+    // Build dateTimes object for structured calendar display
+    const dateTimesObj = {};
+    if (dateMode === 'pick') {
+        const sortedPick2 = [...selectedDates].sort();
+        let day1Times = null;
+        sortedPick2.forEach((dateStr, idx) => {
+            const tid = `dt_${dateStr.replace(/-/g,'_')}`;
+            const slotsWrap = document.getElementById(`dateSlots_${tid}`);
+            if (idx > 0 && slotsWrap && slotsWrap.style.display === 'none') {
+                dateTimesObj[dateStr] = day1Times ? [...day1Times] : [];
+            } else {
+                const slotEls = slotsWrap ? slotsWrap.querySelectorAll('.date-slot') : [];
+                const times = [];
+                slotEls.forEach((_, si) => {
+                    const type = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
+                    if (type === 'specific') {
+                        const t = getHMTime(`slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`);
+                        if (t) times.push(t);
+                    } else {
+                        const from = getHMTime(`slotFromHr_${tid}_${si}`, `slotFromMin_${tid}_${si}`);
+                        const to   = getHMTime(`slotToHr_${tid}_${si}`, `slotToMin_${tid}_${si}`);
+                        if (from && to) times.push(`${from}~${to}`);
+                    }
+                });
+                const sorted2 = times.sort();
+                dateTimesObj[dateStr] = sorted2;
+                if (idx === 0) day1Times = sorted2;
+            }
+        });
+    }
+
     // Save for sendRequest
     _bookingData = {
         service: names[service], duration, isHoliday, total,
         clientName, clientPhone, clientEmail, clientNotes,
+        dateTimes: dateMode === 'pick' ? dateTimesObj : null,
         priceBreakdown: {
             numVisits:    numDates,
             serviceLabel: names[service],
@@ -898,6 +930,7 @@ function sendRequest() {
                 pets: petsData,
                 notes: clientNotes,
                 total,
+                dateTimes: _bookingData.dateTimes || null,
                 priceBreakdown: _bookingData.priceBreakdown || null,
                 status: 'pending',
                 createdAt: wff.serverTimestamp()
