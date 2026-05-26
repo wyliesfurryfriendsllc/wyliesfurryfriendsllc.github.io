@@ -957,7 +957,7 @@ function fmt12Acc(t) {
 function extractTimesFromText(datesText, iso) {
     const lines = (datesText || '').split('\n').map(l => l.trim()).filter(Boolean);
     const d = new Date(iso + 'T12:00:00');
-    const label = d.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+    const label = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
     const line = lines.find(l => l.includes(label));
     if (!line) return ['TBD'];
     const m = line.match(/:\s*(.+)$/);
