@@ -808,7 +808,7 @@
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
-    width: 90px;
+    width: 130px;
 }
 .abc-pet-avatar {
     width: 60px; height: 60px;
@@ -828,8 +828,8 @@
     display: flex; flex-direction: column; align-items: center;
     gap: 2px; min-width: 0; width: 100%;
 }
-.abc-petname   { font-size: 15px; font-weight: 700; color: var(--brown); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px; }
-.abc-ownername { font-size: 13px; color: var(--brown-mid); overflow: hidden; text-overflow: ellipsis; max-width: 90px; white-space: nowrap; }
+.abc-petname   { font-size: 15px; font-weight: 700; color: var(--brown); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+.abc-ownername { font-size: 13px; color: var(--brown-mid); max-width: 130px; word-break: break-word; text-align: center; }
 
 .abc-right { flex: 1; min-width: 0; }
 .abc-right-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 4px; }
