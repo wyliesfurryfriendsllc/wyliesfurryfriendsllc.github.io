@@ -108,15 +108,36 @@
 
                 <!-- RANGE MODE -->
                 <div id="rangeMode" style="display:none">
-                    <div class="form-row mb-16">
-                        <div class="form-group half">
+                    <div class="form-row" style="margin-bottom:8px">
+                        <div class="form-group half" style="margin-bottom:0">
                             <label>Start date</label>
-                            <input type="date" id="rangeStart" onchange="updateSummary()">
+                            <button type="button" class="calendar-trigger" onclick="openRangeCal()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                <span id="rangeStartText">Choose start date...</span>
+                            </button>
+                            <input type="hidden" id="rangeStart">
                         </div>
-                        <div class="form-group half">
+                        <div class="form-group half" style="margin-bottom:0">
                             <label>End date</label>
-                            <input type="date" id="rangeEnd" onchange="updateSummary()">
+                            <button type="button" class="calendar-trigger" onclick="openRangeCal()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                <span id="rangeEndText">Choose end date...</span>
+                            </button>
+                            <input type="hidden" id="rangeEnd">
                         </div>
+                    </div>
+
+                    <div class="calendar-wrap" id="rangeCalWrap" style="display:none;margin-bottom:16px">
+                        <div class="calendar-header">
+                            <button type="button" class="cal-nav" onclick="changeRangeMonth(-1)">&#8249;</button>
+                            <span class="cal-month-label" id="rangeCalMonthLabel"></span>
+                            <button type="button" class="cal-nav" onclick="changeRangeMonth(1)">&#8250;</button>
+                        </div>
+                        <div class="calendar-weekdays">
+                            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                        </div>
+                        <div class="calendar-days" id="rangeCalDays"></div>
+                        <button type="button" class="cal-done-btn" onclick="closeRangeCal()">Done</button>
                     </div>
                     <div class="form-group mb-0">
                         <label>Time preference</label>

@@ -262,6 +262,97 @@ function getHMTime(hrId, minId) {
     return `${String(hr).padStart(2,'0')}:${min}`;
 }
 
+// ─── RANGE CALENDAR ──────────────────────────────────────
+let rangeCalYear, rangeCalMonth;
+
+function openRangeCal() {
+    const now = new Date();
+    if (rangeCalYear === undefined) {
+        rangeCalYear  = now.getFullYear();
+        rangeCalMonth = now.getMonth();
+    }
+    renderRangeCalendar();
+    document.getElementById('rangeCalWrap').style.display = 'block';
+}
+
+function closeRangeCal() {
+    document.getElementById('rangeCalWrap').style.display = 'none';
+    updateRangeCalTriggers();
+    updateSummary();
+}
+
+function changeRangeMonth(dir) {
+    rangeCalMonth += dir;
+    if (rangeCalMonth < 0)  { rangeCalMonth = 11; rangeCalYear--; }
+    if (rangeCalMonth > 11) { rangeCalMonth = 0;  rangeCalYear++; }
+    renderRangeCalendar();
+}
+
+function renderRangeCalendar() {
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('rangeCalMonthLabel').textContent = `${MONTHS[rangeCalMonth]} ${rangeCalYear}`;
+
+    const today    = new Date(); today.setHours(0,0,0,0);
+    const firstDay = new Date(rangeCalYear, rangeCalMonth, 1).getDay();
+    const daysIn   = new Date(rangeCalYear, rangeCalMonth + 1, 0).getDate();
+    const grid     = document.getElementById('rangeCalDays');
+    const startVal = document.getElementById('rangeStart').value;
+    const endVal   = document.getElementById('rangeEnd').value;
+    grid.innerHTML = '';
+
+    for (let i = 0; i < firstDay; i++) {
+        const blank = document.createElement('div');
+        blank.className = 'cal-day cal-blank';
+        grid.appendChild(blank);
+    }
+
+    for (let d = 1; d <= daysIn; d++) {
+        const dateStr = `${rangeCalYear}-${String(rangeCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const dateObj = new Date(rangeCalYear, rangeCalMonth, d);
+        const isPast  = dateObj < today;
+
+        let cls = 'cal-day';
+        if (isPast) cls += ' cal-past';
+        else if (dateStr === startVal || dateStr === endVal) cls += ' cal-selected';
+        else if (startVal && endVal && dateStr > startVal && dateStr < endVal) cls += ' cal-in-range';
+        if (isHolidayDate(dateStr)) cls += ' cal-holiday';
+
+        const cell = document.createElement('div');
+        cell.className  = cls;
+        cell.textContent = d;
+
+        if (!isPast) cell.onclick = () => pickRangeDate(dateStr);
+        grid.appendChild(cell);
+    }
+}
+
+function pickRangeDate(dateStr) {
+    const startEl  = document.getElementById('rangeStart');
+    const endEl    = document.getElementById('rangeEnd');
+    const startVal = startEl.value;
+    const endVal   = endEl.value;
+
+    if (!startVal || (startVal && endVal)) {
+        startEl.value = dateStr;
+        endEl.value   = '';
+    } else if (dateStr > startVal) {
+        endEl.value = dateStr;
+    } else {
+        startEl.value = dateStr;
+        endEl.value   = '';
+    }
+    renderRangeCalendar();
+    updateRangeCalTriggers();
+    updateSummary();
+}
+
+function updateRangeCalTriggers() {
+    const s = document.getElementById('rangeStart').value;
+    const e = document.getElementById('rangeEnd').value;
+    document.getElementById('rangeStartText').textContent = s ? formatDate(s) : 'Choose start date...';
+    document.getElementById('rangeEndText').textContent   = e ? formatDate(e) : 'Choose end date...';
+}
+
 // ─── RANGE TIME ───────────────────────────────────────────
 function switchRangeTime(type) {
     document.getElementById('rangeSpecificWrap').style.display = type === 'specific' ? '' : 'none';

@@ -731,6 +731,11 @@ details.deposit-policy[open] summary { color: var(--pink); }
     color: var(--border);
     cursor: default;
 }
+.cal-day.cal-in-range {
+    background: var(--pink-light);
+    color: var(--pink);
+    border-radius: 8px;
+}
 .cal-day.cal-blank { cursor: default; }
 
 .cal-done-btn {
