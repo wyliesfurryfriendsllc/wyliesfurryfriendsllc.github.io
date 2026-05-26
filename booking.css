@@ -325,6 +325,64 @@
 .remove-btn:hover { color: #c0392b; background: #fde8e8; }
 
 /* ================================
+   DATE SLOTS / ADD TIME
+================================ */
+.date-slot + .date-slot {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.slot-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.slot-type-pills {
+    display: flex;
+    gap: 0;
+}
+
+.slot-remove-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--brown-mid);
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s, background 0.2s;
+    flex-shrink: 0;
+}
+.slot-remove-btn:hover { color: #c0392b; background: #fde8e8; }
+
+.add-time-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    background: none;
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--brown-mid);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.add-time-btn:hover {
+    border-color: var(--pink);
+    color: var(--pink);
+    background: var(--pink-light);
+}
+
+/* ================================
    PET ENTRY
 ================================ */
 .pet-entry {

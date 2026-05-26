@@ -48,6 +48,9 @@ let savedUserPets = [];  // pets loaded from Firestore profile
 // Collected data for step 2
 let _bookingData = {};
 
+// { dateStr: { isSame: bool, slots: [{type, specHr, specMin, fromHr, fromMin, toHr, toMin}] } }
+let dateSlotData = {};
+
 // ─── SERVICE / DURATION ──────────────────────────────────
 function getService()  { return document.querySelector('input[name="service"]:checked').value; }
 function getDuration() { return document.querySelector('input[name="duration"]:checked').value; }
@@ -75,6 +78,7 @@ function openCalendar() {
 
 function closeCalendar() {
     document.getElementById('calendarWrap').style.display = 'none';
+    saveCurrentDateState();
     renderSelectedDatesList();
     updateCalendarTriggerText();
     updateSummary();
@@ -143,100 +147,158 @@ function updateCalendarTriggerText() {
 }
 
 // ─── SELECTED DATES LIST ─────────────────────────────────
-function renderSelectedDatesList() {
-    const container = document.getElementById('selectedDatesList');
+function emptySlot() {
+    return { type: 'specific', specHr: '', specMin: '00', fromHr: '', fromMin: '00', toHr: '', toMin: '00' };
+}
 
-    const saved = {};
+function saveCurrentDateState() {
+    const container = document.getElementById('selectedDatesList');
     container.querySelectorAll('.date-entry').forEach(entry => {
         const ds = entry.dataset.date;
         if (!ds) return;
-        const tid    = `dt_${ds.replace(/-/g,'_')}`;
-        const typeEl = document.querySelector(`input[name="timeType_${tid}"]:checked`);
-        saved[ds] = {
-            type:    typeEl?.value || 'specific',
-            specHr:  document.getElementById(`timeSpecHr_${tid}`)?.value ?? '',
-            specMin: document.getElementById(`timeSpecMin_${tid}`)?.value ?? '00',
-            fromHr:  document.getElementById(`timeFromHr_${tid}`)?.value ?? '',
-            fromMin: document.getElementById(`timeFromMin_${tid}`)?.value ?? '00',
-            toHr:    document.getElementById(`timeToHr_${tid}`)?.value ?? '',
-            toMin:   document.getElementById(`timeToMin_${tid}`)?.value ?? '00',
-        };
+        const tid = `dt_${ds.replace(/-/g,'_')}`;
+        const modeEl = entry.querySelector(`input[name="dtMode_${tid}"]:checked`);
+        const isSame = modeEl?.value === 'same';
+        const slots = [];
+        entry.querySelectorAll('.date-slot').forEach((_, si) => {
+            const type = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
+            slots.push({
+                type,
+                specHr:  document.getElementById(`slotSpecHr_${tid}_${si}`)?.value ?? '',
+                specMin: document.getElementById(`slotSpecMin_${tid}_${si}`)?.value ?? '00',
+                fromHr:  document.getElementById(`slotFromHr_${tid}_${si}`)?.value ?? '',
+                fromMin: document.getElementById(`slotFromMin_${tid}_${si}`)?.value ?? '00',
+                toHr:    document.getElementById(`slotToHr_${tid}_${si}`)?.value ?? '',
+                toMin:   document.getElementById(`slotToMin_${tid}_${si}`)?.value ?? '00',
+            });
+        });
+        if (slots.length === 0) slots.push(emptySlot());
+        dateSlotData[ds] = { isSame, slots };
     });
+}
 
+function renderSelectedDatesList() {
+    const container = document.getElementById('selectedDatesList');
     container.innerHTML = '';
     const sorted = [...selectedDates].sort();
     if (sorted.length === 0) return;
 
     sorted.forEach((dateStr, index) => {
-        const tid     = `dt_${dateStr.replace(/-/g,'_')}`;
+        const tid = `dt_${dateStr.replace(/-/g,'_')}`;
         const isFirst = index === 0;
-        const s       = saved[dateStr] || {};
-        const type0   = s.type || (isFirst ? 'specific' : 'same');
+        const state = dateSlotData[dateStr] || { isSame: false, slots: [emptySlot()] };
+        if (!dateSlotData[dateStr]) dateSlotData[dateStr] = state;
+        const isSame = !isFirst && state.isSame;
+        const slots = state.slots.length > 0 ? state.slots : [emptySlot()];
 
         const div = document.createElement('div');
-        div.className    = 'date-entry';
+        div.className = 'date-entry';
         div.dataset.date = dateStr;
 
-        const sameChecked     = !isFirst && type0 === 'same';
-        const specificChecked = type0 === 'specific';
-        const windowChecked   = type0 === 'window';
+        const slotsHtml = slots.map((sl, si) => renderSlotHtml(tid, dateStr, si, sl, slots.length)).join('');
 
         div.innerHTML = `
             <div class="date-entry-header">
                 <span class="date-entry-label">${formatDate(dateStr)}</span>
             </div>
-            <div class="toggle-pills mb-16">
-                ${!isFirst ? `
+            ${!isFirst ? `
+            <div class="toggle-pills mb-8">
                 <label class="pill-option">
-                    <input type="radio" name="timeType_${tid}" value="same" ${sameChecked?'checked':''} onchange="toggleDateTimeType('${tid}')">
+                    <input type="radio" name="dtMode_${tid}" value="same" ${isSame?'checked':''} onchange="onDateModeChange('${tid}','${dateStr}')">
                     <span>Same as Day 1</span>
-                </label>` : ''}
-                <label class="pill-option">
-                    <input type="radio" name="timeType_${tid}" value="specific" ${specificChecked?'checked':''} onchange="toggleDateTimeType('${tid}')">
-                    <span>Specific time</span>
                 </label>
                 <label class="pill-option">
-                    <input type="radio" name="timeType_${tid}" value="window" ${windowChecked?'checked':''} onchange="toggleDateTimeType('${tid}')">
-                    <span>Time window</span>
+                    <input type="radio" name="dtMode_${tid}" value="own" ${!isSame?'checked':''} onchange="onDateModeChange('${tid}','${dateStr}')">
+                    <span>Set time</span>
                 </label>
-            </div>
-            <div id="specificWrap_${tid}" class="form-group" style="margin-bottom:0;${!specificChecked?'display:none':''}">
-                <label>Preferred time</label>
-                <div class="time-hm-wrap">
-                    <select id="timeSpecHr_${tid}" onchange="updateSummary()">${hrOptions(s.specHr)}</select>
-                    <span class="time-hm-colon">:</span>
-                    <select id="timeSpecMin_${tid}" onchange="updateSummary()">${minOptions(s.specMin)}</select>
-                </div>
-            </div>
-            <div id="windowWrap_${tid}" style="${windowChecked?'':'display:none'}">
-                <div class="form-row">
-                    <div class="form-group half">
-                        <label>From</label>
-                        <div class="time-hm-wrap">
-                            <select id="timeFromHr_${tid}" onchange="updateSummary()">${hrOptions(s.fromHr)}</select>
-                            <span class="time-hm-colon">:</span>
-                            <select id="timeFromMin_${tid}" onchange="updateSummary()">${minOptions(s.fromMin)}</select>
-                        </div>
-                    </div>
-                    <div class="form-group half">
-                        <label>To</label>
-                        <div class="time-hm-wrap">
-                            <select id="timeToHr_${tid}" onchange="updateSummary()">${hrOptions(s.toHr)}</select>
-                            <span class="time-hm-colon">:</span>
-                            <select id="timeToMin_${tid}" onchange="updateSummary()">${minOptions(s.toMin)}</select>
-                        </div>
-                    </div>
-                </div>
+            </div>` : ''}
+            <div id="dateSlots_${tid}" style="${isSame ? 'display:none' : ''}">
+                ${slotsHtml}
+                <button type="button" class="add-time-btn" onclick="addDateSlot('${dateStr}')">+ Add time</button>
             </div>
         `;
         container.appendChild(div);
     });
 }
 
-function toggleDateTimeType(tid) {
-    const type = document.querySelector(`input[name="timeType_${tid}"]:checked`).value;
-    document.getElementById(`specificWrap_${tid}`).style.display = type === 'specific' ? '' : 'none';
-    document.getElementById(`windowWrap_${tid}`).style.display   = type === 'window'   ? '' : 'none';
+function renderSlotHtml(tid, dateStr, si, sl, totalSlots) {
+    const isSpecific = (sl.type || 'specific') !== 'window';
+    return `
+        <div class="date-slot" data-si="${si}">
+            <div class="slot-header">
+                <div class="slot-type-pills">
+                    <label class="pill-option">
+                        <input type="radio" name="slotType_${tid}_${si}" value="specific" ${isSpecific?'checked':''} onchange="toggleSlotType('${tid}',${si})">
+                        <span>Time</span>
+                    </label>
+                    <label class="pill-option">
+                        <input type="radio" name="slotType_${tid}_${si}" value="window" ${!isSpecific?'checked':''} onchange="toggleSlotType('${tid}',${si})">
+                        <span>Range</span>
+                    </label>
+                </div>
+                ${totalSlots > 1 ? `<button type="button" class="slot-remove-btn" onclick="removeSlot('${dateStr}',${si})" title="Remove">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>` : ''}
+            </div>
+            <div id="slotSpecWrap_${tid}_${si}" style="${isSpecific?'':'display:none'}">
+                <div class="time-hm-wrap">
+                    <select id="slotSpecHr_${tid}_${si}" onchange="updateSummary()">${hrOptions(sl.specHr)}</select>
+                    <span class="time-hm-colon">:</span>
+                    <select id="slotSpecMin_${tid}_${si}" onchange="updateSummary()">${minOptions(sl.specMin)}</select>
+                </div>
+            </div>
+            <div id="slotWindowWrap_${tid}_${si}" style="${isSpecific?'display:none':''}">
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label>From</label>
+                        <div class="time-hm-wrap">
+                            <select id="slotFromHr_${tid}_${si}" onchange="updateSummary()">${hrOptions(sl.fromHr)}</select>
+                            <span class="time-hm-colon">:</span>
+                            <select id="slotFromMin_${tid}_${si}" onchange="updateSummary()">${minOptions(sl.fromMin)}</select>
+                        </div>
+                    </div>
+                    <div class="form-group half">
+                        <label>To</label>
+                        <div class="time-hm-wrap">
+                            <select id="slotToHr_${tid}_${si}" onchange="updateSummary()">${hrOptions(sl.toHr)}</select>
+                            <span class="time-hm-colon">:</span>
+                            <select id="slotToMin_${tid}_${si}" onchange="updateSummary()">${minOptions(sl.toMin)}</select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+}
+
+function onDateModeChange(tid, dateStr) {
+    saveCurrentDateState();
+    const isSame = document.querySelector(`input[name="dtMode_${tid}"]:checked`)?.value === 'same';
+    if (dateSlotData[dateStr]) dateSlotData[dateStr].isSame = isSame;
+    document.getElementById(`dateSlots_${tid}`).style.display = isSame ? 'none' : '';
+    updateSummary();
+}
+
+function toggleSlotType(tid, si) {
+    const type = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
+    document.getElementById(`slotSpecWrap_${tid}_${si}`).style.display   = type === 'specific' ? '' : 'none';
+    document.getElementById(`slotWindowWrap_${tid}_${si}`).style.display = type === 'window'   ? '' : 'none';
+    updateSummary();
+}
+
+function addDateSlot(dateStr) {
+    saveCurrentDateState();
+    if (!dateSlotData[dateStr]) dateSlotData[dateStr] = { isSame: false, slots: [emptySlot()] };
+    dateSlotData[dateStr].slots.push(emptySlot());
+    renderSelectedDatesList();
+    updateSummary();
+}
+
+function removeSlot(dateStr, si) {
+    saveCurrentDateState();
+    if (dateSlotData[dateStr] && dateSlotData[dateStr].slots.length > 1) {
+        dateSlotData[dateStr].slots.splice(si, 1);
+    }
+    renderSelectedDatesList();
     updateSummary();
 }
 
@@ -378,7 +440,6 @@ function renderSavedPetCards(pets) {
     if (!pets || pets.length === 0) {
         container.innerHTML = '';
         if (savedPetBtn) savedPetBtn.style.display = '';
-        if (document.getElementById('petList').children.length === 0) addPetEntry();
         return;
     }
 
@@ -498,18 +559,26 @@ function updateSummary() {
         } else {
             datesDiv.innerHTML = '';
             sorted.forEach(dateStr => {
-                const tid   = `dt_${dateStr.replace(/-/g,'_')}`;
-                const type  = document.querySelector(`input[name="timeType_${tid}"]:checked`)?.value || 'specific';
+                const tid = `dt_${dateStr.replace(/-/g,'_')}`;
+                const slotsWrap = document.getElementById(`dateSlots_${tid}`);
                 let timeStr = '—';
-                if (type === 'same') {
+                if (slotsWrap && slotsWrap.style.display === 'none') {
                     timeStr = 'Same as Day 1';
-                } else if (type === 'specific') {
-                    const v = getHMTime(`timeSpecHr_${tid}`, `timeSpecMin_${tid}`);
-                    timeStr = v ? formatTime(v) : '—';
-                } else {
-                    const from = getHMTime(`timeFromHr_${tid}`, `timeFromMin_${tid}`);
-                    const to   = getHMTime(`timeToHr_${tid}`, `timeToMin_${tid}`);
-                    timeStr = `${from ? formatTime(from) : '—'} – ${to ? formatTime(to) : '—'}`;
+                } else if (slotsWrap) {
+                    const slotEls = slotsWrap.querySelectorAll('.date-slot');
+                    const times = [];
+                    slotEls.forEach((_, si) => {
+                        const type = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
+                        if (type === 'specific') {
+                            const v = getHMTime(`slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`);
+                            times.push(v ? formatTime(v) : '—');
+                        } else {
+                            const from = getHMTime(`slotFromHr_${tid}_${si}`, `slotFromMin_${tid}_${si}`);
+                            const to   = getHMTime(`slotToHr_${tid}_${si}`, `slotToMin_${tid}_${si}`);
+                            times.push(`${from ? formatTime(from) : '—'} – ${to ? formatTime(to) : '—'}`);
+                        }
+                    });
+                    timeStr = times.length ? times.join(', ') : '—';
                 }
                 datesDiv.innerHTML += `
                     <div class="summary-date-item">
@@ -573,19 +642,25 @@ function collectDatesText() {
     let text = '';
     if (dateMode === 'pick') {
         [...selectedDates].sort().forEach(dateStr => {
-            const tid  = `dt_${dateStr.replace(/-/g,'_')}`;
-            const type = document.querySelector(`input[name="timeType_${tid}"]:checked`)?.value || 'specific';
-            let t = '';
-            if (type === 'same') {
-                t = 'Same as Day 1';
-            } else if (type === 'specific') {
-                t = formatTime(getHMTime(`timeSpecHr_${tid}`, `timeSpecMin_${tid}`));
-            } else {
-                const from = getHMTime(`timeFromHr_${tid}`, `timeFromMin_${tid}`);
-                const to   = getHMTime(`timeToHr_${tid}`, `timeToMin_${tid}`);
-                t = `${formatTime(from)} – ${formatTime(to)}`;
+            const tid = `dt_${dateStr.replace(/-/g,'_')}`;
+            const slotsWrap = document.getElementById(`dateSlots_${tid}`);
+            if (slotsWrap && slotsWrap.style.display === 'none') {
+                text += `  ${formatDate(dateStr)}: Same as Day 1\n`;
+                return;
             }
-            text += `  ${formatDate(dateStr)}: ${t}\n`;
+            const slotEls = slotsWrap ? slotsWrap.querySelectorAll('.date-slot') : [];
+            const times = [];
+            slotEls.forEach((_, si) => {
+                const type = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
+                if (type === 'specific') {
+                    times.push(formatTime(getHMTime(`slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`)));
+                } else {
+                    const from = getHMTime(`slotFromHr_${tid}_${si}`, `slotFromMin_${tid}_${si}`);
+                    const to   = getHMTime(`slotToHr_${tid}_${si}`, `slotToMin_${tid}_${si}`);
+                    times.push(`${formatTime(from)} – ${formatTime(to)}`);
+                }
+            });
+            text += `  ${formatDate(dateStr)}: ${times.join(', ') || '—'}\n`;
         });
     } else {
         const start    = document.getElementById('rangeStart')?.value || '';
@@ -639,9 +714,12 @@ function reviewOrder(e) {
 
     // Count pets & determine type
     const petEntries = document.querySelectorAll('.pet-entry');
-    const numPets = petEntries.length || 1;
+    const savedPets  = getSelectedSavedPets();
+    const numPets    = savedPets.length + petEntries.length || 1;
     let firstPetType = 'dog';
-    if (petEntries.length > 0) {
+    if (savedPets.length > 0) {
+        firstPetType = savedPets[0].type || 'dog';
+    } else if (petEntries.length > 0) {
         const firstId = petEntries[0].id.replace('petEntry','');
         firstPetType  = document.getElementById(`petType${firstId}`)?.value || 'dog';
     }
@@ -657,7 +735,10 @@ function reviewOrder(e) {
 
     // Build confirm details HTML
     let petsHtml = '';
-    petEntries.forEach((entry, i) => {
+    savedPets.forEach(p => {
+        petsHtml += `<div class="confirm-info-row"><span>${p.name || '—'}</span><span>${capitalize(p.type || 'dog')}${p.breed ? ' · ' + p.breed : ''}</span></div>`;
+    });
+    petEntries.forEach((entry) => {
         const id    = entry.id.replace('petEntry','');
         const name  = document.getElementById(`petName${id}`)?.value  || '—';
         const type  = document.getElementById(`petType${id}`)?.value  || 'dog';
@@ -730,14 +811,21 @@ function sendRequest() {
     const { service, duration, total, clientName, clientPhone, clientEmail, clientNotes } = _bookingData;
 
     let petsText = '';
-    document.querySelectorAll('.pet-entry').forEach((entry, i) => {
+    let pidx = 0;
+    getSelectedSavedPets().forEach(p => {
+        pidx++;
+        petsText += `Pet ${pidx}: ${p.name || '—'} (${capitalize(p.type || 'dog')}${p.breed ? ', ' + p.breed : ''})\n`;
+        if (p.careNotes) petsText += `  Notes: ${p.careNotes}\n`;
+    });
+    document.querySelectorAll('.pet-entry').forEach(entry => {
+        pidx++;
         const id    = entry.id.replace('petEntry','');
         const name  = document.getElementById(`petName${id}`)?.value  || '—';
         const type  = document.getElementById(`petType${id}`)?.value  || 'dog';
         const age   = document.getElementById(`petAge${id}`)?.value   || '';
         const breed = document.getElementById(`petBreed${id}`)?.value || '';
         const notes = document.getElementById(`petNotes${id}`)?.value || '';
-        petsText += `Pet ${i+1}: ${name} (${capitalize(type)}${age ? ', ' + age : ''}${breed ? ', ' + breed : ''})\n`;
+        petsText += `Pet ${pidx}: ${name} (${capitalize(type)}${age ? ', ' + age : ''}${breed ? ', ' + breed : ''})\n`;
         if (notes) petsText += `  Notes: ${notes}\n`;
     });
 
@@ -1006,9 +1094,6 @@ async function saveBookingPet() {
 document.addEventListener('DOMContentLoaded', () => {
     populateRangeTimeSelects();
     updateSummary();
-
-    // Show blank manual form by default (non-logged-in fallback)
-    addPetEntry();
 
     // Check if user is logged in; load their saved pets
     const wff = window.WFF;
