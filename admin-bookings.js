@@ -250,6 +250,7 @@ function renderChargesHtml(b) {
     const adjs = b.adjustments || [];
 
     let petRows = '';
+    let calcBase = 0;
     pets.forEach((pet, idx) => {
         let rate, label;
         if (idx === 0) {
@@ -260,6 +261,7 @@ function renderChargesHtml(b) {
             rate = pet.type === 'cat' ? (p.extraCat || p.extraDog) : p.extraDog;
             label = 'Additional ' + (pet.type || 'pet');
         }
+        calcBase += rate * numVisits;
         petRows += `
             <div class="detail-charge-row">
                 <div>
@@ -269,6 +271,9 @@ function renderChargesHtml(b) {
                 <div class="detail-charge-amount">$${rate * numVisits}</div>
             </div>`;
     });
+
+    // Use calculated base when pets exist; fall back to stored b.total when no pets
+    const baseTotal = pets.length > 0 ? calcBase : (b.total || 0);
 
     let adjRows = '';
     let adjTotal = 0;
@@ -286,8 +291,7 @@ function renderChargesHtml(b) {
             </div>`;
     });
 
-    const baseTotal = b.total || 0;
-    const finalTotal = b.finalTotal !== undefined ? b.finalTotal : (baseTotal + adjTotal);
+    const finalTotal = baseTotal + adjTotal;
     const totalLabel = adjs.length > 0 ? 'Final Total' : 'Total';
 
     if (pets.length === 0 && adjs.length === 0) {
@@ -525,6 +529,30 @@ async function markInService(bookingId) {
     await updateDoc(doc(db, 'bookings', bookingId), { status: 'in_service' });
 }
 
+function calcBaseTotal(b) {
+    const pets = b.pets || [];
+    if (pets.length === 0) return b.total || 0;
+    const service = b.service || 'Drop-In Visit';
+    const duration = parseInt(b.duration) || 30;
+    const p = service === 'Dog Walking' ? PRICING.walking : PRICING.dropin;
+    const is60 = duration === 60;
+    const bookingDates = b.dates || Object.keys(b.dateTimes || {});
+    const isHoliday = isHolidayBooking(bookingDates);
+    const numVisits = getNumVisitsFromBooking(b);
+    let total = 0;
+    pets.forEach((pet, idx) => {
+        let rate;
+        if (idx === 0) {
+            const baseRate = isHoliday ? p.holiday : ((service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base);
+            rate = baseRate + (is60 ? p.addon60 : 0);
+        } else {
+            rate = pet.type === 'cat' ? (p.extraCat || p.extraDog) : p.extraDog;
+        }
+        total += rate * numVisits;
+    });
+    return total;
+}
+
 async function addAdjustment(bookingId) {
     const name   = document.getElementById('adjName')?.value.trim();
     const amount = parseFloat(document.getElementById('adjAmount')?.value);
@@ -536,7 +564,7 @@ async function addAdjustment(bookingId) {
     const adjustments = [...(b.adjustments || []), { name, amount, type }];
     const numVisits = getNumVisitsFromBooking(b);
     const adjTotal  = adjustments.reduce((s, a) => s + (a.type === 'per_visit' ? a.amount * numVisits : a.amount), 0);
-    await updateDoc(doc(db, 'bookings', bookingId), { adjustments, finalTotal: (b.total || 0) + adjTotal });
+    await updateDoc(doc(db, 'bookings', bookingId), { adjustments, finalTotal: calcBaseTotal(b) + adjTotal });
 }
 
 async function removeAdjustment(bookingId, idx) {
@@ -545,7 +573,7 @@ async function removeAdjustment(bookingId, idx) {
     const adjustments = (b.adjustments || []).filter((_, i) => i !== idx);
     const numVisits = getNumVisitsFromBooking(b);
     const adjTotal  = adjustments.reduce((s, a) => s + (a.type === 'per_visit' ? a.amount * numVisits : a.amount), 0);
-    await updateDoc(doc(db, 'bookings', bookingId), { adjustments, finalTotal: (b.total || 0) + adjTotal });
+    await updateDoc(doc(db, 'bookings', bookingId), { adjustments, finalTotal: calcBaseTotal(b) + adjTotal });
 }
 
 function renderAdjustmentsHtml(b) {
