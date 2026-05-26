@@ -1155,3 +1155,71 @@
     padding: 14px 0 0; font-weight: 700; font-size: 16px; color: var(--brown);
     border-top: 2px solid var(--border); margin-top: 4px;
 }
+.detail-charge-sub-total {
+    display: flex; justify-content: space-between;
+    padding: 10px 0 6px; font-size: 13px; font-weight: 600; color: var(--brown-mid);
+    border-top: 1px dashed var(--border); margin-top: 4px;
+}
+.adj-charge  { color: #c0392b; font-weight: 600; font-size: 13px; }
+.adj-discount { color: #27ae60; font-weight: 600; font-size: 13px; }
+.detail-adj-row .detail-charge-label { font-size: 13px; }
+
+/* Adjustment item */
+.detail-adj-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid var(--border); gap: 10px;
+}
+.adj-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.adj-remove-btn {
+    background: none; border: 1.5px solid var(--border); border-radius: 6px;
+    width: 24px; height: 24px; cursor: pointer; color: var(--brown-mid);
+    font-size: 14px; line-height: 1; padding: 0;
+}
+.adj-remove-btn:hover { border-color: #c0392b; color: #c0392b; }
+.adj-empty { font-size: 13px; color: var(--brown-mid); margin: 4px 0 8px; }
+
+/* Adjustment add form */
+.adj-add-form { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.adj-input-name {
+    border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 10px;
+    font-size: 13px; color: var(--brown); width: 100%; box-sizing: border-box;
+}
+.adj-add-row { display: flex; gap: 6px; align-items: center; }
+.adj-input-amt {
+    border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 8px;
+    font-size: 13px; color: var(--brown); width: 110px;
+}
+.adj-select {
+    border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 8px;
+    font-size: 13px; color: var(--brown); flex: 1;
+}
+.adj-add-btn {
+    background: var(--pink); color: #fff; border: none; border-radius: 8px;
+    padding: 7px 14px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.adj-add-btn:hover { opacity: 0.85; }
+
+/* Payment record block */
+.payment-record {
+    background: var(--cream); border-radius: 10px; padding: 10px 12px;
+    margin-bottom: 8px; width: 100%; box-sizing: border-box;
+}
+.payment-record-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; padding: 3px 0;
+}
+.payment-record-label { color: var(--brown-mid); font-weight: 500; }
+.payment-record-val   { color: var(--brown); font-weight: 600; }
+
+/* Deposit amount input (alongside date) */
+.deposit-amount-input {
+    border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 8px;
+    font-size: 13px; color: var(--brown); background: #fff; width: 100px;
+}
+
+/* In Service button */
+.admin-btn-in-service {
+    background: #8e44ad; color: #fff; border: none; border-radius: 10px;
+    padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%;
+}
+.admin-btn-in-service:hover { background: #6c3483; }

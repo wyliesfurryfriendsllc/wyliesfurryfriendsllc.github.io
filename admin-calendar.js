@@ -759,7 +759,7 @@ async function saveNewBooking() {
                 service, duration: parseInt(duration),
                 datesText, dates: sortedDates, dateTimes,
                 pets, notes, total,
-                status: 'confirmed', source: 'manual',
+                status: 'pending', adminAccepted: true, source: 'manual',
                 clientId: nbSelectedClientId || null,
                 createdAt: serverTimestamp()
             });

@@ -228,6 +228,16 @@ function renderPetsHtml(pets) {
     return `<div class="detail-pets-wrap">${items}</div>`;
 }
 
+function getNumVisitsFromBooking(b) {
+    let n = 0;
+    if (b.dateTimes) {
+        for (const slots of Object.values(b.dateTimes)) n += Math.max(1, (slots || []).filter(Boolean).length);
+    } else if (b.dates) {
+        n = (b.dates.length || 1) * Math.max(1, b.times?.length || 1);
+    }
+    return n || 1;
+}
+
 function renderChargesHtml(b) {
     const pets = b.pets || [];
     const service = b.service || 'Drop-In Visit';
@@ -236,21 +246,10 @@ function renderChargesHtml(b) {
     const is60 = duration === 60;
     const bookingDates = b.dates || Object.keys(b.dateTimes || {});
     const isHoliday = isHolidayBooking(bookingDates);
-    let numVisits = 0;
-    if (b.dateTimes) {
-        for (const slots of Object.values(b.dateTimes)) {
-            numVisits += Math.max(1, (slots || []).filter(Boolean).length);
-        }
-    } else if (b.dates) {
-        numVisits = (b.dates.length || 1) * Math.max(1, b.times?.length || 1);
-    }
-    if (numVisits === 0) numVisits = 1;
+    const numVisits = getNumVisitsFromBooking(b);
+    const adjs = b.adjustments || [];
 
-    if (pets.length === 0) {
-        return `<div class="detail-charge-total"><span>Total</span><span>$${b.total || 0}</span></div>`;
-    }
-
-    let rows = '';
+    let petRows = '';
     pets.forEach((pet, idx) => {
         let rate, label;
         if (idx === 0) {
@@ -261,7 +260,7 @@ function renderChargesHtml(b) {
             rate = pet.type === 'cat' ? (p.extraCat || p.extraDog) : p.extraDog;
             label = 'Additional ' + (pet.type || 'pet');
         }
-        rows += `
+        petRows += `
             <div class="detail-charge-row">
                 <div>
                     <div class="detail-charge-label">${escHtml(pet.name || '—')}</div>
@@ -270,7 +269,34 @@ function renderChargesHtml(b) {
                 <div class="detail-charge-amount">$${rate * numVisits}</div>
             </div>`;
     });
-    return rows + `<div class="detail-charge-total"><span>Total</span><span>$${b.total || 0}</span></div>`;
+
+    let adjRows = '';
+    let adjTotal = 0;
+    adjs.forEach(a => {
+        const adjAmt = a.type === 'per_visit' ? a.amount * numVisits : a.amount;
+        adjTotal += adjAmt;
+        const displayAmt = adjAmt >= 0 ? `+$${adjAmt}` : `-$${Math.abs(adjAmt)}`;
+        adjRows += `
+            <div class="detail-charge-row detail-adj-row">
+                <div>
+                    <div class="detail-charge-label">${escHtml(a.name)}</div>
+                    <div class="detail-charge-sub">${a.type === 'per_visit' ? `$${a.amount} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}` : 'One-time'}</div>
+                </div>
+                <div class="detail-charge-amount ${adjAmt >= 0 ? 'adj-charge' : 'adj-discount'}">${displayAmt}</div>
+            </div>`;
+    });
+
+    const baseTotal = b.total || 0;
+    const finalTotal = b.finalTotal !== undefined ? b.finalTotal : (baseTotal + adjTotal);
+    const totalLabel = adjs.length > 0 ? 'Final Total' : 'Total';
+
+    if (pets.length === 0 && adjs.length === 0) {
+        return `<div class="detail-charge-total"><span>Total</span><span>$${baseTotal}</span></div>`;
+    }
+
+    return petRows +
+        (adjs.length > 0 ? `<div class="detail-charge-sub-total"><span>Base Total</span><span>$${baseTotal}</span></div>${adjRows}` : '') +
+        `<div class="detail-charge-total"><span>${totalLabel}</span><span>$${finalTotal}</span></div>`;
 }
 
 function renderDetail(b, panel) {
@@ -278,6 +304,7 @@ function renderDetail(b, panel) {
     const isAccepted        = isPending && !!b.adminAccepted;
     const isDepositReceived = b.status === 'deposit_received';
     const isPaid            = b.status === 'paid';
+    const isInService       = b.status === 'in_service';
     const todayISO = new Date().toISOString().slice(0, 10);
     const pets = b.pets || [];
     let numVisits = 0;
@@ -336,6 +363,22 @@ function renderDetail(b, panel) {
         </div>
 
         <div class="detail-section">
+            <div class="detail-section-label">Price Adjustments</div>
+            ${renderAdjustmentsHtml(b)}
+            <div class="adj-add-form">
+                <input type="text" id="adjName" class="adj-input-name" placeholder="Reason (e.g. Special care fee)">
+                <div class="adj-add-row">
+                    <input type="number" id="adjAmount" class="adj-input-amt" placeholder="e.g. 5 or -10" step="0.01">
+                    <select id="adjType" class="adj-select">
+                        <option value="per_visit">Per visit</option>
+                        <option value="one_time">One-time</option>
+                    </select>
+                    <button class="adj-add-btn" onclick="AdminBookings.addAdjustment('${b.id}')">+ Add</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
             <div class="detail-section-label">Contact</div>
             <div class="detail-row"><span>Name</span><span>${escHtml(b.clientName || '—')}</span></div>
             <div class="detail-row"><span>Phone</span><span>${escHtml(b.clientPhone || '—')}</span></div>
@@ -357,9 +400,10 @@ function renderDetail(b, panel) {
         ${isAccepted ? `
         <div class="detail-actions">
             <div class="deposit-action-wrap">
-                <div class="deposit-action-label">Mark deposit received:</div>
+                <div class="deposit-action-label">Record deposit payment:</div>
                 <div class="deposit-action-row">
                     <input type="date" id="depositDateInput" value="${todayISO}">
+                    <input type="number" id="depositAmountInput" class="deposit-amount-input" placeholder="$ Amount" step="0.01" min="0">
                     <button class="admin-btn-deposit" onclick="AdminBookings.markDepositReceived('${b.id}')">
                         ✓ Deposit Received
                     </button>
@@ -369,24 +413,46 @@ function renderDetail(b, panel) {
         </div>` : ''}
         ${isDepositReceived ? `
         <div class="detail-actions">
-            <div class="deposit-info-row">
-                <span class="deposit-info-label">Deposit received:</span>
-                <span class="deposit-info-date">${b.depositDate || '—'}</span>
+            <div class="payment-record">
+                <div class="payment-record-row">
+                    <span class="payment-record-label">Deposit received</span>
+                    <span class="payment-record-val">${b.depositAmount != null ? '$' + b.depositAmount : '—'} · ${b.depositDate || '—'}</span>
+                </div>
             </div>
-            <button class="admin-btn-paid" onclick="AdminBookings.markPaidInFull('${b.id}')">
-                💚 Mark Paid in Full
-            </button>
+            <div class="deposit-action-wrap">
+                <div class="deposit-action-label">Record final payment:</div>
+                <div class="deposit-action-row">
+                    <input type="date" id="finalPayDateInput" value="${todayISO}">
+                    <input type="number" id="finalPayAmountInput" class="deposit-amount-input" placeholder="$ Amount" step="0.01" min="0">
+                    <button class="admin-btn-paid" onclick="AdminBookings.markPaidInFull('${b.id}')">
+                        💚 Paid in Full
+                    </button>
+                </div>
+            </div>
+            <button class="admin-btn-in-service" onclick="AdminBookings.markInService('${b.id}')">▶ Mark In Service</button>
             <button class="admin-btn-secondary" onclick="AdminBookings.markCompleted('${b.id}')">Mark Completed</button>
             <button class="admin-btn-danger" onclick="AdminBookings.rejectBooking('${b.id}')">✕ Decline</button>
         </div>` : ''}
         ${isPaid ? `
         <div class="detail-actions">
-            <div class="deposit-info-row">
-                <span class="deposit-info-label">Deposit received:</span>
-                <span class="deposit-info-date">${b.depositDate || '—'}</span>
+            <div class="payment-record">
+                <div class="payment-record-row">
+                    <span class="payment-record-label">Deposit</span>
+                    <span class="payment-record-val">${b.depositAmount != null ? '$' + b.depositAmount : '—'} · ${b.depositDate || '—'}</span>
+                </div>
+                <div class="payment-record-row">
+                    <span class="payment-record-label">Final payment</span>
+                    <span class="payment-record-val">${b.finalPaymentAmount != null ? '$' + b.finalPaymentAmount : '—'} · ${b.finalPaymentDate || '—'}</span>
+                </div>
             </div>
             <div class="paid-full-notice">💚 Paid in Full</div>
+            <button class="admin-btn-in-service" onclick="AdminBookings.markInService('${b.id}')">▶ Mark In Service</button>
             <button class="admin-btn-secondary" onclick="AdminBookings.markCompleted('${b.id}')">Mark Completed</button>
+        </div>` : ''}
+        ${isInService ? `
+        <div class="detail-actions">
+            <div class="paid-full-notice" style="color:#8e44ad">⚡ In Service</div>
+            <button class="admin-btn-secondary" onclick="AdminBookings.markCompleted('${b.id}')">✓ Mark Completed</button>
         </div>` : ''}
 
         <div class="detail-section">
@@ -434,17 +500,72 @@ async function markCompleted(bookingId) {
 
 async function markDepositReceived(bookingId) {
     const dateInput = document.getElementById('depositDateInput');
-    const depositDate = dateInput ? dateInput.value : new Date().toISOString().slice(0, 10);
-    if (!confirm(`Mark deposit received on ${depositDate}?`)) return;
-    await updateDoc(doc(db, 'bookings', bookingId), {
-        status: 'deposit_received',
-        depositDate
-    });
+    const amtInput  = document.getElementById('depositAmountInput');
+    const depositDate   = dateInput ? dateInput.value : new Date().toISOString().slice(0, 10);
+    const depositAmount = amtInput && amtInput.value !== '' ? parseFloat(amtInput.value) : null;
+    if (!confirm(`Mark deposit received${depositAmount != null ? ' ($' + depositAmount + ')' : ''} on ${depositDate}?`)) return;
+    const data = { status: 'deposit_received', depositDate };
+    if (depositAmount != null) data.depositAmount = depositAmount;
+    await updateDoc(doc(db, 'bookings', bookingId), data);
 }
 
 async function markPaidInFull(bookingId) {
-    if (!confirm('Mark this booking as paid in full?')) return;
-    await updateDoc(doc(db, 'bookings', bookingId), { status: 'paid' });
+    const dateInput = document.getElementById('finalPayDateInput');
+    const amtInput  = document.getElementById('finalPayAmountInput');
+    const finalPaymentDate   = dateInput ? dateInput.value : new Date().toISOString().slice(0, 10);
+    const finalPaymentAmount = amtInput && amtInput.value !== '' ? parseFloat(amtInput.value) : null;
+    if (!confirm(`Mark paid in full${finalPaymentAmount != null ? ' ($' + finalPaymentAmount + ')' : ''} on ${finalPaymentDate}?`)) return;
+    const data = { status: 'paid', finalPaymentDate };
+    if (finalPaymentAmount != null) data.finalPaymentAmount = finalPaymentAmount;
+    await updateDoc(doc(db, 'bookings', bookingId), data);
+}
+
+async function markInService(bookingId) {
+    if (!confirm('Mark this booking as In Service?')) return;
+    await updateDoc(doc(db, 'bookings', bookingId), { status: 'in_service' });
+}
+
+async function addAdjustment(bookingId) {
+    const name   = document.getElementById('adjName')?.value.trim();
+    const amount = parseFloat(document.getElementById('adjAmount')?.value);
+    const type   = document.getElementById('adjType')?.value || 'one_time';
+    if (!name)       { alert('Please enter a reason for the adjustment.'); return; }
+    if (isNaN(amount)) { alert('Please enter a valid amount (e.g. 5 or -10).'); return; }
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b) return;
+    const adjustments = [...(b.adjustments || []), { name, amount, type }];
+    const numVisits = getNumVisitsFromBooking(b);
+    const adjTotal  = adjustments.reduce((s, a) => s + (a.type === 'per_visit' ? a.amount * numVisits : a.amount), 0);
+    await updateDoc(doc(db, 'bookings', bookingId), { adjustments, finalTotal: (b.total || 0) + adjTotal });
+}
+
+async function removeAdjustment(bookingId, idx) {
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b) return;
+    const adjustments = (b.adjustments || []).filter((_, i) => i !== idx);
+    const numVisits = getNumVisitsFromBooking(b);
+    const adjTotal  = adjustments.reduce((s, a) => s + (a.type === 'per_visit' ? a.amount * numVisits : a.amount), 0);
+    await updateDoc(doc(db, 'bookings', bookingId), { adjustments, finalTotal: (b.total || 0) + adjTotal });
+}
+
+function renderAdjustmentsHtml(b) {
+    const adjs = b.adjustments || [];
+    const numVisits = getNumVisitsFromBooking(b);
+    if (adjs.length === 0) return '<p class="adj-empty">No adjustments yet.</p>';
+    return adjs.map((a, idx) => {
+        const adjAmt = a.type === 'per_visit' ? a.amount * numVisits : a.amount;
+        const displayAmt = adjAmt >= 0 ? `+$${adjAmt}` : `-$${Math.abs(adjAmt)}`;
+        return `<div class="detail-adj-item">
+            <div>
+                <div class="detail-charge-label">${escHtml(a.name)}</div>
+                <div class="detail-charge-sub">${a.type === 'per_visit' ? `$${a.amount} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}` : 'One-time'}</div>
+            </div>
+            <div class="adj-right">
+                <span class="${adjAmt >= 0 ? 'adj-charge' : 'adj-discount'}">${displayAmt}</span>
+                <button class="adj-remove-btn" onclick="AdminBookings.removeAdjustment('${b.id}', ${idx})">×</button>
+            </div>
+        </div>`;
+    }).join('');
 }
 
 async function deleteBooking(bookingId, clientName) {
@@ -570,6 +691,7 @@ async function exportImage(bookingId) {
 window.AdminBookings = {
     init, setFilter, openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
-    markDepositReceived, markPaidInFull, deleteBooking,
-    sendAdminMessage, exportImage
+    markDepositReceived, markPaidInFull, markInService,
+    addAdjustment, removeAdjustment,
+    deleteBooking, sendAdminMessage, exportImage
 };
