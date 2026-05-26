@@ -89,10 +89,9 @@ function renderAdminBookings() {
                     </div>
                 </div>
                 <div class="abc-right">
-                    <div class="abc-right-top">
-                        <span class="abc-service">${escHtml(b.service || '')} · ${b.duration || 30} min</span>
-                        <span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span>
-                    </div>
+                    <div class="abc-service">${escHtml(b.service || '')}</div>
+                    <div class="abc-duration">${b.duration || 30} min</div>
+                    <div style="margin-bottom:4px"><span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span></div>
                     <div class="abc-dates">${escHtml(firstLine)}</div>
                     <div class="abc-price">$${b.total || 0} est.</div>
                 </div>
@@ -214,7 +213,6 @@ function renderPetsHtml(pets) {
             : `<div class="detail-pet-emoji">${emoji}</div>`;
         const metaParts = [
             p.gender,
-            p.age || (p.ageYears ? p.ageYears + ' yr' + (p.ageMonths ? ' ' + p.ageMonths + ' mo' : '') : '') || '',
             p.weight ? p.weight + ' lbs' : ''
         ].filter(Boolean);
         return `
