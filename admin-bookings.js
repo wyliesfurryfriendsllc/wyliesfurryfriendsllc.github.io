@@ -412,14 +412,6 @@ function refreshDetailStatus(status) {
 async function acceptBooking(bookingId, clientName, total) {
     if (!confirm(`Accept booking for ${clientName}?`)) return;
     await updateDoc(doc(db, 'bookings', bookingId), { status: 'confirmed' });
-    // Send auto-message
-    const deposit = Math.round(total / 2);
-    await addDoc(collection(db, 'bookings', bookingId, 'messages'), {
-        sender:     'owner',
-        senderName: 'Wylie',
-        text: `Great news! Your booking has been confirmed. Please send a $${deposit} deposit via Zelle to wyliesfurryfriendsllc@gmail.com to secure your spot. The remaining balance is due before the service begins. Looking forward to caring for your pet!`,
-        createdAt:  serverTimestamp()
-    });
 }
 
 async function rejectBooking(bookingId) {

@@ -170,6 +170,13 @@ function loadMyBookings(user) {
     bookingsUnsub = onSnapshot(q, snap => {
         allBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderBookingsList(allBookings);
+        if (activeBookingId) {
+            const updated = allBookings.find(b => b.id === activeBookingId);
+            if (updated) {
+                const panel = document.getElementById('bookingDetail');
+                if (panel && panel.style.display !== 'none') renderBookingDetail(updated, panel);
+            }
+        }
         const dayPanel = document.getElementById('acctDayPanel');
         if (dayPanel && dayPanel.dataset.iso) showCalDay(dayPanel.dataset.iso);
         renderAccountCal();
