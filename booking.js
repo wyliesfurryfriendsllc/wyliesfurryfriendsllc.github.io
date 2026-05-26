@@ -371,20 +371,18 @@ function populateRangeTimeSelects() {
 function renderSavedPetCards(pets) {
     savedUserPets = pets;
     const container = document.getElementById('savedPetCards');
-    const addBtn = document.getElementById('addAnotherPetBtn');
     if (!container) return;
+
+    const savedPetBtn = document.getElementById('addSavedPetBtn');
 
     if (!pets || pets.length === 0) {
         container.innerHTML = '';
-        // Show "Add a Pet" modal button
-        const savedPetBtn = document.getElementById('addSavedPetBtn');
         if (savedPetBtn) savedPetBtn.style.display = '';
-        if (addBtn) addBtn.style.display = 'none';
         if (document.getElementById('petList').children.length === 0) addPetEntry();
         return;
     }
 
-    // Has saved pets — render selection cards
+    // Has saved pets — render selection cards, hide manual entry form
     container.innerHTML = `
         <p class="saved-pets-hint">Select the pets for this visit:</p>
         <div class="saved-pet-list">
@@ -411,11 +409,7 @@ function renderSavedPetCards(pets) {
             }).join('')}
         </div>`;
 
-    // Show both buttons
-    if (addBtn) addBtn.style.display = '';
-    const savedPetBtn = document.getElementById('addSavedPetBtn');
     if (savedPetBtn) savedPetBtn.style.display = '';
-    // Clear manual pet list
     document.getElementById('petList').innerHTML = '';
     petCount = 0;
     updateSummary();
@@ -929,9 +923,7 @@ document.addEventListener('DOMContentLoaded', () => {
     populateRangeTimeSelects();
     updateSummary();
 
-    // Show add-another button and blank form by default (non-logged-in fallback)
-    const addBtn = document.getElementById('addAnotherPetBtn');
-    if (addBtn) addBtn.style.display = '';
+    // Show blank manual form by default (non-logged-in fallback)
     addPetEntry();
 
     // Check if user is logged in; load their saved pets
