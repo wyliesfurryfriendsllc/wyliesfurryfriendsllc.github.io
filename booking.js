@@ -822,19 +822,78 @@ function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 
 // ─── INIT ─────────────────────────────────────────────────
 // ─── BOOKING PAGE PET MODAL ──────────────────────────────
+// ─── BOOKING PET BIRTHDAY CALENDAR ───────────────────────
+let bkBdayCalYear, bkBdayCalMonth;
+
+function bkSwitchAgeMode(mode) {
+    document.getElementById('bkPetBdayWrap').style.display    = mode === 'exact'     ? '' : 'none';
+    document.getElementById('bkPetAgeYMWrap').style.display   = mode === 'yearmonth' ? '' : 'none';
+}
+
+function bkOpenBdayCal() {
+    const now = new Date();
+    if (bkBdayCalYear === undefined) { bkBdayCalYear = now.getFullYear(); bkBdayCalMonth = now.getMonth(); }
+    bkRenderBdayCal();
+    document.getElementById('bkPetBdayCalWrap').style.display = 'block';
+}
+
+function bkCloseBdayCal() {
+    document.getElementById('bkPetBdayCalWrap').style.display = 'none';
+    const val = document.getElementById('bkPetBirthday').value;
+    document.getElementById('bkPetBdayText').textContent = val ? bkFmtDate(val) : 'Choose birthday...';
+}
+
+function bkChangeBdayMonth(dir) {
+    bkBdayCalMonth += dir;
+    if (bkBdayCalMonth < 0)  { bkBdayCalMonth = 11; bkBdayCalYear--; }
+    if (bkBdayCalMonth > 11) { bkBdayCalMonth = 0;  bkBdayCalYear++; }
+    bkRenderBdayCal();
+}
+
+function bkRenderBdayCal() {
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('bkPetBdayMonthLabel').textContent = `${MONTHS[bkBdayCalMonth]} ${bkBdayCalYear}`;
+    const today    = new Date(); today.setHours(0,0,0,0);
+    const firstDay = new Date(bkBdayCalYear, bkBdayCalMonth, 1).getDay();
+    const daysIn   = new Date(bkBdayCalYear, bkBdayCalMonth + 1, 0).getDate();
+    const grid     = document.getElementById('bkPetBdayDays');
+    const selVal   = document.getElementById('bkPetBirthday').value;
+    grid.innerHTML = '';
+    for (let i = 0; i < firstDay; i++) {
+        const b = document.createElement('div'); b.className = 'cal-day cal-blank'; grid.appendChild(b);
+    }
+    for (let d = 1; d <= daysIn; d++) {
+        const dateStr  = `${bkBdayCalYear}-${String(bkBdayCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const isFuture = new Date(bkBdayCalYear, bkBdayCalMonth, d) > today;
+        const cell     = document.createElement('div');
+        cell.className = 'cal-day' + (isFuture ? ' cal-past' : '') + (dateStr === selVal ? ' cal-selected' : '');
+        cell.textContent = d;
+        if (!isFuture) cell.onclick = () => { document.getElementById('bkPetBirthday').value = dateStr; bkRenderBdayCal(); };
+        grid.appendChild(cell);
+    }
+}
+
+function bkFmtDate(d) {
+    if (!d) return '—';
+    const [y, mo, day] = d.split('-');
+    const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${m[parseInt(mo)-1]} ${parseInt(day)}, ${y}`;
+}
+
 function openBookingPetModal() {
     // Reset form
-    document.getElementById('bkPetName').value = '';
-    document.getElementById('bkPetWeight').value = '';
-    document.getElementById('bkPetAgeYears').value = '';
-    document.getElementById('bkPetAgeMonths').value = '';
-    document.getElementById('bkPetBreed').value = '';
-    document.getElementById('bkPetNotes').value = '';
-    document.getElementById('bkPetPhotoUrl').value = '';
+    ['bkPetName','bkPetWeight','bkPetBreed','bkPetNotes','bkPetPhotoUrl','bkPetBirthday','bkPetAgeYear'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+    });
+    const mo = document.getElementById('bkPetAgeMonth'); if (mo) mo.value = '';
     document.getElementById('bkPetPhotoPreview').style.display = 'none';
     document.getElementById('bkPetPhotoPlaceholder').style.display = '';
     document.querySelectorAll('#bkPetTypeGroup .pet-type-card').forEach((b,i) => b.classList.toggle('active', i===0));
     document.querySelectorAll('#bkPetSexGroup .pet-pill').forEach(b => b.classList.remove('active'));
+    const exactR = document.querySelector('input[name="bkPetAgeMode"][value="exact"]');
+    if (exactR) { exactR.checked = true; bkSwitchAgeMode('exact'); }
+    document.getElementById('bkPetBdayText').textContent = 'Choose birthday...';
+    bkBdayCalYear = undefined;
     document.getElementById('bkPetModal').style.display = '';
     document.body.style.overflow = 'hidden';
 }
@@ -891,16 +950,23 @@ async function saveBookingPet() {
     const name = document.getElementById('bkPetName').value.trim();
     if (!name) { alert("Please enter your pet's name."); return; }
 
+    const bkAgeMode = document.querySelector('input[name="bkPetAgeMode"]:checked')?.value || 'exact';
+    const birthday  = bkAgeMode === 'exact'     ? (document.getElementById('bkPetBirthday').value || '') : '';
+    const ageYear   = bkAgeMode === 'yearmonth' ? (document.getElementById('bkPetAgeYear').value.trim() || '') : '';
+    const ageMonth  = bkAgeMode === 'yearmonth' ? (document.getElementById('bkPetAgeMonth').value || '') : '';
+    const sex       = bkGetPillValue('bkPetSexGroup');
+
+    if (!birthday && !ageYear) { alert("Please enter your pet's birthday or birth year."); return; }
+    if (!sex) { alert("Please select your pet's sex."); return; }
+
     const pet = {
         name,
-        type:      bkGetPillValue('bkPetTypeGroup') || 'dog',
-        sex:       bkGetPillValue('bkPetSexGroup'),
-        weight:    document.getElementById('bkPetWeight').value.trim(),
-        ageYears:  document.getElementById('bkPetAgeYears').value.trim(),
-        ageMonths: document.getElementById('bkPetAgeMonths').value.trim(),
-        breed:     document.getElementById('bkPetBreed').value.trim(),
-        careNotes: document.getElementById('bkPetNotes').value.trim(),
-        photoUrl:  document.getElementById('bkPetPhotoUrl').value.trim(),
+        type:     bkGetPillValue('bkPetTypeGroup') || 'dog',
+        sex, birthday, ageYear, ageMonth,
+        weight:   document.getElementById('bkPetWeight').value.trim(),
+        breed:    document.getElementById('bkPetBreed').value.trim(),
+        careNotes:document.getElementById('bkPetNotes').value.trim(),
+        photoUrl: document.getElementById('bkPetPhotoUrl').value.trim(),
     };
 
     // Save to Firestore if logged in

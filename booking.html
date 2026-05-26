@@ -327,7 +327,7 @@
             Pet Details
         </div>
         <div class="form-group">
-            <label>What type of pet?</label>
+            <label>What type of pet? <span class="req">*</span></label>
             <div class="pet-type-cards" id="bkPetTypeGroup">
                 <button type="button" class="pet-type-card active" data-value="dog" onclick="bkTogglePill(this,'single')">🐶 Dog</button>
                 <button type="button" class="pet-type-card" data-value="cat" onclick="bkTogglePill(this,'single')">🐱 Cat</button>
@@ -344,21 +344,63 @@
                 <input type="number" id="bkPetWeight" placeholder="e.g. 12" min="0">
             </div>
         </div>
-        <div class="form-row">
-            <div class="form-group" style="flex:1">
-                <label>Age (Yr.)</label>
-                <input type="number" id="bkPetAgeYears" placeholder="Years" min="0">
+        <div class="form-group" style="margin-bottom:12px">
+            <label>Birthday <span class="req">*</span></label>
+            <div class="toggle-pills mb-8" style="margin-top:6px">
+                <label class="pill-option">
+                    <input type="radio" name="bkPetAgeMode" value="exact" checked onchange="bkSwitchAgeMode('exact')">
+                    <span>Exact date</span>
+                </label>
+                <label class="pill-option">
+                    <input type="radio" name="bkPetAgeMode" value="yearmonth" onchange="bkSwitchAgeMode('yearmonth')">
+                    <span>Year &amp; Month</span>
+                </label>
             </div>
-            <div class="form-group" style="flex:1">
-                <label>Age (Mo.)</label>
-                <input type="number" id="bkPetAgeMonths" placeholder="Months" min="0" max="11">
-            </div>
-            <div class="form-group" style="flex:2">
-                <label>Sex</label>
-                <div class="pet-pills" id="bkPetSexGroup">
-                    <button type="button" class="pet-pill" data-value="male" onclick="bkTogglePill(this,'single')">Male</button>
-                    <button type="button" class="pet-pill" data-value="female" onclick="bkTogglePill(this,'single')">Female</button>
+            <div id="bkPetBdayWrap">
+                <button type="button" class="calendar-trigger" style="margin-bottom:8px" onclick="bkOpenBdayCal()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span id="bkPetBdayText">Choose birthday...</span>
+                </button>
+                <input type="hidden" id="bkPetBirthday">
+                <div class="calendar-wrap" id="bkPetBdayCalWrap" style="display:none">
+                    <div class="calendar-header">
+                        <button type="button" class="cal-nav" onclick="bkChangeBdayMonth(-1)">&#8249;</button>
+                        <span class="cal-month-label" id="bkPetBdayMonthLabel"></span>
+                        <button type="button" class="cal-nav" onclick="bkChangeBdayMonth(1)">&#8250;</button>
+                    </div>
+                    <div class="calendar-weekdays">
+                        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                    </div>
+                    <div class="calendar-days" id="bkPetBdayDays"></div>
+                    <button type="button" class="cal-done-btn" onclick="bkCloseBdayCal()">Done</button>
                 </div>
+            </div>
+            <div id="bkPetAgeYMWrap" style="display:none">
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label>Year</label>
+                        <input type="number" id="bkPetAgeYear" placeholder="e.g. 2020" min="1980" max="2026">
+                    </div>
+                    <div class="form-group half">
+                        <label>Month <span class="optional">(optional)</span></label>
+                        <select id="bkPetAgeMonth">
+                            <option value="">Select...</option>
+                            <option value="1">January</option><option value="2">February</option>
+                            <option value="3">March</option><option value="4">April</option>
+                            <option value="5">May</option><option value="6">June</option>
+                            <option value="7">July</option><option value="8">August</option>
+                            <option value="9">September</option><option value="10">October</option>
+                            <option value="11">November</option><option value="12">December</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Sex <span class="req">*</span></label>
+            <div class="pet-pills" id="bkPetSexGroup">
+                <button type="button" class="pet-pill" data-value="male" onclick="bkTogglePill(this,'single')">Male</button>
+                <button type="button" class="pet-pill" data-value="female" onclick="bkTogglePill(this,'single')">Female</button>
             </div>
         </div>
         <div class="form-group">
