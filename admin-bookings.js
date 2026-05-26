@@ -282,14 +282,15 @@ function renderChargesHtml(b) {
     let adjRows = '';
     let adjTotal = 0;
     adjs.forEach(a => {
-        const adjAmt = a.type === 'per_visit' ? a.amount * numVisits : a.amount;
+        const v = a.type === 'per_visit' ? (a.visits || numVisits) : 1;
+        const adjAmt = a.amount * v;
         adjTotal += adjAmt;
         const displayAmt = adjAmt >= 0 ? `+$${adjAmt}` : `-$${Math.abs(adjAmt)}`;
         adjRows += `
             <div class="detail-charge-row detail-adj-row">
                 <div>
                     <div class="detail-charge-label">${escHtml(a.name)}</div>
-                    <div class="detail-charge-sub">${a.type === 'per_visit' ? `$${a.amount} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}` : 'One-time'}</div>
+                    <div class="detail-charge-sub">${a.type === 'per_visit' ? `$${a.amount} × ${v} visit${v !== 1 ? 's' : ''}` : 'One-time'}</div>
                 </div>
                 <div class="detail-charge-amount ${adjAmt >= 0 ? 'adj-charge' : 'adj-discount'}">${displayAmt}</div>
             </div>`;
@@ -376,12 +377,17 @@ function renderDetail(b, panel) {
             <div class="adj-add-form">
                 <input type="text" id="adjName" class="adj-input-name" placeholder="Reason (e.g. Special care fee)">
                 <div class="adj-add-row">
-                    <input type="number" id="adjAmount" class="adj-input-amt" placeholder="e.g. 5 or -10" step="0.01">
-                    <select id="adjType" class="adj-select">
+                    <input type="number" id="adjAmount" class="adj-input-amt" placeholder="$ amount" step="0.01">
+                    <select id="adjType" class="adj-select" onchange="AdminBookings.toggleAdjVisits()">
                         <option value="per_visit">Per visit</option>
                         <option value="one_time">One-time</option>
                     </select>
                     <button class="adj-add-btn" onclick="AdminBookings.addAdjustment('${b.id}')">+ Add</button>
+                </div>
+                <div id="adjVisitsWrap" class="adj-visits-wrap">
+                    <span class="adj-visits-label">×</span>
+                    <input type="number" id="adjVisits" class="adj-input-visits" placeholder="${getNumVisitsFromBooking(b)}" min="1" step="1" value="${getNumVisitsFromBooking(b)}">
+                    <span class="adj-visits-label">visits</span>
                 </div>
             </div>
         </div>
@@ -557,6 +563,12 @@ function calcBaseTotal(b) {
     return total;
 }
 
+function toggleAdjVisits() {
+    const type = document.getElementById('adjType')?.value;
+    const wrap = document.getElementById('adjVisitsWrap');
+    if (wrap) wrap.style.display = type === 'per_visit' ? 'flex' : 'none';
+}
+
 async function addAdjustment(bookingId) {
     const name   = document.getElementById('adjName')?.value.trim();
     const amount = parseFloat(document.getElementById('adjAmount')?.value);
@@ -565,9 +577,16 @@ async function addAdjustment(bookingId) {
     if (isNaN(amount)) { alert('Please enter a valid amount (e.g. 5 or -10).'); return; }
     const b = allBookings.find(x => x.id === bookingId);
     if (!b) return;
-    const adjustments = [...(b.adjustments || []), { name, amount, type }];
-    const numVisits = getNumVisitsFromBooking(b);
-    const adjTotal  = adjustments.reduce((s, a) => s + (a.type === 'per_visit' ? a.amount * numVisits : a.amount), 0);
+    const bookingVisits = getNumVisitsFromBooking(b);
+    const visitsVal = document.getElementById('adjVisits')?.value;
+    const visits = type === 'per_visit' ? (visitsVal ? parseInt(visitsVal) || bookingVisits : bookingVisits) : null;
+    const adj = { name, amount, type };
+    if (visits !== null) adj.visits = visits;
+    const adjustments = [...(b.adjustments || []), adj];
+    const adjTotal = adjustments.reduce((s, a) => {
+        const v = a.type === 'per_visit' ? (a.visits || getNumVisitsFromBooking(b)) : 1;
+        return s + a.amount * v;
+    }, 0);
     await updateDoc(doc(db, 'bookings', bookingId), { adjustments, finalTotal: calcBaseTotal(b) + adjTotal });
 }
 
@@ -575,8 +594,11 @@ async function removeAdjustment(bookingId, idx) {
     const b = allBookings.find(x => x.id === bookingId);
     if (!b) return;
     const adjustments = (b.adjustments || []).filter((_, i) => i !== idx);
-    const numVisits = getNumVisitsFromBooking(b);
-    const adjTotal  = adjustments.reduce((s, a) => s + (a.type === 'per_visit' ? a.amount * numVisits : a.amount), 0);
+    const bookingVisits = getNumVisitsFromBooking(b);
+    const adjTotal = adjustments.reduce((s, a) => {
+        const v = a.type === 'per_visit' ? (a.visits || bookingVisits) : 1;
+        return s + a.amount * v;
+    }, 0);
     await updateDoc(doc(db, 'bookings', bookingId), { adjustments, finalTotal: calcBaseTotal(b) + adjTotal });
 }
 
@@ -585,12 +607,13 @@ function renderAdjustmentsHtml(b) {
     const numVisits = getNumVisitsFromBooking(b);
     if (adjs.length === 0) return '<p class="adj-empty">No adjustments yet.</p>';
     return adjs.map((a, idx) => {
-        const adjAmt = a.type === 'per_visit' ? a.amount * numVisits : a.amount;
+        const v = a.type === 'per_visit' ? (a.visits || numVisits) : 1;
+        const adjAmt = a.amount * v;
         const displayAmt = adjAmt >= 0 ? `+$${adjAmt}` : `-$${Math.abs(adjAmt)}`;
         return `<div class="detail-adj-item">
             <div>
                 <div class="detail-charge-label">${escHtml(a.name)}</div>
-                <div class="detail-charge-sub">${a.type === 'per_visit' ? `$${a.amount} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}` : 'One-time'}</div>
+                <div class="detail-charge-sub">${a.type === 'per_visit' ? `$${a.amount} × ${v} visit${v !== 1 ? 's' : ''}` : 'One-time'}</div>
             </div>
             <div class="adj-right">
                 <span class="${adjAmt >= 0 ? 'adj-charge' : 'adj-discount'}">${displayAmt}</span>
@@ -724,6 +747,6 @@ window.AdminBookings = {
     init, setFilter, openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
     markDepositReceived, markPaidInFull, markInService,
-    addAdjustment, removeAdjustment,
+    addAdjustment, removeAdjustment, toggleAdjVisits,
     deleteBooking, sendAdminMessage, exportImage
 };
