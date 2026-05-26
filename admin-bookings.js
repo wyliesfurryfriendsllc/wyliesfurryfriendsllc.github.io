@@ -11,19 +11,21 @@ let activeBookingId = null;
 
 const STATUS_LABELS = {
     pending:          'Pending',
-    confirmed:        'Confirmed',
-    deposit_received: 'Deposit Received',
-    paid:             'Paid in Full',
+    deposit_received: 'Reserved',
+    paid:             'Confirmed',
+    in_service:       'In Service',
     rejected:         'Declined',
-    completed:        'Completed'
+    completed:        'Completed',
+    confirmed:        'Confirmed'   // backward compat
 };
 const STATUS_COLORS = {
     pending:          'status-pending',
-    confirmed:        'status-confirmed',
     deposit_received: 'status-deposit',
     paid:             'status-paid',
+    in_service:       'status-in-service',
     rejected:         'status-rejected',
-    completed:        'status-completed'
+    completed:        'status-completed',
+    confirmed:        'status-paid'  // backward compat
 };
 
 // ─── INIT ─────────────────────────────────────────────────
@@ -273,7 +275,7 @@ function renderChargesHtml(b) {
 
 function renderDetail(b, panel) {
     const isPending         = b.status === 'pending';
-    const isConfirmed       = b.status === 'confirmed';
+    const isAccepted        = isPending && !!b.adminAccepted;
     const isDepositReceived = b.status === 'deposit_received';
     const isPaid            = b.status === 'paid';
     const todayISO = new Date().toISOString().slice(0, 10);
@@ -343,7 +345,7 @@ function renderDetail(b, panel) {
 
         </div>
 
-        ${isPending ? `
+        ${isPending && !isAccepted ? `
         <div class="detail-actions">
             <button class="admin-btn-primary" onclick="AdminBookings.acceptBooking('${b.id}','${escHtml(b.clientName||'')}',${b.total||0})">
                 ✓ Accept Booking
@@ -352,7 +354,7 @@ function renderDetail(b, panel) {
                 ✕ Decline
             </button>
         </div>` : ''}
-        ${isConfirmed ? `
+        ${isAccepted ? `
         <div class="detail-actions">
             <div class="deposit-action-wrap">
                 <div class="deposit-action-label">Mark deposit received:</div>
@@ -363,7 +365,6 @@ function renderDetail(b, panel) {
                     </button>
                 </div>
             </div>
-            <button class="admin-btn-secondary" onclick="AdminBookings.markCompleted('${b.id}')">Mark Completed</button>
             <button class="admin-btn-danger" onclick="AdminBookings.rejectBooking('${b.id}')">✕ Decline</button>
         </div>` : ''}
         ${isDepositReceived ? `
@@ -411,8 +412,8 @@ function refreshDetailStatus(status) {
 
 // ─── ACTIONS ─────────────────────────────────────────────
 async function acceptBooking(bookingId, clientName, total) {
-    if (!confirm(`Accept booking for ${clientName}?`)) return;
-    await updateDoc(doc(db, 'bookings', bookingId), { status: 'confirmed' });
+    if (!confirm(`Accept booking for ${clientName}?\nStatus will stay Pending until deposit is received.`)) return;
+    await updateDoc(doc(db, 'bookings', bookingId), { adminAccepted: true });
 }
 
 async function rejectBooking(bookingId) {

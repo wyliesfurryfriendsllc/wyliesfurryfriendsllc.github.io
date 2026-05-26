@@ -366,10 +366,10 @@ function renderBookingDetail(b, panel) {
             ${buildChargesHtml(b)}
         </div>
         ${b.notes ? `<div class="detail-section"><div class="detail-section-label">Notes</div><p class="detail-notes">${escHtml(b.notes)}</p></div>` : ''}
-        ${b.status === 'confirmed' ? `
+        ${(b.status === 'pending' && b.adminAccepted) || b.status === 'confirmed' ? `
         <div class="detail-section detail-payment-notice">
-            <div class="detail-section-label">Payment Required</div>
-            <p>Please send a <strong>$${Math.round((b.total || 0) / 2)} deposit</strong> via Zelle to <strong>wyliesfurryfriendsllc@gmail.com</strong> to secure your spot. The remaining balance is due before the service begins.</p>
+            <div class="detail-section-label">Deposit Required</div>
+            <p>Your booking has been accepted! Please send a <strong>$${Math.round((b.total || 0) / 2)} deposit</strong> via Zelle to <strong>wyliesfurryfriendsllc@gmail.com</strong> to secure your spot. The remaining balance is due before the service begins.</p>
         </div>` : ''}
         ${b.status === 'deposit_received' ? `
         <div class="detail-section detail-payment-notice detail-payment-reserved">
