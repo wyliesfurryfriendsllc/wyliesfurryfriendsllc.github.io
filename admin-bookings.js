@@ -1,6 +1,6 @@
 import {
     db, collection, query, orderBy, onSnapshot,
-    doc, updateDoc, addDoc, getDoc, serverTimestamp
+    doc, updateDoc, addDoc, getDoc, deleteDoc, serverTimestamp
 } from './firebase.js';
 
 let bookingsUnsub = null;
@@ -300,6 +300,9 @@ function renderDetail(b, panel) {
                 <button class="detail-export-btn" onclick="AdminBookings.exportImage('${b.id}')" title="Save as image">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 </button>
+                <button class="detail-delete-btn" onclick="AdminBookings.deleteBooking('${b.id}','${escHtml(b.clientName||'this booking')}')" title="Delete booking">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                </button>
                 <button class="detail-close" onclick="AdminBookings.closeDetail()">×</button>
             </div>
         </div>
@@ -445,6 +448,13 @@ async function markPaidInFull(bookingId) {
     await updateDoc(doc(db, 'bookings', bookingId), { status: 'paid' });
 }
 
+async function deleteBooking(bookingId, clientName) {
+    if (!confirm(`Delete booking for ${clientName}?\n\nThis cannot be undone.`)) return;
+    if (!confirm(`Are you sure? This booking will be permanently deleted.`)) return;
+    await deleteDoc(doc(db, 'bookings', bookingId));
+    closeDetail();
+}
+
 // ─── MESSAGES ─────────────────────────────────────────────
 function loadAdminMessages(bookingId) {
     if (messagesUnsub) messagesUnsub();
@@ -561,6 +571,6 @@ async function exportImage(bookingId) {
 window.AdminBookings = {
     init, setFilter, openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
-    markDepositReceived, markPaidInFull,
+    markDepositReceived, markPaidInFull, deleteBooking,
     sendAdminMessage, exportImage
 };
