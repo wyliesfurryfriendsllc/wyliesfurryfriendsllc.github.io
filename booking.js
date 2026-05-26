@@ -150,13 +150,16 @@ function renderSelectedDatesList() {
     container.querySelectorAll('.date-entry').forEach(entry => {
         const ds = entry.dataset.date;
         if (!ds) return;
-        const tid = `dt_${ds.replace(/-/g,'_')}`;
+        const tid    = `dt_${ds.replace(/-/g,'_')}`;
         const typeEl = document.querySelector(`input[name="timeType_${tid}"]:checked`);
         saved[ds] = {
-            type: typeEl?.value || 'specific',
-            spec: document.getElementById(`timeSpec_${tid}`)?.value || '',
-            from: document.getElementById(`timeFrom_${tid}`)?.value || '',
-            to:   document.getElementById(`timeTo_${tid}`)?.value   || ''
+            type:    typeEl?.value || 'specific',
+            specHr:  document.getElementById(`timeSpecHr_${tid}`)?.value ?? '',
+            specMin: document.getElementById(`timeSpecMin_${tid}`)?.value ?? '00',
+            fromHr:  document.getElementById(`timeFromHr_${tid}`)?.value ?? '',
+            fromMin: document.getElementById(`timeFromMin_${tid}`)?.value ?? '00',
+            toHr:    document.getElementById(`timeToHr_${tid}`)?.value ?? '',
+            toMin:   document.getElementById(`timeToMin_${tid}`)?.value ?? '00',
         };
     });
 
@@ -199,19 +202,29 @@ function renderSelectedDatesList() {
             </div>
             <div id="specificWrap_${tid}" class="form-group" style="margin-bottom:0;${!specificChecked?'display:none':''}">
                 <label>Preferred time</label>
-                <select id="timeSpec_${tid}" class="time-select" onchange="updateSummary()">
-                    ${generateTimeOptions(false, s.spec)}
-                </select>
+                <div class="time-hm-wrap">
+                    <select id="timeSpecHr_${tid}" onchange="updateSummary()">${hrOptions(s.specHr)}</select>
+                    <span class="time-hm-colon">:</span>
+                    <select id="timeSpecMin_${tid}" onchange="updateSummary()">${minOptions(s.specMin)}</select>
+                </div>
             </div>
             <div id="windowWrap_${tid}" style="${windowChecked?'':'display:none'}">
                 <div class="form-row">
                     <div class="form-group half">
                         <label>From</label>
-                        <select id="timeFrom_${tid}" class="time-select" onchange="updateSummary()">${generateTimeOptions(false, s.from)}</select>
+                        <div class="time-hm-wrap">
+                            <select id="timeFromHr_${tid}" onchange="updateSummary()">${hrOptions(s.fromHr)}</select>
+                            <span class="time-hm-colon">:</span>
+                            <select id="timeFromMin_${tid}" onchange="updateSummary()">${minOptions(s.fromMin)}</select>
+                        </div>
                     </div>
                     <div class="form-group half">
                         <label>To</label>
-                        <select id="timeTo_${tid}" class="time-select" onchange="updateSummary()">${generateTimeOptions(false, s.to)}</select>
+                        <div class="time-hm-wrap">
+                            <select id="timeToHr_${tid}" onchange="updateSummary()">${hrOptions(s.toHr)}</select>
+                            <span class="time-hm-colon">:</span>
+                            <select id="timeToMin_${tid}" onchange="updateSummary()">${minOptions(s.toMin)}</select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -227,22 +240,26 @@ function toggleDateTimeType(tid) {
     updateSummary();
 }
 
-// ─── TIME OPTIONS ─────────────────────────────────────────
-function generateTimeOptions(_, selected) {
-    let html = `<option value=""${!selected?'selected':''}>Select time...</option>`;
-    for (let h = 7; h <= 21; h++) {
-        for (let m = 0; m < 60; m += 15) {
-            if (h === 21 && m > 0) break;
-            const hh    = String(h).padStart(2,'0');
-            const mm    = String(m).padStart(2,'0');
-            const val   = `${hh}:${mm}`;
-            const ampm  = h >= 12 ? 'PM' : 'AM';
-            const h12   = h % 12 || 12;
-            const label = `${h12}:${mm} ${ampm}`;
-            html += `<option value="${val}"${selected===val?'selected':''}>${label}</option>`;
-        }
+// ─── TIME HELPERS ─────────────────────────────────────────
+function hrOptions(sel) {
+    let h = '<option value="">Hr</option>';
+    for (let i = 0; i <= 23; i++) {
+        h += `<option value="${i}"${String(sel)===String(i)?'selected':''}>${i}</option>`;
     }
-    return html;
+    return h;
+}
+
+function minOptions(sel) {
+    return ['00','15','30','45'].map(m =>
+        `<option value="${m}"${sel===m?'selected':''}>${m}</option>`
+    ).join('');
+}
+
+function getHMTime(hrId, minId) {
+    const hr  = document.getElementById(hrId)?.value;
+    const min = document.getElementById(minId)?.value;
+    if (hr === '' || hr == null || min == null) return '';
+    return `${String(hr).padStart(2,'0')}:${min}`;
 }
 
 // ─── RANGE TIME ───────────────────────────────────────────
@@ -253,10 +270,9 @@ function switchRangeTime(type) {
 }
 
 function populateRangeTimeSelects() {
-    const opts = generateTimeOptions(false, '');
-    ['rangeTimeSpecific','rangeTimeFrom','rangeTimeTo'].forEach(id => {
+    ['rangeSpecHr', 'rangeFromHr', 'rangeToHr'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.innerHTML = opts;
+        if (el) el.innerHTML = hrOptions('');
     });
 }
 
@@ -268,17 +284,11 @@ function renderSavedPetCards(pets) {
     if (!container) return;
 
     if (!pets || pets.length === 0) {
-        // No saved pets — show "Go add a pet" button
-        container.innerHTML = `
-            <div class="no-saved-pets">
-                <p class="no-saved-pets-msg">No pets saved to your profile yet.</p>
-                <a href="account.html?tab=pets&return=booking" class="btn-go-add-pet">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Add a Pet to Your Profile
-                </a>
-            </div>`;
-        // Keep the manual form for fallback
-        if (addBtn) addBtn.style.display = '';
+        container.innerHTML = '';
+        // Show "Add a Pet" modal button
+        const savedPetBtn = document.getElementById('addSavedPetBtn');
+        if (savedPetBtn) savedPetBtn.style.display = '';
+        if (addBtn) addBtn.style.display = 'none';
         if (document.getElementById('petList').children.length === 0) addPetEntry();
         return;
     }
@@ -310,9 +320,11 @@ function renderSavedPetCards(pets) {
             }).join('')}
         </div>`;
 
-    // Show "Add another pet" for any pet not in profile
+    // Show both buttons
     if (addBtn) addBtn.style.display = '';
-    // Clear manual pet list (no blank form when using saved pets)
+    const savedPetBtn = document.getElementById('addSavedPetBtn');
+    if (savedPetBtn) savedPetBtn.style.display = '';
+    // Clear manual pet list
     document.getElementById('petList').innerHTML = '';
     petCount = 0;
     updateSummary();
@@ -407,11 +419,11 @@ function updateSummary() {
                 if (type === 'same') {
                     timeStr = 'Same as Day 1';
                 } else if (type === 'specific') {
-                    const v = document.getElementById(`timeSpec_${tid}`)?.value;
+                    const v = getHMTime(`timeSpecHr_${tid}`, `timeSpecMin_${tid}`);
                     timeStr = v ? formatTime(v) : '—';
                 } else {
-                    const from = document.getElementById(`timeFrom_${tid}`)?.value;
-                    const to   = document.getElementById(`timeTo_${tid}`)?.value;
+                    const from = getHMTime(`timeFromHr_${tid}`, `timeFromMin_${tid}`);
+                    const to   = getHMTime(`timeToHr_${tid}`, `timeToMin_${tid}`);
                     timeStr = `${from ? formatTime(from) : '—'} – ${to ? formatTime(to) : '—'}`;
                 }
                 datesDiv.innerHTML += `
@@ -432,11 +444,11 @@ function updateSummary() {
             const timeType = document.querySelector('input[name="rangeTimeType"]:checked')?.value || 'specific';
             let timeStr = '—';
             if (timeType === 'specific') {
-                const v = document.getElementById('rangeTimeSpecific')?.value;
+                const v = getHMTime('rangeSpecHr', 'rangeSpecMin');
                 timeStr = v ? formatTime(v) : '—';
             } else {
-                const from = document.getElementById('rangeTimeFrom')?.value;
-                const to   = document.getElementById('rangeTimeTo')?.value;
+                const from = getHMTime('rangeFromHr', 'rangeFromMin');
+                const to   = getHMTime('rangeToHr', 'rangeToMin');
                 timeStr = (from && to) ? `${formatTime(from)} – ${formatTime(to)}` : '—';
             }
             datesDiv.innerHTML = `
@@ -482,10 +494,10 @@ function collectDatesText() {
             if (type === 'same') {
                 t = 'Same as Day 1';
             } else if (type === 'specific') {
-                t = formatTime(document.getElementById(`timeSpec_${tid}`)?.value || '');
+                t = formatTime(getHMTime(`timeSpecHr_${tid}`, `timeSpecMin_${tid}`));
             } else {
-                const from = document.getElementById(`timeFrom_${tid}`)?.value || '';
-                const to   = document.getElementById(`timeTo_${tid}`)?.value   || '';
+                const from = getHMTime(`timeFromHr_${tid}`, `timeFromMin_${tid}`);
+                const to   = getHMTime(`timeToHr_${tid}`, `timeToMin_${tid}`);
                 t = `${formatTime(from)} – ${formatTime(to)}`;
             }
             text += `  ${formatDate(dateStr)}: ${t}\n`;
@@ -496,11 +508,11 @@ function collectDatesText() {
         const timeType = document.querySelector('input[name="rangeTimeType"]:checked')?.value || 'specific';
         let t = '';
         if (timeType === 'specific') {
-            t = formatTime(document.getElementById('rangeTimeSpecific')?.value || '');
+            t = formatTime(getHMTime('rangeSpecHr', 'rangeSpecMin'));
         } else {
-            const from = document.getElementById('rangeTimeFrom')?.value || '';
-            const to   = document.getElementById('rangeTimeTo')?.value   || '';
-            t = `${formatTime(from)} – ${formatTime(to)}`;
+            const from = getHMTime('rangeFromHr', 'rangeFromMin');
+            const to   = getHMTime('rangeToHr', 'rangeToMin');
+            t = from && to ? `${formatTime(from)} – ${formatTime(to)}` : '—';
         }
         text = `  ${formatDate(start)} – ${formatDate(end)}: ${t}\n`;
     }
@@ -724,6 +736,104 @@ function formatDate(d) {
 function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
 
 // ─── INIT ─────────────────────────────────────────────────
+// ─── BOOKING PAGE PET MODAL ──────────────────────────────
+function openBookingPetModal() {
+    // Reset form
+    document.getElementById('bkPetName').value = '';
+    document.getElementById('bkPetWeight').value = '';
+    document.getElementById('bkPetAgeYears').value = '';
+    document.getElementById('bkPetAgeMonths').value = '';
+    document.getElementById('bkPetBreed').value = '';
+    document.getElementById('bkPetNotes').value = '';
+    document.getElementById('bkPetPhotoUrl').value = '';
+    document.getElementById('bkPetPhotoPreview').style.display = 'none';
+    document.getElementById('bkPetPhotoPlaceholder').style.display = '';
+    document.querySelectorAll('#bkPetTypeGroup .pet-type-card').forEach((b,i) => b.classList.toggle('active', i===0));
+    document.querySelectorAll('#bkPetSexGroup .pet-pill').forEach(b => b.classList.remove('active'));
+    document.getElementById('bkPetModal').style.display = '';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeBookingPetModal() {
+    document.getElementById('bkPetModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function bkTogglePill(btn, mode) {
+    if (mode === 'single') {
+        btn.closest('.pet-pills, .pet-type-cards').querySelectorAll('.pet-pill, .pet-type-card').forEach(p => p.classList.remove('active'));
+    }
+    btn.classList.toggle('active');
+}
+
+function bkGetPillValue(groupId) {
+    const el = document.querySelector(`#${groupId} .pet-pill.active, #${groupId} .pet-type-card.active`);
+    return el ? el.dataset.value : '';
+}
+
+function bkUpdatePhotoPreview() {
+    const url = document.getElementById('bkPetPhotoUrl').value.trim();
+    const img = document.getElementById('bkPetPhotoPreview');
+    const ph  = document.getElementById('bkPetPhotoPlaceholder');
+    if (url) { img.src = url; img.style.display = ''; ph.style.display = 'none'; }
+    else     { img.style.display = 'none'; ph.style.display = ''; }
+}
+
+async function bkHandlePhoto(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const base64 = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = new Image();
+            img.onload = () => {
+                const s = Math.min(1, 500 / img.width);
+                const c = document.createElement('canvas');
+                c.width = img.width * s; c.height = img.height * s;
+                c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                resolve(c.toDataURL('image/jpeg', 0.85));
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+    document.getElementById('bkPetPhotoUrl').value = base64;
+    bkUpdatePhotoPreview();
+}
+
+async function saveBookingPet() {
+    const wff = window.WFF;
+    const name = document.getElementById('bkPetName').value.trim();
+    if (!name) { alert("Please enter your pet's name."); return; }
+
+    const pet = {
+        name,
+        type:      bkGetPillValue('bkPetTypeGroup') || 'dog',
+        sex:       bkGetPillValue('bkPetSexGroup'),
+        weight:    document.getElementById('bkPetWeight').value.trim(),
+        ageYears:  document.getElementById('bkPetAgeYears').value.trim(),
+        ageMonths: document.getElementById('bkPetAgeMonths').value.trim(),
+        breed:     document.getElementById('bkPetBreed').value.trim(),
+        careNotes: document.getElementById('bkPetNotes').value.trim(),
+        photoUrl:  document.getElementById('bkPetPhotoUrl').value.trim(),
+    };
+
+    // Save to Firestore if logged in
+    if (wff && wff.auth && wff.auth.currentUser) {
+        const uid = wff.auth.currentUser.uid;
+        const snap = await wff.getDoc(wff.doc(wff.db, 'users', uid));
+        const existing = snap.exists() ? (snap.data().pets || []) : [];
+        existing.push(pet);
+        await wff.updateDoc(wff.doc(wff.db, 'users', uid), { pets: existing });
+        renderSavedPetCards(existing);
+    } else {
+        // Not logged in — just add as manual entry
+        savedUserPets.push(pet);
+        renderSavedPetCards(savedUserPets);
+    }
+    closeBookingPetModal();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     populateRangeTimeSelects();
     updateSummary();

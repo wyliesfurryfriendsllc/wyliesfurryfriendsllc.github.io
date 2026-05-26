@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400&family=Fraunces:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="booking.css">
+    <link rel="stylesheet" href="account.css">
 </head>
 <body class="booking-page">
 
@@ -124,19 +125,44 @@
                             <label class="pill-option"><input type="radio" name="rangeTimeType" value="window" onchange="switchRangeTime('window')"><span>Time window</span></label>
                         </div>
                         <div id="rangeSpecificWrap">
-                            <select id="rangeTimeSpecific" onchange="updateSummary()" class="time-select">
-                                <option value="">Select time...</option>
-                            </select>
+                            <div class="time-hm-wrap">
+                                <select id="rangeSpecHr" onchange="updateSummary()"><option value="">Hr</option></select>
+                                <span class="time-hm-colon">:</span>
+                                <select id="rangeSpecMin" onchange="updateSummary()">
+                                    <option value="00">00</option>
+                                    <option value="15">15</option>
+                                    <option value="30">30</option>
+                                    <option value="45">45</option>
+                                </select>
+                            </div>
                         </div>
                         <div id="rangeWindowWrap" style="display:none">
                             <div class="form-row">
                                 <div class="form-group half">
                                     <label>From</label>
-                                    <select id="rangeTimeFrom" class="time-select" onchange="updateSummary()"><option value="">Select...</option></select>
+                                    <div class="time-hm-wrap">
+                                        <select id="rangeFromHr" onchange="updateSummary()"><option value="">Hr</option></select>
+                                        <span class="time-hm-colon">:</span>
+                                        <select id="rangeFromMin" onchange="updateSummary()">
+                                            <option value="00">00</option>
+                                            <option value="15">15</option>
+                                            <option value="30">30</option>
+                                            <option value="45">45</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="form-group half">
                                     <label>To</label>
-                                    <select id="rangeTimeTo" class="time-select" onchange="updateSummary()"><option value="">Select...</option></select>
+                                    <div class="time-hm-wrap">
+                                        <select id="rangeToHr" onchange="updateSummary()"><option value="">Hr</option></select>
+                                        <span class="time-hm-colon">:</span>
+                                        <select id="rangeToMin" onchange="updateSummary()">
+                                            <option value="00">00</option>
+                                            <option value="15">15</option>
+                                            <option value="30">30</option>
+                                            <option value="45">45</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -153,6 +179,10 @@
                     <button type="button" class="add-btn" id="addAnotherPetBtn" onclick="addPetEntry()" style="display:none">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         Add another pet
+                    </button>
+                    <button type="button" class="add-btn" id="addSavedPetBtn" onclick="openBookingPetModal()" style="display:none">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add a Pet
                     </button>
                 </div>
             </div>
@@ -245,6 +275,87 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pet Modal (for logged-in users adding a new pet from booking page) -->
+<div id="bkPetModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBookingPetModal()">
+    <div class="modal-card modal-card-wide">
+        <div class="modal-header">
+            <h3>Add a Pet</h3>
+            <button class="modal-close-btn" onclick="closeBookingPetModal()">×</button>
+        </div>
+
+        <div class="modal-section-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Pet Photo
+        </div>
+        <div class="pet-photo-preview-wrap" onclick="document.getElementById('bkPetPhotoFile').click()" style="cursor:pointer">
+            <img id="bkPetPhotoPreview" class="pet-photo-preview-img" src="" alt="" style="display:none" onerror="this.style.display='none'">
+            <div id="bkPetPhotoPlaceholder" class="pet-photo-placeholder">No photo yet</div>
+        </div>
+        <input type="file" id="bkPetPhotoFile" accept="image/*" style="display:none" onchange="bkHandlePhoto(this)">
+        <button type="button" class="photo-upload-btn" onclick="document.getElementById('bkPetPhotoFile').click()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Photo from Device
+        </button>
+        <div class="form-group" style="margin-top:10px">
+            <label>Photo URL <span class="optional">(or paste a link)</span></label>
+            <input type="url" id="bkPetPhotoUrl" placeholder="https://..." oninput="bkUpdatePhotoPreview()">
+        </div>
+
+        <div class="modal-section-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg>
+            Pet Details
+        </div>
+        <div class="form-group">
+            <label>What type of pet?</label>
+            <div class="pet-type-cards" id="bkPetTypeGroup">
+                <button type="button" class="pet-type-card active" data-value="dog" onclick="bkTogglePill(this,'single')">🐶 Dog</button>
+                <button type="button" class="pet-type-card" data-value="cat" onclick="bkTogglePill(this,'single')">🐱 Cat</button>
+                <button type="button" class="pet-type-card" data-value="other" onclick="bkTogglePill(this,'single')">🐾 Other</button>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group" style="flex:2">
+                <label>Name <span class="req">*</span></label>
+                <input type="text" id="bkPetName" placeholder="e.g. Luna">
+            </div>
+            <div class="form-group" style="flex:1">
+                <label>Weight (lbs)</label>
+                <input type="number" id="bkPetWeight" placeholder="e.g. 12" min="0">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group" style="flex:1">
+                <label>Age (Yr.)</label>
+                <input type="number" id="bkPetAgeYears" placeholder="Years" min="0">
+            </div>
+            <div class="form-group" style="flex:1">
+                <label>Age (Mo.)</label>
+                <input type="number" id="bkPetAgeMonths" placeholder="Months" min="0" max="11">
+            </div>
+            <div class="form-group" style="flex:2">
+                <label>Sex</label>
+                <div class="pet-pills" id="bkPetSexGroup">
+                    <button type="button" class="pet-pill" data-value="male" onclick="bkTogglePill(this,'single')">Male</button>
+                    <button type="button" class="pet-pill" data-value="female" onclick="bkTogglePill(this,'single')">Female</button>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Breed <span class="optional">(optional)</span></label>
+            <input type="text" id="bkPetBreed" placeholder="e.g. Golden Retriever">
+        </div>
+        <div class="form-group">
+            <label>Notes <span class="optional">(optional)</span></label>
+            <textarea id="bkPetNotes" rows="2" placeholder="Medical needs, feeding instructions, anything we should know..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-modal-cancel" onclick="closeBookingPetModal()">Cancel</button>
+            <button class="btn-modal-save" onclick="saveBookingPet()">Save Pet</button>
         </div>
     </div>
 </div>

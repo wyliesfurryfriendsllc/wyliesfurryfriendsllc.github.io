@@ -751,6 +751,36 @@ details.deposit-policy[open] summary { color: var(--pink); }
 .cal-done-btn:hover { background: #b0667a; }
 
 /* ================================
+   TIME HM PICKER
+================================ */
+.time-hm-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.time-hm-wrap select {
+    flex: 1;
+    padding: 11px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: var(--brown);
+    background: var(--cream);
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: auto;
+    min-width: 0;
+}
+.time-hm-wrap select:focus { border-color: var(--pink); }
+.time-hm-colon {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--brown);
+    flex-shrink: 0;
+}
+
+/* ================================
    TIME SELECT
 ================================ */
 .time-select {
