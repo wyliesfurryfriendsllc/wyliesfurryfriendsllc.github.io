@@ -830,9 +830,27 @@ function bkSwitchAgeMode(mode) {
     document.getElementById('bkPetAgeYMWrap').style.display   = mode === 'yearmonth' ? '' : 'none';
 }
 
+function populateBkBdayYears() {
+    const sel = document.getElementById('bkBdayYearSel');
+    if (sel.options.length > 0) return;
+    const now = new Date().getFullYear();
+    for (let y = now; y >= 1980; y--) sel.add(new Option(y, y));
+}
+
+function onBkBdayYearChange() {
+    bkBdayCalYear = parseInt(document.getElementById('bkBdayYearSel').value);
+    bkRenderBdayCal();
+}
+
+function onBkBdayMonthChange() {
+    bkBdayCalMonth = parseInt(document.getElementById('bkBdayMonthSel').value);
+    bkRenderBdayCal();
+}
+
 function bkOpenBdayCal() {
     const now = new Date();
     if (bkBdayCalYear === undefined) { bkBdayCalYear = now.getFullYear(); bkBdayCalMonth = now.getMonth(); }
+    populateBkBdayYears();
     bkRenderBdayCal();
     document.getElementById('bkPetBdayCalWrap').style.display = 'block';
 }
@@ -851,8 +869,8 @@ function bkChangeBdayMonth(dir) {
 }
 
 function bkRenderBdayCal() {
-    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    document.getElementById('bkPetBdayMonthLabel').textContent = `${MONTHS[bkBdayCalMonth]} ${bkBdayCalYear}`;
+    document.getElementById('bkBdayYearSel').value  = bkBdayCalYear;
+    document.getElementById('bkBdayMonthSel').value = bkBdayCalMonth;
     const today    = new Date(); today.setHours(0,0,0,0);
     const firstDay = new Date(bkBdayCalYear, bkBdayCalMonth, 1).getDay();
     const daysIn   = new Date(bkBdayCalYear, bkBdayCalMonth + 1, 0).getDate();

@@ -546,12 +546,30 @@ function switchPetAgeMode(mode) {
     document.getElementById('petAgeYMWrap').style.display       = mode === 'yearmonth' ? '' : 'none';
 }
 
+function populatePetBdayYears() {
+    const sel = document.getElementById('petBdayYearSel');
+    if (sel.options.length > 0) return;
+    const now = new Date().getFullYear();
+    for (let y = now; y >= 1980; y--) sel.add(new Option(y, y));
+}
+
+function onPetBdayYearChange() {
+    petBdayCalYear = parseInt(document.getElementById('petBdayYearSel').value);
+    renderPetBdayCal();
+}
+
+function onPetBdayMonthChange() {
+    petBdayCalMonth = parseInt(document.getElementById('petBdayMonthSel').value);
+    renderPetBdayCal();
+}
+
 function openPetBdayCal() {
     const now = new Date();
     if (petBdayCalYear === undefined) {
         petBdayCalYear  = now.getFullYear();
         petBdayCalMonth = now.getMonth();
     }
+    populatePetBdayYears();
     renderPetBdayCal();
     document.getElementById('petBdayCalWrap').style.display = 'block';
 }
@@ -570,8 +588,8 @@ function changePetBdayMonth(dir) {
 }
 
 function renderPetBdayCal() {
-    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    document.getElementById('petBdayMonthLabel').textContent = `${MONTHS[petBdayCalMonth]} ${petBdayCalYear}`;
+    document.getElementById('petBdayYearSel').value  = petBdayCalYear;
+    document.getElementById('petBdayMonthSel').value = petBdayCalMonth;
     const today    = new Date(); today.setHours(0,0,0,0);
     const firstDay = new Date(petBdayCalYear, petBdayCalMonth, 1).getDay();
     const daysIn   = new Date(petBdayCalYear, petBdayCalMonth + 1, 0).getDate();

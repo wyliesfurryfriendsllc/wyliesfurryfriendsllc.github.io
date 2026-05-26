@@ -755,6 +755,26 @@ details.deposit-policy[open] summary { color: var(--pink); }
 }
 .cal-done-btn:hover { background: #b0667a; }
 
+.bday-selects {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.bday-year-sel, .bday-month-sel {
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--brown);
+    background: var(--cream);
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.bday-year-sel:focus, .bday-month-sel:focus { border-color: var(--pink); }
+
 /* ================================
    TIME HM PICKER
 ================================ */
