@@ -130,6 +130,7 @@ function renderGallery() {
     GALLERY_GROUPS.forEach(indices => {
         const rowEl = document.createElement('div');
         rowEl.className = 'gallery-row';
+        grid.appendChild(rowEl); // must be in DOM before onLoad runs (cached images call onLoad synchronously)
 
         const imgs = [];
         let loaded = 0;
@@ -151,8 +152,6 @@ function renderGallery() {
             img.onload = onLoad;
             if (img.complete && img.naturalWidth) onLoad();
         });
-
-        grid.appendChild(rowEl);
     });
 
     const tailIndices = _photos.map((_, i) => i).filter(i => !groupedSet.has(i));
