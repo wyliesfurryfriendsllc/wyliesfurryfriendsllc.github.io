@@ -450,6 +450,19 @@
 .detail-row:last-child { border-bottom: none; }
 .detail-row span:first-child { color: var(--brown-mid); }
 
+.charge-pet-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--brown);
+    padding-top: 8px;
+    padding-bottom: 2px;
+}
+.charge-item span:first-child { color: var(--brown-mid); font-size: 13px; }
+.charge-item span:last-child  { font-weight: 600; }
+.charge-total { border-top: 1.5px solid var(--border); margin-top: 4px; padding-top: 8px; }
+.charge-total span:first-child { font-weight: 700; color: var(--brown); }
+.charge-total span:last-child  { font-weight: 700; }
+
 .detail-dates {
     font-family: 'Inter', sans-serif;
     font-size: 13px;

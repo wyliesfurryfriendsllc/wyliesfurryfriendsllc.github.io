@@ -801,7 +801,19 @@ function reviewOrder(e) {
     `;
 
     // Save for sendRequest
-    _bookingData = { service: names[service], duration, isHoliday, total, clientName, clientPhone, clientEmail, clientNotes };
+    _bookingData = {
+        service: names[service], duration, isHoliday, total,
+        clientName, clientPhone, clientEmail, clientNotes,
+        priceBreakdown: {
+            numVisits:    numDates,
+            serviceLabel: names[service],
+            basePerVisit: base + (show60 ? pricing.addon60 : 0),
+            extraRate:    hasExtra ? extraRate : 0,
+            numExtra:     numPets - 1,
+            isCat,
+            numPets
+        }
+    };
 
     // Switch views
     document.getElementById('bookingLayout').style.display  = 'none';
@@ -886,6 +898,7 @@ function sendRequest() {
                 pets: petsData,
                 notes: clientNotes,
                 total,
+                priceBreakdown: _bookingData.priceBreakdown || null,
                 status: 'pending',
                 createdAt: wff.serverTimestamp()
             }).catch(err => console.error('Firestore save failed:', err));

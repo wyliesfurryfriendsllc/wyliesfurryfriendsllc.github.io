@@ -321,12 +321,33 @@ function closeBookingDetail() {
     document.querySelectorAll('.booking-card').forEach(c => c.classList.remove('active'));
 }
 
+function buildChargesHtml(b) {
+    const pb   = b.priceBreakdown;
+    const pets = b.pets || [];
+    const total = b.total || 0;
+    if (!pb) {
+        let html = '';
+        pets.forEach(p => { html += `<div class="charge-pet-label">${escHtml(p.name || '—')}</div>`; });
+        html += `<div class="detail-row charge-total"><span>Total</span><span>$${total}</span></div>`;
+        return html;
+    }
+    const { numVisits, serviceLabel, basePerVisit, extraRate, numExtra, isCat } = pb;
+    const visitWord = numVisits === 1 ? 'visit' : 'visits';
+    let html = '';
+    const firstName = pets[0]?.name || '—';
+    html += `<div class="charge-pet-label">${escHtml(firstName)}</div>`;
+    html += `<div class="detail-row charge-item"><span>${escHtml(serviceLabel)} · $${basePerVisit} × ${numVisits} ${visitWord}</span><span>$${basePerVisit * numVisits}</span></div>`;
+    const extraLabel = isCat ? 'Additional cat' : 'Additional dog';
+    for (let i = 1; i <= numExtra; i++) {
+        const petName = pets[i]?.name || '—';
+        html += `<div class="charge-pet-label">${escHtml(petName)}</div>`;
+        html += `<div class="detail-row charge-item"><span>${extraLabel} · $${extraRate} × ${numVisits} ${visitWord}</span><span>$${extraRate * numVisits}</span></div>`;
+    }
+    html += `<div class="detail-row charge-total"><span>Total</span><span>$${total}</span></div>`;
+    return html;
+}
+
 function renderBookingDetail(b, panel) {
-    let petsHtml = '';
-    (b.pets || []).forEach(p => {
-        petsHtml += `<div class="detail-row"><span>${escHtml(p.name || '—')}</span><span>${escHtml(p.type || '')}${p.breed ? ' · ' + escHtml(p.breed) : ''}${p.age ? ', ' + escHtml(p.age) : ''}</span></div>`;
-    });
-    if (!petsHtml) petsHtml = '<div class="detail-row"><span>—</span></div>';
 
     panel.innerHTML = `
         <div class="detail-header">
@@ -341,12 +362,8 @@ function renderBookingDetail(b, panel) {
             <pre class="detail-dates">${escHtml((b.datesText || '—').trim())}</pre>
         </div>
         <div class="detail-section">
-            <div class="detail-section-label">Pets</div>
-            ${petsHtml}
-        </div>
-        <div class="detail-section">
-            <div class="detail-section-label">Estimated Total</div>
-            <div class="detail-row"><span>Total</span><span>$${b.total || 0}</span></div>
+            <div class="detail-section-label">Services &amp; Charges</div>
+            ${buildChargesHtml(b)}
         </div>
         ${b.notes ? `<div class="detail-section"><div class="detail-section-label">Notes</div><p class="detail-notes">${escHtml(b.notes)}</p></div>` : ''}
         ${b.status === 'confirmed' ? `
