@@ -219,18 +219,20 @@ function isoDate(d) {
 }
 
 const STATUS_LABELS = {
-    pending:          'Pending Review',
+    pending:          'Pending',
+    deposit_received: 'Reserved',
+    paid:             'Confirmed',
+    in_service:       'In Service',
     confirmed:        'Confirmed',
-    deposit_received: 'Spot Reserved',
-    paid:             'Paid in Full',
     rejected:         'Declined',
     completed:        'Completed'
 };
 const STATUS_COLORS = {
     pending:          'status-pending',
-    confirmed:        'status-confirmed',
     deposit_received: 'status-deposit',
     paid:             'status-paid',
+    in_service:       'status-in-service',
+    confirmed:        'status-paid',
     rejected:         'status-rejected',
     completed:        'status-completed'
 };
@@ -270,21 +272,26 @@ function renderBookingsList(bookings) {
         const firstLine = b.datesText ? b.datesText.trim().split('\n')[0] : '—';
 
         const pets = b.pets || [];
-        const avatarsHtml = pets.slice(0, 3).map((p, i) => {
-            if (p.photoUrl) return `<img class="bc-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name||'')}" style="z-index:${3-i}">`;
-            const em = p.type === 'cat' ? '🐱' : '🐶';
-            return `<div class="bc-pet-avatar bc-pet-emoji" style="z-index:${3-i}">${em}</div>`;
-        }).join('');
+        const firstPet = pets[0] || {};
+        const emoji = firstPet.type === 'cat' ? '🐱' : '🐶';
+        const petNamesStr = pets.length === 0 ? '—' : pets.map(p => p.name || '?').join(', ');
 
         card.innerHTML = `
-            <div class="booking-card-top">
-                <div class="booking-card-service">${escHtml(b.service || '—')} · ${b.duration || 30} min</div>
-                <span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span>
-            </div>
-            <div class="booking-card-dates">${escHtml(firstLine)}</div>
-            <div class="booking-card-footer">
-                <span class="booking-card-total">$${b.total || 0} est.</span>
-                ${avatarsHtml ? `<div class="bc-avatars">${avatarsHtml}</div>` : `<span class="booking-card-date">${date}</span>`}
+            <div class="bc-card-inner">
+                <div class="bc-left">
+                    <div class="bc-avatar-wrap-lg">
+                        ${firstPet.photoUrl ? `<img class="bc-avatar-lg" src="${escHtml(firstPet.photoUrl)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+                        <div class="bc-emoji-lg"${firstPet.photoUrl ? ' style="display:none"' : ''}>${emoji}</div>
+                    </div>
+                    <div class="bc-pet-names">${escHtml(petNamesStr)}</div>
+                </div>
+                <div class="bc-right">
+                    <div class="bc-svc-name">${escHtml(b.service || '—')}</div>
+                    <div class="bc-duration">${b.duration || 30} min</div>
+                    <span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span>
+                    <div class="bc-date-line">${escHtml(firstLine)}</div>
+                    <div class="bc-total-line">$${b.total || 0} est.</div>
+                </div>
             </div>
         `;
         container.appendChild(card);

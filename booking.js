@@ -701,10 +701,24 @@ function reviewOrder(e) {
     const names     = { dropin: 'Drop-In Visit', walking: 'Dog Walking' };
     const isHoliday = bookingHasHoliday();
 
-    // Count dates
+    // Count total visits (each time slot per day = one visit)
     let numDates = 1;
     if (dateMode === 'pick') {
-        numDates = selectedDates.size;
+        const sortedPick = [...selectedDates].sort();
+        let totalSlots = 0;
+        let day1SlotCount = 0;
+        sortedPick.forEach((dateStr, idx) => {
+            const tid = `dt_${dateStr.replace(/-/g,'_')}`;
+            const slotsWrap = document.getElementById(`dateSlots_${tid}`);
+            if (slotsWrap && slotsWrap.style.display === 'none') {
+                totalSlots += day1SlotCount;
+            } else {
+                const cnt = slotsWrap ? slotsWrap.querySelectorAll('.date-slot').length : 1;
+                if (idx === 0) day1SlotCount = cnt;
+                totalSlots += cnt;
+            }
+        });
+        numDates = totalSlots || 1;
     } else {
         const start = document.getElementById('rangeStart')?.value;
         const end   = document.getElementById('rangeEnd')?.value;
