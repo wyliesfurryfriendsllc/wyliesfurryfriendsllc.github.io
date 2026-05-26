@@ -905,36 +905,50 @@ function showCalDay(iso) {
         return;
     }
 
-    const items = bks.map(b => {
+    // Build flat list: one entry per time slot
+    const entries = [];
+    bks.forEach(b => {
+        const pets = b.pets || [];
+        const avatars = pets.slice(0,4).map((p, i) =>
+            p.photoUrl
+                ? `<img class="cday-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name||'')}" style="z-index:${4-i}">`
+                : `<div class="cday-pet-avatar cday-pet-emoji" style="z-index:${4-i}">${p.type==='cat'?'🐱':'🐶'}</div>`
+        ).join('');
+        const petNames = pets.map(p => escHtml(p.name||'?')).join(', ');
+        const svcLabel = escHtml(b.service||'Visit') + (petNames ? ': ' + petNames : '');
+
         const rawSlots = (b.dateTimes?.[iso] || []).slice().sort();
-        let timesHtml;
         if (rawSlots.length) {
-            timesHtml = rawSlots.map(t => `<div class="acct-day-item-time">${escHtml(fmtSlotAcc(t))}</div>`).join('');
+            rawSlots.forEach(t => {
+                const [hh, mm] = t.split('~')[0].split(':').map(Number);
+                entries.push({ sortKey: hh * 60 + (mm||0), timeLabel: fmtSlotAcc(t), svcLabel, avatars, id: b.id });
+            });
         } else {
             const fallback = extractTimesFromText(b.datesText, iso);
-            timesHtml = fallback.map(t => `<div class="acct-day-item-time">${escHtml(t)}</div>`).join('');
+            fallback.forEach(t => {
+                const sortKey = parse12hMin(t);
+                entries.push({ sortKey, timeLabel: t, svcLabel, avatars, id: b.id });
+            });
         }
-        const pets = b.pets || [];
-        const avatars = pets.slice(0,4).map((p, i) => {
-            if (p.photoUrl) return `<img class="cday-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name||'')}" style="z-index:${4-i}">`;
-            return `<div class="cday-pet-avatar cday-pet-emoji" style="z-index:${4-i}">${p.type==='cat'?'🐱':'🐶'}</div>`;
-        }).join('');
-        const petNames = pets.map(p => escHtml(p.name||'?')).join(', ');
-        return `<div class="acct-day-item" onclick="showTab('bookings');openBookingDetail('${b.id}')">
+    });
+
+    entries.sort((a, b) => a.sortKey - b.sortKey);
+
+    const items = entries.map(e => `
+        <div class="acct-day-item" onclick="showTab('bookings');openBookingDetail('${e.id}')">
             <div class="acct-day-item-left">
-                <div class="acct-day-item-service">${escHtml(b.service||'Visit')}${petNames ? ': ' + petNames : ''}</div>
-                ${timesHtml}
+                <div class="acct-day-item-time">${e.timeLabel}</div>
+                <div class="acct-day-item-service">${e.svcLabel}</div>
             </div>
-            <div class="cday-avatars">${avatars}</div>
-        </div>`;
-    }).join('');
+            <div class="cday-avatars">${e.avatars}</div>
+        </div>`).join('');
 
     panel.innerHTML = `
         <div class="acct-day-header">
             <span class="acct-day-date">${escHtml(dateLabel)}</span>
-            <span class="acct-day-count">${bks.length} visit${bks.length!==1?'s':''}</span>
+            <span class="acct-day-count">${entries.length} visit${entries.length!==1?'s':''}</span>
         </div>
-        ${items}`;
+        ${items || '<p class="empty-msg" style="padding:16px 0">No visits this day.</p>'}`;
 }
 
 function fmtSlotAcc(t) {
@@ -952,6 +966,16 @@ function fmt12Acc(t) {
     const h = Number(parts[0]), m = Number(parts[1]);
     if (isNaN(h) || isNaN(m)) return t;
     return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
+}
+
+function parse12hMin(t) {
+    const m = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!m) return 0;
+    let h = parseInt(m[1]), min = parseInt(m[2]);
+    const isPM = m[3].toUpperCase() === 'PM';
+    if (isPM && h !== 12) h += 12;
+    if (!isPM && h === 12) h = 0;
+    return h * 60 + min;
 }
 
 function extractTimesFromText(datesText, iso) {

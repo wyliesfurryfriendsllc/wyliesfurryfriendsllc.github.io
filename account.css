@@ -1220,8 +1220,16 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     margin-bottom: 4px;
 }
 .acct-day-item-time {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--brown);
+    margin-bottom: 2px;
+}
+.acct-day-item-service {
+    font-weight: 500;
     font-size: 13px;
     color: var(--brown-mid);
+    margin-bottom: 0;
 }
 .cday-avatars {
     display: flex;
@@ -1229,18 +1237,18 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     flex-shrink: 0;
 }
 .cday-pet-avatar {
-    width: 32px;
-    height: 32px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
-    border: 2px solid #fff;
+    border: 2.5px solid #fff;
     object-fit: cover;
-    margin-left: -8px;
+    margin-left: -12px;
     background: var(--cream-2);
     flex-shrink: 0;
 }
 .cday-pet-avatar:first-child { margin-left: 0; }
 .cday-pet-emoji {
-    font-size: 16px;
+    font-size: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
