@@ -43,6 +43,7 @@ function bookingHasHoliday() {
 let selectedDates = new Set(); // 'YYYY-MM-DD' strings
 let calYear, calMonth;
 let petCount = 0;
+let savedUserPets = [];  // pets loaded from Firestore profile
 
 // Collected data for step 2
 let _bookingData = {};
@@ -259,6 +260,71 @@ function populateRangeTimeSelects() {
     });
 }
 
+// ─── SAVED PETS ──────────────────────────────────────────
+function renderSavedPetCards(pets) {
+    savedUserPets = pets;
+    const container = document.getElementById('savedPetCards');
+    const addBtn = document.getElementById('addAnotherPetBtn');
+    if (!container) return;
+
+    if (!pets || pets.length === 0) {
+        // No saved pets — show "Go add a pet" button
+        container.innerHTML = `
+            <div class="no-saved-pets">
+                <p class="no-saved-pets-msg">No pets saved to your profile yet.</p>
+                <a href="account.html?tab=pets&return=booking" class="btn-go-add-pet">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add a Pet to Your Profile
+                </a>
+            </div>`;
+        // Keep the manual form for fallback
+        if (addBtn) addBtn.style.display = '';
+        if (document.getElementById('petList').children.length === 0) addPetEntry();
+        return;
+    }
+
+    // Has saved pets — render selection cards
+    container.innerHTML = `
+        <p class="saved-pets-hint">Select the pets for this visit:</p>
+        <div class="saved-pet-list">
+            ${pets.map((p, i) => {
+                const emoji = p.type === 'cat' ? '🐱' : '🐶';
+                const avatar = p.photoUrl
+                    ? `<img class="sp-avatar" src="${p.photoUrl}" alt="${p.name || ''}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                    : '';
+                const ageStr = [p.ageYears ? p.ageYears + 'yr' : '', p.ageMonths ? p.ageMonths + 'mo' : ''].filter(Boolean).join(' ');
+                const meta = [p.breed, ageStr].filter(Boolean).join(' · ');
+                return `<label class="saved-pet-card" id="spc${i}">
+                    <input type="checkbox" class="sp-check" data-idx="${i}" checked onchange="updateSummary()">
+                    <div class="sp-avatar-wrap">
+                        ${avatar}<div class="sp-emoji" style="${p.photoUrl ? 'display:none' : ''}">${emoji}</div>
+                    </div>
+                    <div class="sp-info">
+                        <div class="sp-name">${p.name || '—'}</div>
+                        ${meta ? `<div class="sp-meta">${meta}</div>` : ''}
+                    </div>
+                    <div class="sp-check-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                </label>`;
+            }).join('')}
+        </div>`;
+
+    // Show "Add another pet" for any pet not in profile
+    if (addBtn) addBtn.style.display = '';
+    // Clear manual pet list (no blank form when using saved pets)
+    document.getElementById('petList').innerHTML = '';
+    petCount = 0;
+    updateSummary();
+}
+
+function getSelectedSavedPets() {
+    return [...document.querySelectorAll('.sp-check:checked')].map(cb => {
+        const idx = parseInt(cb.dataset.idx);
+        return savedUserPets[idx];
+    }).filter(Boolean);
+}
+
 // ─── PET ENTRIES ─────────────────────────────────────────
 function addPetEntry() {
     petCount++;
@@ -381,24 +447,26 @@ function updateSummary() {
         }
     }
 
-    // Pets
-    const petEntries = document.querySelectorAll('.pet-entry');
+    // Pets — combine saved (checked) + manual entries
     const petsDiv = document.getElementById('summaryPets');
-    if (petEntries.length === 0) {
+    const allPets = [];
+    getSelectedSavedPets().forEach(p => allPets.push({ name: p.name || '—', type: p.type || 'dog', breed: p.breed || '' }));
+    document.querySelectorAll('.pet-entry').forEach(entry => {
+        const id = entry.id.replace('petEntry','');
+        allPets.push({
+            name:  document.getElementById(`petName${id}`)?.value || '—',
+            type:  document.getElementById(`petType${id}`)?.value || 'dog',
+            breed: document.getElementById(`petBreed${id}`)?.value || ''
+        });
+    });
+    if (allPets.length === 0) {
         petsDiv.innerHTML = '<span class="summary-empty">No pets added yet</span>';
     } else {
-        petsDiv.innerHTML = '';
-        petEntries.forEach(entry => {
-            const id    = entry.id.replace('petEntry','');
-            const name  = document.getElementById(`petName${id}`)?.value || '—';
-            const type  = document.getElementById(`petType${id}`)?.value || 'dog';
-            const breed = document.getElementById(`petBreed${id}`)?.value;
-            petsDiv.innerHTML += `
-                <div class="summary-pet-item">
-                    <strong>${name}</strong>
-                    <span>${capitalize(type)}${breed ? ' · ' + breed : ''}</span>
-                </div>`;
-        });
+        petsDiv.innerHTML = allPets.map(p => `
+            <div class="summary-pet-item">
+                <strong>${p.name}</strong>
+                <span>${capitalize(p.type)}${p.breed ? ' · ' + p.breed : ''}</span>
+            </div>`).join('');
     }
 }
 
@@ -595,7 +663,13 @@ function sendRequest() {
         // Save to Firestore
         const wff = window.WFF;
         if (wff && wff.db) {
-            const petsData = [];
+            // Saved (checked) pets from profile
+            const petsData = getSelectedSavedPets().map(p => ({
+                name: p.name || '', type: p.type || 'dog',
+                age: [p.ageYears ? p.ageYears + 'yr' : '', p.ageMonths ? p.ageMonths + 'mo' : ''].filter(Boolean).join(' '),
+                breed: p.breed || '', photoUrl: p.photoUrl || '', notes: p.careNotes || ''
+            }));
+            // Manually entered pets
             document.querySelectorAll('.pet-entry').forEach(entry => {
                 const id = entry.id.replace('petEntry','');
                 petsData.push({
@@ -652,6 +726,25 @@ function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 // ─── INIT ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     populateRangeTimeSelects();
-    addPetEntry();
     updateSummary();
+
+    // Show add-another button and blank form by default (non-logged-in fallback)
+    const addBtn = document.getElementById('addAnotherPetBtn');
+    if (addBtn) addBtn.style.display = '';
+    addPetEntry();
+
+    // Check if user is logged in; load their saved pets
+    const wff = window.WFF;
+    if (wff && wff.auth && wff.onAuthStateChanged) {
+        wff.onAuthStateChanged(wff.auth, async user => {
+            if (!user) return; // not logged in — keep manual form
+            try {
+                const snap = await wff.getDoc(wff.doc(wff.db, 'users', user.uid));
+                const pets = snap.exists() ? (snap.data().pets || []) : [];
+                renderSavedPetCards(pets);
+            } catch (e) {
+                console.warn('Could not load saved pets:', e);
+            }
+        });
+    }
 });

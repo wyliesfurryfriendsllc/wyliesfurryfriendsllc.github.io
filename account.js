@@ -62,6 +62,12 @@ function showAccountUI(user, profile) {
     document.getElementById('profilePhone').value         = profile.phone || '';
     document.getElementById('profileEmailDisplay').textContent = user.email;
     renderPets();
+    // Auto-open tab from URL param (e.g. ?tab=pets&return=booking)
+    const tabParam = new URLSearchParams(window.location.search).get('tab');
+    if (tabParam) showTab(tabParam);
+    // If redirected from booking to add a pet, auto-open the add pet modal
+    const returnParam = new URLSearchParams(window.location.search).get('return');
+    if (tabParam === 'pets' && returnParam === 'booking') openAddPetModal();
 }
 
 function switchAuthMode(mode) {
@@ -628,6 +634,9 @@ async function savePetModal() {
     await syncToClients(currentUser, { name: currentUser.displayName || '', email: currentUser.email, phone: '', pets: userPets });
     closePetModal();
     renderPets();
+    // If arrived from booking page, go back after saving
+    const returnTo = new URLSearchParams(window.location.search).get('return');
+    if (returnTo === 'booking') window.location.href = 'booking.html';
 }
 
 async function deletePet(idx) {

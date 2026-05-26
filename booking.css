@@ -930,3 +930,99 @@ details.deposit-policy[open] summary { color: var(--pink); }
     .form-row { grid-template-columns: 1fr; }
     .pet-type-row { grid-template-columns: 1fr; }
 }
+
+/* ─── SAVED PET CARDS (booking page) ──────────────── */
+.saved-pets-hint {
+    font-size: 13px;
+    color: var(--brown-mid);
+    margin-bottom: 10px;
+}
+.saved-pet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.saved-pet-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    background: #fff;
+    user-select: none;
+}
+.saved-pet-card:has(.sp-check:checked) {
+    border-color: var(--pink);
+    background: #fdf6f8;
+}
+.saved-pet-card input[type=checkbox] { display: none; }
+.sp-avatar-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--cream-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.sp-avatar {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+.sp-emoji { font-size: 20px; }
+.sp-info { flex: 1; min-width: 0; }
+.sp-name { font-weight: 700; font-size: 14px; color: var(--brown); }
+.sp-meta { font-size: 12px; color: var(--brown-mid); margin-top: 2px; }
+.sp-check-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: transparent;
+    transition: all 0.15s;
+}
+.saved-pet-card:has(.sp-check:checked) .sp-check-icon {
+    background: var(--pink);
+    border-color: var(--pink);
+    color: #fff;
+}
+
+/* No saved pets state */
+.no-saved-pets {
+    text-align: center;
+    padding: 16px;
+    border: 1.5px dashed var(--border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+.no-saved-pets-msg {
+    font-size: 13px;
+    color: var(--brown-mid);
+    margin-bottom: 10px;
+}
+.btn-go-add-pet {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--pink);
+    color: #fff;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.15s;
+}
+.btn-go-add-pet:hover { opacity: 0.88; }
