@@ -1,4 +1,4 @@
-import { db, collection, getDocs, query, where, orderBy } from './firebase.js';
+import { db, collection, getDocs, query, where } from './firebase.js';
 
 async function loadHomeReviews() {
     const grid = document.getElementById('homeReviewsGrid');
@@ -7,11 +7,12 @@ async function loadHomeReviews() {
     const q = query(
         collection(db, 'reviews'),
         where('status', '==', 'approved'),
-        where('featuredOnHome', '==', true),
-        orderBy('createdAt', 'desc')
+        where('featuredOnHome', '==', true)
     );
     const snap = await getDocs(q);
-    let reviews = snap.docs.map(d => ({ id: d.id, ...d.data() })).slice(0, 6);
+    let reviews = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
+        .slice(0, 6);
 
     if (!reviews.length) return; // keep hardcoded fallback
 

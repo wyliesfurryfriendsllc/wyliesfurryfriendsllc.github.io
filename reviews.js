@@ -1,6 +1,6 @@
 import {
     db,
-    collection, getDocs, query, where, orderBy
+    collection, getDocs, query, where
 } from './firebase.js';
 
 let allReviews  = [];
@@ -10,7 +10,14 @@ let activeTags     = new Set();
 let sortOrder      = 'newest';
 
 async function init() {
-    await Promise.all([loadTags(), loadReviews()]);
+    try {
+        await Promise.all([loadTags(), loadReviews()]);
+    } catch(e) {
+        console.error('reviews init:', e);
+        document.getElementById('rvSummary').textContent = '';
+        document.getElementById('rvGrid').innerHTML = '<p class="rv-empty">Failed to load reviews.</p>';
+        return;
+    }
     renderTagChips();
     renderGrid();
     updateSummary();
@@ -18,11 +25,7 @@ async function init() {
 }
 
 async function loadReviews() {
-    const q = query(
-        collection(db, 'reviews'),
-        where('status', '==', 'approved'),
-        orderBy('createdAt', 'desc')
-    );
+    const q = query(collection(db, 'reviews'), where('status', '==', 'approved'));
     const snap = await getDocs(q);
     allReviews = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
