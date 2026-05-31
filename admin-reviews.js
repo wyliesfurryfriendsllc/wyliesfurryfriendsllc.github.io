@@ -194,6 +194,10 @@ function arAddFormHtml() {
               ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
                 .map((m,i) => `<option value="${m}" ${i === new Date().getMonth() ? 'selected' : ''}>${m}</option>`).join('')}
             </select>
+            <select class="ar-input" id="arFDay" style="width:68px">
+              ${Array.from({length:31},(_,i)=>i+1)
+                .map(d=>`<option value="${d}" ${d===new Date().getDate()?'selected':''}>${d}</option>`).join('')}
+            </select>
             <select class="ar-input" id="arFYear" style="width:80px">
               ${Array.from({length:5},(_,i)=> new Date().getFullYear()-i)
                 .map(y=>`<option value="${y}">${y}</option>`).join('')}
@@ -279,7 +283,7 @@ async function arSubmitAdd() {
     const author   = document.getElementById('arFAuthor').value.trim();
     const service  = document.getElementById('arFService').value;
     const rating   = Number(document.getElementById('arFRating').value);
-    const dateLabel= (document.getElementById('arFMonth').value + ' ' + document.getElementById('arFYear').value).trim();
+    const dateLabel= (document.getElementById('arFMonth').value + ' ' + document.getElementById('arFDay').value + ', ' + document.getElementById('arFYear').value).trim();
     const text     = document.getElementById('arFText').value.trim();
     const color    = document.getElementById('arFColor').value;
     const featured = document.getElementById('arFFeatured').checked;
