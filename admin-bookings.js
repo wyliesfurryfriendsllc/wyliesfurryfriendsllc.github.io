@@ -37,10 +37,22 @@ function init() {
         renderAdminBookings();
         if (activeBookingId) {
             const updated = allBookings.find(b => b.id === activeBookingId);
-            const panel   = document.getElementById('adminBookingDetail');
-            if (updated && panel && panel.style.display !== 'none') {
-                renderDetail(updated, panel);
-                loadAdminMessages(activeBookingId);
+            if (updated) {
+                let panel = document.getElementById('adminInlineDetail');
+                if (!panel) {
+                    // list rebuild removed the panel — re-insert it
+                    const card = document.querySelector(`.admin-booking-card[data-booking-id="${activeBookingId}"]`);
+                    if (card) {
+                        panel = document.createElement('div');
+                        panel.id = 'adminInlineDetail';
+                        panel.className = 'admin-booking-inline-detail';
+                        card.parentNode.insertBefore(panel, card.nextSibling);
+                    }
+                }
+                if (panel) {
+                    renderDetail(updated, panel);
+                    loadAdminMessages(activeBookingId);
+                }
             }
         }
     }, err => {
@@ -124,6 +136,7 @@ function renderAdminBookings() {
                 : `<div class="abc-pet-avatar abc-pet-emoji">${petEmoji}</div>`;
             const card = document.createElement('div');
             card.className = 'admin-booking-card' + (b.id === activeBookingId ? ' active' : '');
+            card.dataset.bookingId = b.id;
             card.onclick = () => openDetail(b.id);
             card.innerHTML = `
                 <div class="abc-layout">
@@ -149,15 +162,26 @@ function renderAdminBookings() {
 
 // ─── DETAIL ───────────────────────────────────────────────
 function openDetail(bookingId) {
-    activeBookingId = bookingId;
-    document.querySelectorAll('.admin-booking-card').forEach(c => c.classList.remove('active'));
-    const card = [...document.querySelectorAll('.admin-booking-card')]
-        .find(c => c.querySelector('.abc-name') && c.onclick);
-    renderAdminBookings(); // re-render to update active class
+    // If same card clicked again, close it
+    if (activeBookingId === bookingId) { closeDetail(); return; }
 
-    const panel = document.getElementById('adminBookingDetail');
-    panel.style.display = '';
+    // Remove any existing inline detail
+    const existing = document.getElementById('adminInlineDetail');
+    if (existing) existing.remove();
+
+    activeBookingId = bookingId;
+    renderAdminBookings(); // re-render to mark active card
+
+    // Find the card and insert detail below it
+    const card = document.querySelector(`.admin-booking-card[data-booking-id="${bookingId}"]`);
+    if (!card) return;
+
+    const panel = document.createElement('div');
+    panel.id = 'adminInlineDetail';
+    panel.className = 'admin-booking-inline-detail';
     panel.innerHTML = '<div class="detail-loading">Loading...</div>';
+    card.parentNode.insertBefore(panel, card.nextSibling);
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     getDoc(doc(db, 'bookings', bookingId)).then(snap => {
         if (!snap.exists()) { panel.innerHTML = '<p>Booking not found.</p>'; return; }
@@ -170,7 +194,8 @@ function openDetail(bookingId) {
 function closeDetail() {
     activeBookingId = null;
     if (messagesUnsub) { messagesUnsub(); messagesUnsub = null; }
-    document.getElementById('adminBookingDetail').style.display = 'none';
+    const panel = document.getElementById('adminInlineDetail');
+    if (panel) panel.remove();
     renderAdminBookings();
 }
 
@@ -348,12 +373,31 @@ function renderChargesHtml(b) {
         `<div class="detail-charge-total"><span>${totalLabel}</span><span>$${finalTotal}</span></div>`;
 }
 
+function paymentRecordsHtml(b) {
+    const hasDeposit = b.depositDate || b.depositAmount != null;
+    const hasFinal   = b.finalPaymentDate || b.finalPaymentAmount != null;
+    if (!hasDeposit && !hasFinal) return '';
+    return `<div class="payment-record">
+        ${hasDeposit ? `<div class="payment-record-row">
+            <span class="payment-record-label">Deposit</span>
+            <span class="payment-record-val">${b.depositAmount != null ? '$' + b.depositAmount : '—'} · ${b.depositDate || '—'}</span>
+            <button class="payment-edit-btn" onclick="AdminBookings.openEditPaymentModal('${b.id}','deposit')" title="Edit deposit">✎</button>
+        </div>` : ''}
+        ${hasFinal ? `<div class="payment-record-row">
+            <span class="payment-record-label">Final payment</span>
+            <span class="payment-record-val">${b.finalPaymentAmount != null ? '$' + b.finalPaymentAmount : '—'} · ${b.finalPaymentDate || '—'}</span>
+            <button class="payment-edit-btn" onclick="AdminBookings.openEditPaymentModal('${b.id}','final')" title="Edit final payment">✎</button>
+        </div>` : ''}
+    </div>`;
+}
+
 function renderDetail(b, panel) {
     const isPending         = b.status === 'pending';
     const isAccepted        = isPending && !!b.adminAccepted;
     const isDepositReceived = b.status === 'deposit_received';
     const isPaid            = b.status === 'paid';
     const isInService       = b.status === 'in_service';
+    const isCompleted       = b.status === 'completed';
     const todayISO = new Date().toISOString().slice(0, 10);
     const pets = b.pets || [];
     let numVisits = 0;
@@ -467,12 +511,7 @@ function renderDetail(b, panel) {
         </div>` : ''}
         ${isDepositReceived ? `
         <div class="detail-actions">
-            <div class="payment-record">
-                <div class="payment-record-row">
-                    <span class="payment-record-label">Deposit received</span>
-                    <span class="payment-record-val">${b.depositAmount != null ? '$' + b.depositAmount : '—'} · ${b.depositDate || '—'}</span>
-                </div>
-            </div>
+            ${paymentRecordsHtml(b)}
             <div class="deposit-action-wrap">
                 <div class="deposit-action-label">Record final payment:</div>
                 <div class="deposit-action-row">
@@ -489,24 +528,21 @@ function renderDetail(b, panel) {
         </div>` : ''}
         ${isPaid ? `
         <div class="detail-actions">
-            <div class="payment-record">
-                <div class="payment-record-row">
-                    <span class="payment-record-label">Deposit</span>
-                    <span class="payment-record-val">${b.depositAmount != null ? '$' + b.depositAmount : '—'} · ${b.depositDate || '—'}</span>
-                </div>
-                <div class="payment-record-row">
-                    <span class="payment-record-label">Final payment</span>
-                    <span class="payment-record-val">${b.finalPaymentAmount != null ? '$' + b.finalPaymentAmount : '—'} · ${b.finalPaymentDate || '—'}</span>
-                </div>
-            </div>
+            ${paymentRecordsHtml(b)}
             <div class="paid-full-notice">💚 Paid in Full</div>
             <button class="admin-btn-in-service" onclick="AdminBookings.markInService('${b.id}')">▶ Mark In Service</button>
             <button class="admin-btn-secondary" onclick="AdminBookings.markCompleted('${b.id}')">Mark Completed</button>
         </div>` : ''}
         ${isInService ? `
         <div class="detail-actions">
+            ${paymentRecordsHtml(b)}
             <div class="paid-full-notice" style="color:#8e44ad">⚡ In Service</div>
             <button class="admin-btn-secondary" onclick="AdminBookings.markCompleted('${b.id}')">✓ Mark Completed</button>
+        </div>` : ''}
+        ${isCompleted ? `
+        <div class="detail-actions">
+            ${paymentRecordsHtml(b)}
+            <div class="paid-full-notice" style="color:#2d6a4f">✓ Completed</div>
         </div>` : ''}
 
         <div class="detail-section">
@@ -782,11 +818,167 @@ async function exportImage(bookingId) {
     }
 }
 
+// ─── EDIT DATES MODAL ────────────────────────────────────
+function openEditDatesModal(bookingId) {
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b) return;
+
+    const dateTimes = b.dateTimes ? JSON.parse(JSON.stringify(b.dateTimes)) : {};
+    if (!Object.keys(dateTimes).length && b.dates) {
+        b.dates.forEach(iso => { dateTimes[iso] = b.times ? [...b.times] : []; });
+    }
+
+    const existing = document.getElementById('editDatesOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'editDatesOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center';
+
+    const sortedDates = Object.keys(dateTimes).sort();
+    overlay.innerHTML = `
+        <div style="background:#fffaf7;border-radius:16px;padding:32px;width:90%;max-width:540px;max-height:80vh;overflow-y:auto">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+                <h3 style="margin:0;font-size:18px;color:#3d2b1f">Edit Service Dates</h3>
+                <button onclick="document.getElementById('editDatesOverlay').remove()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#888;line-height:1">×</button>
+            </div>
+            <p style="font-size:12px;color:#888;margin:0 0 12px">Times format: HH:MM or HH:MM~HH:MM. Comma-separate multiple times per day.</p>
+            <div id="edDatesList">
+                ${sortedDates.map(iso => edBuildDateRow(iso, dateTimes[iso])).join('')}
+            </div>
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid #ede0d4">
+                <div style="display:flex;gap:8px;align-items:center">
+                    <input type="date" id="edNewDateInput" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px">
+                    <button onclick="edAddDate()" style="padding:8px 16px;background:#c8905c;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;white-space:nowrap">+ Add Date</button>
+                </div>
+            </div>
+            <div id="edError" style="color:#e53e3e;font-size:13px;margin-top:8px;display:none"></div>
+            <div style="display:flex;gap:12px;margin-top:24px;justify-content:flex-end">
+                <button onclick="document.getElementById('editDatesOverlay').remove()" style="padding:10px 20px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer;font-size:14px">Cancel</button>
+                <button id="edSaveBtn" onclick="edSaveDates('${bookingId}')" style="padding:10px 20px;background:#2d6a4f;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">Save Changes</button>
+            </div>
+        </div>`;
+
+    document.body.appendChild(overlay);
+}
+
+function edBuildDateRow(iso, slots) {
+    const d = new Date(iso + 'T12:00:00');
+    const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const slotsStr = (slots || []).join(', ');
+    return `<div class="ed-date-row" data-iso="${iso}" style="display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid #f0e8e0">
+        <div style="flex:1">
+            <div style="font-weight:600;font-size:14px;color:#3d2b1f;margin-bottom:4px">${escHtml(label)}</div>
+            <input class="ed-slots-input" type="text" value="${escHtml(slotsStr)}" placeholder="e.g. 08:00~09:00, 14:00~15:00" style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box">
+        </div>
+        <button onclick="this.closest('.ed-date-row').remove()" style="background:none;border:none;color:#e53e3e;font-size:20px;cursor:pointer;padding:2px 4px;margin-top:2px;line-height:1">×</button>
+    </div>`;
+}
+
+window.edAddDate = function() {
+    const input = document.getElementById('edNewDateInput');
+    const iso = input.value;
+    if (!iso) { alert('Please select a date.'); return; }
+    if (document.querySelector(`.ed-date-row[data-iso="${iso}"]`)) { alert('That date is already in the list.'); return; }
+    document.getElementById('edDatesList').insertAdjacentHTML('beforeend', edBuildDateRow(iso, []));
+    input.value = '';
+};
+
+window.edSaveDates = async function(bookingId) {
+    const btn = document.getElementById('edSaveBtn');
+    const errEl = document.getElementById('edError');
+    errEl.style.display = 'none';
+    btn.textContent = 'Saving…'; btn.disabled = true;
+    const rows = document.querySelectorAll('.ed-date-row');
+    const dateTimes = {};
+    rows.forEach(row => {
+        const iso = row.dataset.iso;
+        const raw = row.querySelector('.ed-slots-input').value.trim();
+        dateTimes[iso] = raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : [];
+    });
+    try {
+        await updateDoc(doc(db, 'bookings', bookingId), { dateTimes });
+        document.getElementById('editDatesOverlay').remove();
+    } catch(e) {
+        errEl.textContent = 'Save failed: ' + e.message;
+        errEl.style.display = '';
+        btn.textContent = 'Save Changes'; btn.disabled = false;
+    }
+};
+
+// ─── EDIT PAYMENT RECORDS ────────────────────────────────
+function openEditPaymentModal(bookingId, type) {
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b) return;
+
+    const isDeposit = type === 'deposit';
+    const title   = isDeposit ? 'Edit Deposit Record' : 'Edit Final Payment';
+    const dateVal  = isDeposit ? (b.depositDate || '') : (b.finalPaymentDate || '');
+    const amtVal   = isDeposit ? (b.depositAmount ?? '') : (b.finalPaymentAmount ?? '');
+    const saveKey  = isDeposit ? 'epSaveDeposit' : 'epSaveFinal';
+
+    const existing = document.getElementById('editPaymentOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'editPaymentOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center';
+    overlay.innerHTML = `
+        <div style="background:#fffaf7;border-radius:16px;padding:32px;width:90%;max-width:400px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+                <h3 style="margin:0;font-size:18px;color:#3d2b1f">${title}</h3>
+                <button onclick="document.getElementById('editPaymentOverlay').remove()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#888;line-height:1">×</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+                <div>
+                    <label style="display:block;font-size:13px;font-weight:600;color:#666;margin-bottom:4px">Date</label>
+                    <input type="date" id="epDateInput" value="${escHtml(dateVal)}" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
+                </div>
+                <div>
+                    <label style="display:block;font-size:13px;font-weight:600;color:#666;margin-bottom:4px">Amount ($)</label>
+                    <input type="number" id="epAmountInput" value="${amtVal}" step="0.01" min="0" placeholder="0.00" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
+                </div>
+            </div>
+            <div id="epError" style="color:#e53e3e;font-size:13px;margin-top:8px;display:none"></div>
+            <div style="display:flex;gap:12px;margin-top:24px;justify-content:flex-end">
+                <button onclick="document.getElementById('editPaymentOverlay').remove()" style="padding:10px 20px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer;font-size:14px">Cancel</button>
+                <button id="${saveKey}" onclick="epSave('${bookingId}','${type}')" style="padding:10px 20px;background:#2d6a4f;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">Save</button>
+            </div>
+        </div>`;
+
+    document.body.appendChild(overlay);
+}
+
+window.epSave = async function(bookingId, type) {
+    const isDeposit = type === 'deposit';
+    const btn = document.getElementById(isDeposit ? 'epSaveDeposit' : 'epSaveFinal');
+    const errEl = document.getElementById('epError');
+    errEl.style.display = 'none';
+    const dateVal = document.getElementById('epDateInput').value;
+    const amtRaw  = document.getElementById('epAmountInput').value;
+    const amount  = amtRaw !== '' ? parseFloat(amtRaw) : null;
+    btn.textContent = 'Saving…'; btn.disabled = true;
+    try {
+        const data = isDeposit
+            ? { depositDate: dateVal, ...(amount != null ? { depositAmount: amount } : {}) }
+            : { finalPaymentDate: dateVal, ...(amount != null ? { finalPaymentAmount: amount } : {}) };
+        await updateDoc(doc(db, 'bookings', bookingId), data);
+        document.getElementById('editPaymentOverlay').remove();
+    } catch(e) {
+        errEl.textContent = 'Save failed: ' + e.message;
+        errEl.style.display = '';
+        btn.textContent = 'Save'; btn.disabled = false;
+    }
+};
+
 // ─── EXPOSE ───────────────────────────────────────────────
 window.AdminBookings = {
     init, setFilter, openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
     markDepositReceived, markPaidInFull, markInService,
     addAdjustment, removeAdjustment, toggleAdjVisits,
-    deleteBooking, sendAdminMessage, exportImage
+    deleteBooking, sendAdminMessage, exportImage,
+    openEditDatesModal, openEditPaymentModal
 };
+
+window.openEditDatesModal = openEditDatesModal;

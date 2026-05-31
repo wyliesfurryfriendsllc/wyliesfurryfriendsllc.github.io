@@ -1,6 +1,20 @@
 /* ================================
    ADMIN PAGE
 ================================ */
+html {
+    overflow-x: hidden;
+}
+body {
+    overflow-x: hidden;
+    position: relative; /* required for overflow-x: hidden to work on iOS Safari */
+    max-width: 100%;
+}
+
+/* iOS: prevent input zoom (font-size must be >= 16px) */
+input, select, textarea {
+    font-size: 16px !important;
+}
+
 .admin-page {
     background: #F7F3EF;
     min-height: 100vh;
@@ -86,6 +100,7 @@
     max-width: 1600px;
     margin: 0 auto;
     padding: 40px 32px 80px;
+    overflow-x: hidden;
 }
 
 .admin-section-header {
@@ -291,10 +306,8 @@
    ADMIN BOOKINGS
 ================================ */
 .admin-bookings-layout {
-    display: grid;
-    grid-template-columns: 900px minmax(480px, 1fr);
-    gap: 24px;
-    align-items: start;
+    display: block;
+    max-width: 900px;
 }
 
 .admin-bookings-col { min-width: 0; }
@@ -338,10 +351,16 @@
     border-radius: 14px;
     padding: 14px 16px;
     cursor: pointer;
+    overflow: hidden;
     transition: border-color 0.15s, box-shadow 0.15s;
 }
 .admin-booking-card:hover { border-color: var(--pink-light); box-shadow: 0 2px 12px rgba(61,32,24,0.07); }
-.admin-booking-card.active { border-color: var(--pink); box-shadow: 0 0 0 3px var(--pink-light); }
+.admin-booking-card.active {
+    border-color: var(--pink);
+    border-bottom-color: transparent;
+    border-radius: 14px 14px 0 0;
+    box-shadow: none;
+}
 
 .abc-top {
     display: flex;
@@ -379,16 +398,22 @@
 .deposit-info-date { color: var(--brown); font-weight: 700; }
 .paid-full-notice { font-size: 14px; font-weight: 700; color: #1e8449; padding: 6px 0; width: 100%; }
 
-/* Booking detail panel */
-.admin-booking-detail {
+/* Booking detail panel (old right panel — hidden) */
+.admin-booking-detail { display: none !important; }
+
+/* Inline detail panel (inserted below clicked card) */
+.admin-booking-inline-detail {
     background: #fff;
-    border: 1.5px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    position: sticky;
-    top: 80px;
-    max-height: calc(100vh - 100px);
-    overflow-y: auto;
+    border: 1.5px solid var(--pink);
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    padding: 24px 28px 28px;
+    margin-bottom: 4px;
+    animation: slideDown 0.18s ease;
+}
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .detail-top-bar {
@@ -492,6 +517,41 @@
 @media (max-width: 900px) {
     .admin-bookings-layout { grid-template-columns: 1fr; }
     .admin-booking-detail { position: static; max-height: none; }
+}
+
+@media (max-width: 768px) {
+    .admin-main { padding: 20px 12px 60px; }
+    .admin-header-inner { padding: 0 16px; }
+
+    /* Timeline: shrink date column */
+    .abc-timeline-date { width: 52px; }
+    .abc-timeline-date span { font-size: 11px; }
+
+    /* Cards: stack content vertically */
+    .abc-layout { flex-direction: column; gap: 8px; }
+    .abc-right { width: 100%; }
+    .abc-pet-avatar { width: 48px; height: 48px; }
+    .abc-dates { white-space: normal; word-break: break-word; }
+
+    /* Inline detail: tighter padding */
+    .admin-booking-inline-detail { padding: 16px 14px 20px; }
+
+    /* Detail sections */
+    #detail-export-content { padding: 12px; }
+
+    /* Action buttons: stack */
+    .detail-actions { flex-direction: column; align-items: stretch; }
+    .detail-actions button { width: 100%; justify-content: center; }
+
+    /* Deposit row: stack */
+    .deposit-action-row { flex-wrap: wrap; }
+    .deposit-amount-input { width: 100%; }
+
+    /* Payment record */
+    .payment-record-val { font-size: 12px; }
+
+    /* Messages */
+    .messages-thread { max-height: 180px; }
 }
 
 /* ================================
@@ -1219,7 +1279,13 @@
     font-size: 13px; padding: 3px 0;
 }
 .payment-record-label { color: var(--brown-mid); font-weight: 500; }
-.payment-record-val   { color: var(--brown); font-weight: 600; }
+.payment-record-val   { color: var(--brown); font-weight: 600; flex: 1; text-align: right; margin-right: 6px; }
+.payment-edit-btn {
+    background: none; border: none; cursor: pointer;
+    color: #b08060; font-size: 15px; padding: 0 2px; line-height: 1;
+    opacity: 0.7; transition: opacity .15s;
+}
+.payment-edit-btn:hover { opacity: 1; color: var(--brown); }
 
 /* Deposit amount input (alongside date) */
 .deposit-amount-input {
@@ -1337,6 +1403,7 @@
     display: flex;
     gap: 0;
     margin-bottom: 8px;
+    overflow: hidden;
 }
 .abc-timeline-date {
     display: flex;
@@ -1350,7 +1417,7 @@
 .abc-timeline-date::after {
     content: '';
     position: absolute;
-    top: 36px;
+    top: 62px;
     bottom: -8px;
     left: 50%;
     transform: translateX(-50%);
@@ -1365,7 +1432,7 @@
     background: var(--pink);
     border: 2px solid #fff;
     box-shadow: 0 0 0 2px var(--pink);
-    margin-bottom: 6px;
+    margin-bottom: 10px;
     flex-shrink: 0;
 }
 .abc-timeline-date span {
@@ -1377,8 +1444,14 @@
 }
 .abc-timeline-cards {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
     padding-bottom: 16px;
+}
+.abc-timeline-cards .admin-booking-card {
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
 }
