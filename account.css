@@ -489,7 +489,7 @@
     border-radius: 12px;
     padding: 14px 16px;
 }
-.detail-payment-notice .detail-section-label { color: #2d6a2d; }
+.detail-payment-notice .detail-section-label { color: #2d6a2d; font-size: 13px; }
 .detail-payment-notice p { font-size: 13px; color: #2d6a2d; line-height: 1.6; margin-bottom: 4px; }
 
 .detail-deposit-policy { margin-top: 10px; }
