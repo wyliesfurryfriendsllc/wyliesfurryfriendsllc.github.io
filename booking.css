@@ -298,8 +298,9 @@
     position: relative;
 }
 .date-entry--first {
-    background: #e8e0d8;
-    border-color: #d4c8bc;
+    background: var(--cream-2);
+    border-color: var(--border);
+    border-width: 2px;
 }
 
 .date-entry-header {
