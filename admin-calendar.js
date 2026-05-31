@@ -573,6 +573,8 @@ function nbToggleDate(iso) {
 }
 
 function nbPrevMonth() {
+    const now = new Date();
+    if (nbModalYear < now.getFullYear() || (nbModalYear === now.getFullYear() && nbModalMonth <= now.getMonth())) return;
     nbModalMonth--;
     if (nbModalMonth < 0) { nbModalMonth = 11; nbModalYear--; }
     renderNbCal();
