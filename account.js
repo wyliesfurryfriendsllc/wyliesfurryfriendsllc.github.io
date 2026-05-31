@@ -1,6 +1,6 @@
 import {
     db, auth,
-    collection, addDoc, doc, updateDoc, setDoc, getDoc,
+    collection, addDoc, getDocs, doc, updateDoc, setDoc, getDoc,
     query, where, onSnapshot, orderBy, serverTimestamp,
     createUserWithEmailAndPassword, signInWithEmailAndPassword,
     signOut, onAuthStateChanged, updateProfile,
@@ -346,8 +346,10 @@ function openBookingDetail(bookingId) {
 
     getDoc(doc(db, 'bookings', bookingId)).then(snap => {
         if (!snap.exists()) { panel.innerHTML = '<p>Booking not found.</p>'; return; }
-        renderBookingDetail({ id: snap.id, ...snap.data() }, panel);
+        const b = { id: snap.id, ...snap.data() };
+        renderBookingDetail(b, panel);
         loadMessages(bookingId);
+        if (b.status === 'completed') loadReviewStatus(bookingId);
     });
 }
 
@@ -456,6 +458,17 @@ function renderBookingDetail(b, panel) {
         <div class="detail-section detail-payment-notice detail-payment-paid">
             <div class="detail-section-label">Payment Complete 💚</div>
             <p>Full payment received. Thank you! We look forward to caring for your pet 🐾</p>
+        </div>` : ''}
+        ${b.status === 'completed' ? `
+        <div class="detail-section" id="reviewSection_${b.id}">
+            <div class="detail-section-label">Leave a Review</div>
+            <div class="review-form-wrap" id="reviewFormWrap_${b.id}">
+                <div class="review-star-picker" id="reviewStars_${b.id}" data-rating="0">
+                    ${[1,2,3,4,5].map(n=>`<span class="review-star" data-val="${n}" onclick="setReviewStar('${b.id}',${n})">★</span>`).join('')}
+                </div>
+                <textarea class="review-textarea" id="reviewText_${b.id}" placeholder="Share your experience..."></textarea>
+                <button class="review-submit-btn" onclick="submitReview('${b.id}')">Submit Review</button>
+            </div>
         </div>` : ''}
         <div class="detail-section">
             <div class="detail-section-label">Messages with Wylie</div>
@@ -1080,6 +1093,71 @@ function escHtml(s) {
 }
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
 
+// ─── REVIEWS ─────────────────────────────────────────────
+function setReviewStar(bookingId, val) {
+    const container = document.getElementById(`reviewStars_${bookingId}`);
+    if (!container) return;
+    container.dataset.rating = val;
+    container.querySelectorAll('.review-star').forEach(s => {
+        s.classList.toggle('active', Number(s.dataset.val) <= val);
+    });
+}
+
+async function submitReview(bookingId) {
+    const container = document.getElementById(`reviewStars_${bookingId}`);
+    const textarea  = document.getElementById(`reviewText_${bookingId}`);
+    const wrap      = document.getElementById(`reviewFormWrap_${bookingId}`);
+    const rating    = Number(container?.dataset.rating || 0);
+    const text      = textarea?.value.trim();
+
+    if (!rating) { alert('Please select a star rating.'); return; }
+    if (!text)   { alert('Please write a short review.'); return; }
+
+    const btn = wrap?.querySelector('.review-submit-btn');
+    if (btn) btn.disabled = true;
+
+    const booking = allBookings.find(b => b.id === bookingId);
+    const serviceMap = { 'drop-in': 'Drop-In Visit', 'walking': 'Dog Walking' };
+    const service = serviceMap[booking?.serviceType] || booking?.serviceType || '';
+    const name = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Client';
+    const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    const authorName = name.split(' ')[0] + (name.split(' ')[1] ? ' ' + name.split(' ')[1][0] + '.' : '');
+    const now = new Date();
+    const dateLabel = now.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+
+    try {
+        await addDoc(collection(db, 'reviews'), {
+            text,
+            rating,
+            authorName,
+            service,
+            dateLabel,
+            createdAt: serverTimestamp(),
+            status: 'pending',
+            source: 'client',
+            bookingId,
+            userId: currentUser?.uid || null,
+            featuredOnHome: false,
+            colorVariant: 'rc-pink',
+            tags: []
+        });
+        if (wrap) wrap.innerHTML = '<p class="review-thanks">Thank you! We\'ve received your feedback.</p>';
+    } catch (e) {
+        console.error('submitReview:', e);
+        if (btn) btn.disabled = false;
+        alert('Failed to submit review. Please try again.');
+    }
+}
+
+async function loadReviewStatus(bookingId) {
+    const q = query(collection(db, 'reviews'), where('bookingId', '==', bookingId));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+        const wrap = document.getElementById(`reviewFormWrap_${bookingId}`);
+        if (wrap) wrap.innerHTML = '<p class="review-thanks">Thank you! We\'ve received your feedback.</p>';
+    }
+}
+
 // ─── EXPOSE TO HTML ───────────────────────────────────────
 window.switchAuthMode    = switchAuthMode;
 window.doLogin           = doLogin;
@@ -1109,3 +1187,5 @@ window.closePetBdayCal   = closePetBdayCal;
 window.changePetBdayMonth   = changePetBdayMonth;
 window.onPetBdayYearChange  = onPetBdayYearChange;
 window.onPetBdayMonthChange = onPetBdayMonthChange;
+window.setReviewStar        = setReviewStar;
+window.submitReview         = submitReview;

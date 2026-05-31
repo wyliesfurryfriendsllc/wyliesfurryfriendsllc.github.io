@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews — Wylie Furry Friends</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="reviews.css">
+</head>
+<body class="reviews-page">
+
+<nav id="top">
+    <a class="nav-logo" href="index.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg>
+        Wylie Furry Friends
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">&#9776;</button>
+    <ul class="nav-links" id="navLinks">
+        <li><a href="index.html#services">Services</a></li>
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="reviews.html" class="nav-active">Reviews</a></li>
+        <li><a href="account.html">My Account</a></li>
+        <li><a href="booking.html" class="nav-book-btn">Book Now</a></li>
+    </ul>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="rv-hero">
+    <h1>Client Reviews</h1>
+    <p id="rvSummary" class="rv-summary">Loading reviews...</p>
+</section>
+
+<!-- ===== FILTERS ===== -->
+<div class="rv-controls">
+    <div class="rv-service-tabs" id="rvServiceTabs">
+        <button class="rv-tab active" data-service="">All</button>
+        <button class="rv-tab" data-service="Drop-In Visit">Drop-In Visit</button>
+        <button class="rv-tab" data-service="Dog Walking">Dog Walking</button>
+    </div>
+
+    <div class="rv-sort-wrap">
+        <label for="rvSort">Sort:</label>
+        <select id="rvSort">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+        </select>
+    </div>
+</div>
+
+<!-- ===== TAG CHIPS ===== -->
+<div class="rv-tags-wrap" id="rvTagsWrap" style="display:none">
+    <div class="rv-tags" id="rvTagChips"></div>
+</div>
+
+<!-- ===== GRID ===== -->
+<section class="rv-grid-section">
+    <div class="reviews-grid" id="rvGrid">
+        <p class="rv-loading">Loading...</p>
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-left">
+            <span class="footer-logo">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg>
+                Wylie Furry Friends
+            </span>
+            <p>Professional pet sitting & dog walking<br>in Naperville, IL and surrounding areas.</p>
+        </div>
+        <div class="footer-links">
+            <a href="index.html#services">Services</a>
+            <a href="index.html#about">About</a>
+            <a href="reviews.html">Reviews</a>
+            <a href="booking.html">Book Now</a>
+        </div>
+        <div class="footer-right">
+            <p>© 2026 Wylie Furry Friends LLC</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    const hamburger = document.getElementById('hamburger');
+    const navLinks  = document.getElementById('navLinks');
+    hamburger.addEventListener('click', () => navLinks.classList.toggle('open'));
+</script>
+<script type="module" src="reviews.js"></script>
+</body>
+</html>

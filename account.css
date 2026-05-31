@@ -1422,3 +1422,57 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     border-color: #A9DFBF;
 }
 .detail-payment-paid .detail-section-label { color: #1e8449; }
+
+/* ─── LEAVE A REVIEW ──────────────────────────────── */
+.review-star-picker {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+.review-star {
+    font-size: 28px;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.15s;
+    line-height: 1;
+}
+.review-star.active { color: #f5a623; }
+.review-star:hover  { color: #f5a623; }
+
+.review-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    background: #fff;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+.review-textarea:focus {
+    outline: none;
+    border-color: var(--pink);
+}
+.review-submit-btn {
+    background: var(--pink);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+.review-submit-btn:hover { opacity: 0.85; }
+.review-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.review-thanks {
+    font-size: 14px;
+    color: #1e8449;
+    font-weight: 500;
+    padding: 8px 0;
+}
+

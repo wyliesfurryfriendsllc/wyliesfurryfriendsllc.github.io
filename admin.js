@@ -22,7 +22,7 @@ function login() {
 }
 
 function showAdminTab(tab) {
-    ['bookings','clients','calendar','gallery'].forEach(t => {
+    ['bookings','clients','calendar','gallery','reviews'].forEach(t => {
         const el = document.getElementById('adminTab' + t.charAt(0).toUpperCase() + t.slice(1));
         if (el) el.style.display = t === tab ? '' : 'none';
     });
@@ -31,6 +31,7 @@ function showAdminTab(tab) {
     });
     if (tab === 'clients')  window.AdminClients?.init();
     if (tab === 'calendar') window.AdminCalendar?.init();
+    if (tab === 'reviews')  window.AdminReviews?.init();
 }
 
 function logout() {
