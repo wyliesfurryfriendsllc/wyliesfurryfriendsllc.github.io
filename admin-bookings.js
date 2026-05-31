@@ -775,12 +775,12 @@ async function exportImage(bookingId) {
             `font-size:11px!important;box-sizing:border-box!important;`;
     });
     try {
-        const w = target.scrollWidth;
+        const EXPORT_W = 680;
         const canvas = await html2canvas(target, {
             backgroundColor: '#fffaf7',
-            scale: window.devicePixelRatio || 2,
-            width: w,
-            windowWidth: w,
+            scale: 2,
+            width: EXPORT_W,
+            windowWidth: EXPORT_W,
             useCORS: true,
             logging: false
         });
