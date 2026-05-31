@@ -58,7 +58,7 @@
 }
 
 .admin-header-inner {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 0 32px;
     height: 60px;
@@ -83,7 +83,7 @@
 
 /* Main */
 .admin-main {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 40px 32px 80px;
 }
@@ -292,7 +292,7 @@
 ================================ */
 .admin-bookings-layout {
     display: grid;
-    grid-template-columns: 900px 1fr;
+    grid-template-columns: 900px minmax(480px, 1fr);
     gap: 24px;
     align-items: start;
 }
