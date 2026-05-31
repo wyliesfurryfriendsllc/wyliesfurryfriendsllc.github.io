@@ -131,6 +131,12 @@
     color: inherit;
 }
 
+/* ─── REVIEW TEXT OVERRIDE ───────────────────────── */
+.rv-grid-section .review-text {
+    font-size: 15px;
+    line-height: 1.85;
+}
+
 /* ─── MOBILE ─────────────────────────────────────── */
 @media (max-width: 600px) {
     .rv-hero h1 { font-size: 1.8rem; }
