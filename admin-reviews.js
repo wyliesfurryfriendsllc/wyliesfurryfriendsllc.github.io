@@ -324,6 +324,14 @@ async function refresh() {
     arRender();
 }
 
+/* ── Auto-init once module is ready ─────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+    const reviewsTabEl = document.getElementById('adminTabReviews');
+    if (reviewsTabEl && reviewsTabEl.style.display !== 'none') {
+        window.AdminReviews.init();
+    }
+});
+
 /* ── Helpers ───────────────────────────────────────────────── */
 function starsText(n) { return '★'.repeat(n || 5) + '☆'.repeat(5 - (n || 5)); }
 function esc(s) {

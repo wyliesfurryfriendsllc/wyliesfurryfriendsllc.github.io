@@ -31,7 +31,16 @@ function showAdminTab(tab) {
     });
     if (tab === 'clients')  window.AdminClients?.init();
     if (tab === 'calendar') window.AdminCalendar?.init();
-    if (tab === 'reviews')  window.AdminReviews?.init();
+    if (tab === 'reviews') {
+        if (window.AdminReviews) {
+            window.AdminReviews.init();
+        } else {
+            const t = setInterval(() => {
+                if (window.AdminReviews) { clearInterval(t); window.AdminReviews.init(); }
+            }, 100);
+            setTimeout(() => clearInterval(t), 5000);
+        }
+    }
 }
 
 function logout() {
