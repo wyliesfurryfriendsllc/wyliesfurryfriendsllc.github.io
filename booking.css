@@ -606,6 +606,7 @@
 .summary-expect {
     border-top: 1px solid var(--border);
     padding-top: 20px;
+    margin-top: 16px;
 }
 
 .expect-title {
