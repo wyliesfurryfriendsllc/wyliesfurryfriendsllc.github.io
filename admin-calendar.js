@@ -552,7 +552,7 @@ function renderNbCal() {
             + (nbDateTimes.has(iso) ? ' nb-cal-selected' : '')
             + (iso < today ? ' nb-cal-past' : '');
         cell.textContent = d;
-        if (iso >= today) cell.onclick = () => { nbToggleDate(iso); };
+        cell.onclick = () => { nbToggleDate(iso); };
         grid.appendChild(cell);
     }
 }
@@ -573,8 +573,6 @@ function nbToggleDate(iso) {
 }
 
 function nbPrevMonth() {
-    const now = new Date();
-    if (nbModalYear < now.getFullYear() || (nbModalYear === now.getFullYear() && nbModalMonth <= now.getMonth())) return;
     nbModalMonth--;
     if (nbModalMonth < 0) { nbModalMonth = 11; nbModalYear--; }
     renderNbCal();
