@@ -29,7 +29,7 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 12px;
-    max-width: 1200px;
+    max-width: 900px;
     margin: 0 auto 16px;
     padding: 0 48px;
 }
@@ -74,7 +74,7 @@
 
 /* ─── TAG CHIPS ─────────────────────────────────── */
 .rv-tags-wrap {
-    max-width: 1200px;
+    max-width: 900px;
     margin: 0 auto 20px;
     padding: 0 48px;
 }
@@ -99,7 +99,7 @@
 
 /* ─── GRID ──────────────────────────────────────── */
 .rv-grid-section {
-    max-width: 1200px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 0 48px 64px;
 }
