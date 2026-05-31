@@ -328,7 +328,7 @@ function buildDatesText(b) {
             const d = new Date(dateStr + 'T12:00:00');
             const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             const times = (b.dateTimes[dateStr] || []).map(t => fmtSlotAcc(t)).join(', ') || '—';
-            return `  ${label}: ${times}`;
+            return `${label}: ${times}`;
         }).join('\n');
     }
     // Fallback: resolve "Same as Day 1" in datesText
@@ -383,7 +383,7 @@ function renderBookingDetail(b, panel) {
         </div>
         <div class="detail-section">
             <div class="detail-section-label">Dates &amp; Times</div>
-            <pre class="detail-dates">${escHtml(buildDatesText(b).trim())}</pre>
+            <pre class="detail-dates">${escHtml(buildDatesText(b).split('\n').map(l=>l.trim()).filter(Boolean).join('\n'))}</pre>
         </div>
         <div class="detail-section">
             <div class="detail-section-label">Services &amp; Charges</div>
