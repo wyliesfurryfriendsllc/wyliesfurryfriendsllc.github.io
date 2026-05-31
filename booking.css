@@ -4,6 +4,7 @@
 .booking-page {
     background: var(--cream);
     min-height: 100vh;
+    --cream-2: #ffe9f5;
 }
 
 .booking-layout {
