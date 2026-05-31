@@ -490,7 +490,21 @@
     padding: 14px 16px;
 }
 .detail-payment-notice .detail-section-label { color: #2d6a2d; }
-.detail-payment-notice p { font-size: 13px; color: #2d6a2d; line-height: 1.6; }
+.detail-payment-notice p { font-size: 13px; color: #2d6a2d; line-height: 1.6; margin-bottom: 4px; }
+
+.detail-deposit-policy { margin-top: 10px; }
+.detail-deposit-policy summary {
+    font-size: 12px; font-weight: 700; color: #2d6a2d;
+    cursor: pointer; list-style: none; display: flex; align-items: center; gap: 4px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+}
+.detail-deposit-policy summary::-webkit-details-marker { display: none; }
+.detail-deposit-policy summary::before { content: '▶'; font-size: 9px; transition: transform 0.2s; }
+.detail-deposit-policy[open] summary::before { transform: rotate(90deg); }
+.detail-deposit-policy-body { margin-top: 8px; }
+.detail-deposit-policy-body p { font-size: 12px; color: #2d6a2d; margin-bottom: 6px; }
+.detail-deposit-policy-body ul { padding-left: 16px; margin: 0; }
+.detail-deposit-policy-body li { font-size: 12px; color: #2d6a2d; line-height: 1.6; }
 
 /* Messages */
 .messages-thread {
