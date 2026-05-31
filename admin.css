@@ -1331,3 +1331,54 @@
 .ar-add-tag-row { display: flex; align-items: center; gap: 8px; }
 .ar-sort-row { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--brown); }
 .ar-sort-row select { border:1.5px solid var(--border); border-radius:8px; padding:5px 10px; font-size:13px; font-family:inherit; background:#fff; color:var(--brown); cursor:pointer; }
+
+/* ─── BOOKING TIMELINE ───────────────────────────── */
+.abc-timeline-group {
+    display: flex;
+    gap: 0;
+    margin-bottom: 8px;
+}
+.abc-timeline-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 72px;
+    flex-shrink: 0;
+    padding-top: 20px;
+    position: relative;
+}
+.abc-timeline-date::after {
+    content: '';
+    position: absolute;
+    top: 36px;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    background: var(--border);
+}
+.abc-timeline-group:last-child .abc-timeline-date::after { display: none; }
+.abc-timeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--pink);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px var(--pink);
+    margin-bottom: 6px;
+    flex-shrink: 0;
+}
+.abc-timeline-date span {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--brown);
+    text-align: center;
+    line-height: 1.2;
+}
+.abc-timeline-cards {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 16px;
+}

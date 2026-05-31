@@ -63,47 +63,87 @@ function setFilter(filter) {
 function renderAdminBookings() {
     const container = document.getElementById('adminBookingsList');
     if (!container) return;
+    const ACTIVE_STATUSES = ['pending','deposit_received','paid','in_service','confirmed'];
     const filtered = activeFilter === 'all'
-        ? allBookings
+        ? allBookings.filter(b => ACTIVE_STATUSES.includes(b.status))
         : allBookings.filter(b => b.status === activeFilter);
 
     if (filtered.length === 0) {
         container.innerHTML = `<p class="empty-msg">No ${activeFilter === 'all' ? '' : activeFilter + ' '}bookings yet.</p>`;
         return;
     }
-    container.innerHTML = '';
-    filtered.forEach(b => {
-        const card = document.createElement('div');
-        card.className = 'admin-booking-card' + (b.id === activeBookingId ? ' active' : '');
-        card.onclick = () => openDetail(b.id);
-        const firstLine = b.datesText ? b.datesText.trim().split('\n')[0] : '—';
-        const firstPet  = (b.pets || [])[0];
-        const petPhoto  = firstPet?.photoUrl || '';
-        const petName   = firstPet?.name || '';
-        const petEmoji  = firstPet?.type === 'cat' ? '🐱' : '🐶';
-        const avatarHtml = petPhoto
-            ? `<img class="abc-pet-avatar" src="${escHtml(petPhoto)}" alt="${escHtml(petName)}">`
-            : `<div class="abc-pet-avatar abc-pet-emoji">${petEmoji}</div>`;
+    // Group by first service date
+    function getFirstDate(b) {
+        if (b.dateTimes && Object.keys(b.dateTimes).length) return Object.keys(b.dateTimes).sort()[0];
+        if (b.dates && b.dates.length) return b.dates[0];
+        if (b.datesText) {
+            const m = b.datesText.trim().match(/(\w+ \d+,?\s*\d+)/);
+            return m ? m[1] : '9999-12-31';
+        }
+        return '9999-12-31';
+    }
+    filtered.sort((a, b) => getFirstDate(a).localeCompare(getFirstDate(b)));
 
-        card.innerHTML = `
-            <div class="abc-layout">
-                <div class="abc-left">
-                    ${avatarHtml}
-                    <div class="abc-left-text">
-                        <span class="abc-petname">${escHtml(petName || '—')}</span>
-                        <span class="abc-ownername">${escHtml(b.clientName || '—')}</span>
-                    </div>
-                </div>
-                <div class="abc-right">
-                    <div class="abc-service">${escHtml(b.service || '')}</div>
-                    <div class="abc-duration">${b.duration || 30} min</div>
-                    <div style="margin-bottom:4px"><span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span></div>
-                    <div class="abc-dates">${escHtml(firstLine)}</div>
-                    <div class="abc-price">$${b.total || 0} est.</div>
-                </div>
+    // Build date groups
+    const groups = {};
+    const groupOrder = [];
+    filtered.forEach(b => {
+        const iso = getFirstDate(b);
+        if (!groups[iso]) { groups[iso] = []; groupOrder.push(iso); }
+        groups[iso].push(b);
+    });
+
+    container.innerHTML = '';
+    groupOrder.forEach(iso => {
+        // Date label
+        let dateLabel = iso;
+        try {
+            const d = new Date(iso + (iso.length === 10 ? 'T12:00:00' : ''));
+            dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        } catch(e) {}
+
+        const group = document.createElement('div');
+        group.className = 'abc-timeline-group';
+        group.innerHTML = `
+            <div class="abc-timeline-date">
+                <div class="abc-timeline-dot"></div>
+                <span>${dateLabel}</span>
             </div>
-        `;
-        container.appendChild(card);
+            <div class="abc-timeline-cards" id="tg_${iso.replace(/\W/g,'_')}"></div>`;
+        container.appendChild(group);
+
+        const cardsEl = group.querySelector('.abc-timeline-cards');
+        groups[iso].forEach(b => {
+            const firstLine = b.datesText ? b.datesText.trim().split('\n')[0] : '—';
+            const firstPet  = (b.pets || [])[0];
+            const petPhoto  = firstPet?.photoUrl || '';
+            const petName   = firstPet?.name || '';
+            const petEmoji  = firstPet?.type === 'cat' ? '🐱' : '🐶';
+            const avatarHtml = petPhoto
+                ? `<img class="abc-pet-avatar" src="${escHtml(petPhoto)}" alt="${escHtml(petName)}">`
+                : `<div class="abc-pet-avatar abc-pet-emoji">${petEmoji}</div>`;
+            const card = document.createElement('div');
+            card.className = 'admin-booking-card' + (b.id === activeBookingId ? ' active' : '');
+            card.onclick = () => openDetail(b.id);
+            card.innerHTML = `
+                <div class="abc-layout">
+                    <div class="abc-left">
+                        ${avatarHtml}
+                        <div class="abc-left-text">
+                            <span class="abc-petname">${escHtml(petName || '—')}</span>
+                            <span class="abc-ownername">${escHtml(b.clientName || '—')}</span>
+                        </div>
+                    </div>
+                    <div class="abc-right">
+                        <div class="abc-service">${escHtml(b.service || '')}</div>
+                        <div class="abc-duration">${b.duration || 30} min</div>
+                        <div style="margin-bottom:4px"><span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span></div>
+                        <div class="abc-dates">${escHtml(firstLine)}</div>
+                        <div class="abc-price">$${b.total || 0} est.</div>
+                    </div>
+                </div>`;
+            cardsEl.appendChild(card);
+        });
     });
 }
 
