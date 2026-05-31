@@ -189,7 +189,16 @@ function arAddFormHtml() {
         </div>
         <div class="ar-form-field">
           <label>Date Label</label>
-          <input class="ar-input" id="arFDate" placeholder="e.g. Nov 2025">
+          <div style="display:flex;gap:6px">
+            <select class="ar-input" id="arFMonth" style="flex:1">
+              ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+                .map((m,i) => `<option value="${m}" ${i === new Date().getMonth() ? 'selected' : ''}>${m}</option>`).join('')}
+            </select>
+            <select class="ar-input" id="arFYear" style="width:80px">
+              ${Array.from({length:5},(_,i)=> new Date().getFullYear()-i)
+                .map(y=>`<option value="${y}">${y}</option>`).join('')}
+            </select>
+          </div>
         </div>
       </div>
       <div class="ar-form-row">
@@ -270,7 +279,7 @@ async function arSubmitAdd() {
     const author   = document.getElementById('arFAuthor').value.trim();
     const service  = document.getElementById('arFService').value;
     const rating   = Number(document.getElementById('arFRating').value);
-    const dateLabel= document.getElementById('arFDate').value.trim();
+    const dateLabel= (document.getElementById('arFMonth').value + ' ' + document.getElementById('arFYear').value).trim();
     const text     = document.getElementById('arFText').value.trim();
     const color    = document.getElementById('arFColor').value;
     const featured = document.getElementById('arFFeatured').checked;
