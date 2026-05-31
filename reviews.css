@@ -29,9 +29,9 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 12px;
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto 16px;
-    padding: 0 24px;
+    padding: 0 48px;
 }
 
 .rv-service-tabs {
@@ -74,9 +74,9 @@
 
 /* ─── TAG CHIPS ─────────────────────────────────── */
 .rv-tags-wrap {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto 20px;
-    padding: 0 24px;
+    padding: 0 48px;
 }
 .rv-tags {
     display: flex;
@@ -99,9 +99,21 @@
 
 /* ─── GRID ──────────────────────────────────────── */
 .rv-grid-section {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 0 24px 64px;
+    padding: 0 48px 64px;
+}
+.rv-grid-section .reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+@media (max-width: 900px) {
+    .rv-grid-section .reviews-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .rv-grid-section .reviews-grid { grid-template-columns: 1fr; }
+    .rv-grid-section { padding: 0 24px 48px; }
 }
 .rv-loading {
     color: #aaa;
