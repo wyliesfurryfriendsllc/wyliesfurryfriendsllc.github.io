@@ -666,11 +666,19 @@ function selectClient(clientId) {
 
     const pets = c.pets || [];
     if (pets.length > 0) {
-        document.getElementById('nbPetCheckboxes').innerHTML = pets.map((p, i) => `
+        pets.forEach((_, i) => nbSelectedPets.add(i));
+        document.getElementById('nbPetCheckboxes').innerHTML = pets.map((p, i) => {
+            const emoji = p.type === 'cat' ? '🐱' : '🐶';
+            const avatarHtml = p.photoUrl
+                ? `<img class="nb-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name||'')}">`
+                : `<div class="nb-pet-avatar nb-pet-emoji">${emoji}</div>`;
+            return `
             <label class="nb-pet-option">
-                <input type="checkbox" value="${i}" onchange="AdminCalendar.togglePet(${i})">
+                <input type="checkbox" value="${i}" checked onchange="AdminCalendar.togglePet(${i})">
+                ${avatarHtml}
                 <span>${escHtml(p.name || '—')} <em style="color:var(--brown-mid);font-style:normal">${escHtml(p.type||'')}</em></span>
-            </label>`).join('');
+            </label>`;
+        }).join('');
         document.getElementById('nbPetSection').style.display = '';
     } else {
         document.getElementById('nbPetSection').style.display = 'none';

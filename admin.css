@@ -793,6 +793,8 @@
 }
 .nb-pet-option:hover { background: var(--cream-2); }
 .nb-pet-option input[type="checkbox"] { accent-color: var(--pink); width: 16px; height: 16px; }
+.nb-pet-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.nb-pet-emoji { background: var(--cream-2); display: flex; align-items: center; justify-content: center; font-size: 18px; }
 
 /* ================================
    BOOKING CARD — LEFT/RIGHT LAYOUT
