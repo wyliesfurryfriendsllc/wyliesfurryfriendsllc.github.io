@@ -84,8 +84,8 @@ function getFiltered() {
     }
 
     list.sort((a, b) => {
-        const ta = a.createdAt?.seconds ?? 0;
-        const tb = b.createdAt?.seconds ?? 0;
+        const ta = a.dateLabel ? new Date(a.dateLabel).getTime() : 0;
+        const tb = b.dateLabel ? new Date(b.dateLabel).getTime() : 0;
         return sortOrder === 'newest' ? tb - ta : ta - tb;
     });
 
