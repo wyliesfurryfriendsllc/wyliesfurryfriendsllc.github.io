@@ -56,6 +56,14 @@ function arRender() {
             <h2 class="admin-section-title">All Reviews</h2>
             <p class="admin-section-sub">Manage approved reviews and homepage featuring.</p>
           </div>
+          <div class="ar-sort-row">
+            <label>Sort:
+              <select id="arApprovedSort" onchange="arSortApproved(this.value)">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+              </select>
+            </label>
+          </div>
         </div>
         <div id="arApprovedList">${arApprovedHtml()}</div>
       </div>
@@ -110,9 +118,22 @@ function arPendingHtml() {
     </div>`).join('');
 }
 
+let arApprovedSortOrder = 'newest';
+
+function arSortApproved(val) {
+    arApprovedSortOrder = val;
+    document.getElementById('arApprovedList').innerHTML = arApprovedHtml();
+}
+window.arSortApproved = arSortApproved;
+
 /* ── Approved HTML ─────────────────────────────────────────── */
 function arApprovedHtml() {
-    const list = arReviews.filter(r => r.status === 'approved');
+    let list = arReviews.filter(r => r.status === 'approved');
+    list.sort((a, b) => {
+        const ta = a.dateLabel ? new Date(a.dateLabel).getTime() : 0;
+        const tb = b.dateLabel ? new Date(b.dateLabel).getTime() : 0;
+        return arApprovedSortOrder === 'newest' ? tb - ta : ta - tb;
+    });
     if (!list.length) return '<p class="ar-empty">No approved reviews yet.</p>';
     return list.map(r => {
         const tagOptions = arTags.map(t =>
@@ -151,6 +172,7 @@ function arApprovedHtml() {
         </label>
       </div>` : ''}
       <div class="ar-card-actions" style="margin-top:8px">
+        <button class="admin-btn-primary ar-btn-sm" onclick="arOpenEdit('${r.id}')">Edit</button>
         <button class="admin-btn-secondary ar-btn-sm" onclick="arDeleteReview('${r.id}')">Delete</button>
       </div>
     </div>`;
@@ -340,6 +362,96 @@ async function arDeleteTag(id) {
     await refresh();
 }
 window.arDeleteTag = arDeleteTag;
+
+/* ── Edit Modal ────────────────────────────────────────────── */
+function arOpenEdit(id) {
+    const r = arReviews.find(x => x.id === id);
+    if (!r) return;
+
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const dateParts = r.dateLabel ? r.dateLabel.split(/[\s,]+/) : [];
+    const selMonth = dateParts[0] || 'Jan';
+    const selDay   = dateParts[1] || '1';
+    const selYear  = dateParts[2] || new Date().getFullYear();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'arEditOverlay';
+    overlay.className = 'admin-modal-overlay';
+    overlay.style.cssText = 'display:flex;align-items:center;justify-content:center;z-index:1000';
+    overlay.innerHTML = `
+    <div class="admin-modal" style="max-width:560px;width:100%;padding:28px">
+      <h3 style="margin:0 0 20px;font-size:18px;color:var(--brown)">Edit Review</h3>
+      <div class="ar-form-row">
+        <div class="ar-form-field"><label>Author Name</label>
+          <input class="ar-input" id="arEAuthor" value="${esc(r.authorName)}"></div>
+        <div class="ar-form-field"><label>Service</label>
+          <select class="ar-input" id="arEService">
+            <option ${r.service==='Drop-In Visit'?'selected':''}>Drop-In Visit</option>
+            <option ${r.service==='Dog Walking'?'selected':''}>Dog Walking</option>
+          </select></div>
+      </div>
+      <div class="ar-form-row">
+        <div class="ar-form-field"><label>Rating</label>
+          <select class="ar-input" id="arERating">
+            ${[5,4,3,2,1].map(n=>`<option value="${n}" ${r.rating==n?'selected':''}>${'★'.repeat(n)}${'☆'.repeat(5-n)} (${n})</option>`).join('')}
+          </select></div>
+        <div class="ar-form-field"><label>Date Label</label>
+          <div style="display:flex;gap:6px">
+            <select class="ar-input" id="arEMonth" style="flex:1">
+              ${months.map(m=>`<option ${m===selMonth?'selected':''}>${m}</option>`).join('')}
+            </select>
+            <select class="ar-input" id="arEDay" style="width:68px">
+              ${Array.from({length:31},(_,i)=>i+1).map(d=>`<option ${d==selDay?'selected':''}>${d}</option>`).join('')}
+            </select>
+            <select class="ar-input" id="arEYear" style="width:80px">
+              ${Array.from({length:5},(_,i)=>new Date().getFullYear()-i).map(y=>`<option ${y==selYear?'selected':''}>${y}</option>`).join('')}
+            </select>
+          </div></div>
+      </div>
+      <div class="ar-form-field" style="margin-bottom:12px"><label>Review Text</label>
+        <textarea class="ar-input ar-textarea" id="arEText">${esc(r.text)}</textarea></div>
+      <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+        <label class="ar-toggle-label"><input type="checkbox" id="arEFeatured" ${r.featuredOnHome?'checked':''}> Featured on Home</label>
+        <label class="ar-toggle-label">Color:
+          <select class="ar-input" id="arEColor">
+            ${COLORS.map(c=>`<option ${r.colorVariant===c?'selected':''}>${c}</option>`).join('')}
+          </select></label>
+      </div>
+      <p id="arEditMsg" style="font-size:13px;margin-bottom:8px"></p>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="admin-btn-secondary" onclick="document.getElementById('arEditOverlay').remove()">Cancel</button>
+        <button class="admin-btn-primary" onclick="arSaveEdit('${id}')">Save</button>
+      </div>
+    </div>`;
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+}
+window.arOpenEdit = arOpenEdit;
+
+async function arSaveEdit(id) {
+    const author   = document.getElementById('arEAuthor').value.trim();
+    const service  = document.getElementById('arEService').value;
+    const rating   = Number(document.getElementById('arERating').value);
+    const month    = document.getElementById('arEMonth').value;
+    const day      = document.getElementById('arEDay').value;
+    const year     = document.getElementById('arEYear').value;
+    const dateLabel= `${month} ${day}, ${year}`;
+    const text     = document.getElementById('arEText').value.trim();
+    const featured = document.getElementById('arEFeatured').checked;
+    const color    = document.getElementById('arEColor').value;
+    const msg      = document.getElementById('arEditMsg');
+
+    if (!author || !text) { msg.textContent = 'Author and text are required.'; msg.style.color='#c0392b'; return; }
+    msg.textContent = 'Saving...'; msg.style.color = '#888';
+    try {
+        await updateDoc(doc(db, 'reviews', id), { authorName:author, service, rating, dateLabel, text, featuredOnHome:featured, colorVariant:color });
+        document.getElementById('arEditOverlay')?.remove();
+        await refresh();
+    } catch(e) {
+        msg.textContent = 'Error: ' + e.message; msg.style.color = '#c0392b';
+    }
+}
+window.arSaveEdit = arSaveEdit;
 
 async function refresh() {
     await Promise.all([arLoadReviews(), arLoadTags()]);

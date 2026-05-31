@@ -1329,3 +1329,5 @@
 .ar-tag-row { display: flex; align-items: center; gap: 8px; }
 .ar-tag-edit-input { max-width: 240px; }
 .ar-add-tag-row { display: flex; align-items: center; gap: 8px; }
+.ar-sort-row { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--brown); }
+.ar-sort-row select { border:1.5px solid var(--border); border-radius:8px; padding:5px 10px; font-size:13px; font-family:inherit; background:#fff; color:var(--brown); cursor:pointer; }
