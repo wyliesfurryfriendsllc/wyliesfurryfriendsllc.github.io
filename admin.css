@@ -292,7 +292,7 @@
 ================================ */
 .admin-bookings-layout {
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 900px 1fr;
     gap: 24px;
     align-items: start;
 }
