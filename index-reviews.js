@@ -13,10 +13,7 @@ async function loadHomeReviews() {
     const snap = await getDocs(q);
     let reviews = snap.docs.map(d => ({ id: d.id, ...d.data() })).slice(0, 6);
 
-    if (!reviews.length) {
-        grid.innerHTML = '<p style="color:#aaa;font-size:14px">No reviews yet.</p>';
-        return;
-    }
+    if (!reviews.length) return; // keep hardcoded fallback
 
     const colors = ['rc-pink','rc-green','rc-peach','rc-lavender','rc-sage','rc-rose'];
     grid.innerHTML = reviews.map((r, i) => {
