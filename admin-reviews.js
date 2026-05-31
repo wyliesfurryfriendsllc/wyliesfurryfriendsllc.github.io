@@ -294,15 +294,20 @@ async function arSubmitAdd() {
     if (!author || !text) { msg.textContent = 'Author name and review text are required.'; msg.style.color='#c0392b'; return; }
 
     msg.textContent = 'Saving...'; msg.style.color = '#888';
-    await addDoc(collection(db, 'reviews'), {
-        authorName: author, service, rating, dateLabel, text,
-        colorVariant: color, featuredOnHome: featured, tags,
-        status: 'approved', source: 'admin',
-        bookingId: null, userId: null,
-        createdAt: serverTimestamp()
-    });
-    msg.textContent = 'Review added successfully!'; msg.style.color = '#1e8449';
-    await refresh();
+    try {
+        await addDoc(collection(db, 'reviews'), {
+            authorName: author, service, rating, dateLabel, text,
+            colorVariant: color, featuredOnHome: featured, tags,
+            status: 'approved', source: 'admin',
+            bookingId: null, userId: null,
+            createdAt: serverTimestamp()
+        });
+        msg.textContent = 'Review added successfully!'; msg.style.color = '#1e8449';
+        await refresh();
+    } catch(e) {
+        console.error('arSubmitAdd error:', e);
+        msg.textContent = 'Error: ' + e.message; msg.style.color = '#c0392b';
+    }
 }
 window.arSubmitAdd = arSubmitAdd;
 
