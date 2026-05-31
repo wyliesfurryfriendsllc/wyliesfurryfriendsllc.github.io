@@ -641,11 +641,12 @@ function collectDatesText() {
     const dateMode = document.querySelector('input[name="dateMode"]:checked')?.value || 'pick';
     let text = '';
     if (dateMode === 'pick') {
+        let day1TimesStr = null;
         [...selectedDates].sort().forEach(dateStr => {
             const tid = `dt_${dateStr.replace(/-/g,'_')}`;
             const slotsWrap = document.getElementById(`dateSlots_${tid}`);
             if (slotsWrap && slotsWrap.style.display === 'none') {
-                text += `  ${formatDate(dateStr)}: Same as Day 1\n`;
+                text += `  ${formatDate(dateStr)}: ${day1TimesStr || '—'}\n`;
                 return;
             }
             const slotEls = slotsWrap ? slotsWrap.querySelectorAll('.date-slot') : [];
@@ -660,7 +661,9 @@ function collectDatesText() {
                     times.push(`${formatTime(from)} – ${formatTime(to)}`);
                 }
             });
-            text += `  ${formatDate(dateStr)}: ${times.join(', ') || '—'}\n`;
+            const timesStr = times.join(', ') || '—';
+            if (day1TimesStr === null) day1TimesStr = timesStr;
+            text += `  ${formatDate(dateStr)}: ${timesStr}\n`;
         });
     } else {
         const start    = document.getElementById('rangeStart')?.value || '';

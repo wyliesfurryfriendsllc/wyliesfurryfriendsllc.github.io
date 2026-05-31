@@ -321,6 +321,30 @@ function closeBookingDetail() {
     document.querySelectorAll('.booking-card').forEach(c => c.classList.remove('active'));
 }
 
+function buildDatesText(b) {
+    if (b.dateTimes && typeof b.dateTimes === 'object') {
+        const sorted = Object.keys(b.dateTimes).sort();
+        return sorted.map(dateStr => {
+            const d = new Date(dateStr + 'T12:00:00');
+            const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const times = (b.dateTimes[dateStr] || []).map(t => fmtSlotAcc(t)).join(', ') || '—';
+            return `  ${label}: ${times}`;
+        }).join('\n');
+    }
+    // Fallback: resolve "Same as Day 1" in datesText
+    const lines = (b.datesText || '').split('\n').map(l => l.trim()).filter(Boolean);
+    let day1Times = null;
+    return lines.map(line => {
+        if (line.includes('Same as Day 1')) {
+            const datePart = line.split(':')[0];
+            return `${datePart}: ${day1Times || '—'}`;
+        }
+        const m = line.match(/:\s*(.+)$/);
+        if (m && day1Times === null) day1Times = m[1].trim();
+        return line;
+    }).join('\n');
+}
+
 function buildChargesHtml(b) {
     const pb   = b.priceBreakdown;
     const pets = b.pets || [];
@@ -359,7 +383,7 @@ function renderBookingDetail(b, panel) {
         </div>
         <div class="detail-section">
             <div class="detail-section-label">Dates &amp; Times</div>
-            <pre class="detail-dates">${escHtml((b.datesText || '—').trim())}</pre>
+            <pre class="detail-dates">${escHtml(buildDatesText(b).trim())}</pre>
         </div>
         <div class="detail-section">
             <div class="detail-section-label">Services &amp; Charges</div>
