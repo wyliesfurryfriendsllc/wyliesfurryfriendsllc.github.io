@@ -457,6 +457,7 @@
     padding-top: 8px;
     padding-bottom: 2px;
 }
+.charge-item { border-bottom: none; }
 .charge-item span:first-child { color: var(--brown-mid); font-size: 13px; }
 .charge-item span:last-child  { font-weight: 600; }
 .charge-total { border-top: 1.5px solid var(--border); margin-top: 4px; padding-top: 8px; }
