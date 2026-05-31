@@ -276,20 +276,25 @@ function renderBookingsList(bookings) {
         const d = getDaysUntil(b);
         return d !== null && d >= 0 && d <= 3 && ACTIVE_STATUSES.has(b.status);
     });
-    if (upcoming.length > 0) {
-        const banner = document.createElement('div');
-        banner.className = 'upcoming-banner';
-        banner.innerHTML = upcoming.map(b => {
-            const d = getDaysUntil(b);
-            const label = d === 0 ? 'Today!' : `In ${d} day${d !== 1 ? 's' : ''}`;
-            const firstLine = b.datesText ? b.datesText.trim().split('\n')[0].trim() : '—';
-            return `<div class="upcoming-banner-row">
+    upcoming.forEach(b => {
+        const d = getDaysUntil(b);
+        const label = d === 0 ? 'Today!' : `In ${d} day${d !== 1 ? 's' : ''}`;
+        const firstLine = b.datesText ? b.datesText.trim().split('\n')[0].trim() : '—';
+        const needsPayment = b.status === 'deposit_received';
+        const card = document.createElement('div');
+        card.className = 'upcoming-card';
+        card.onclick = () => openBookingDetail(b.id);
+        card.innerHTML = `
+            <div class="upcoming-card-row">
                 <span class="upcoming-banner-icon">⏰</span>
-                <div><strong>${escHtml(b.service || 'Booking')} · ${label}</strong><span>${escHtml(firstLine)}</span></div>
+                <div>
+                    <strong>${escHtml(b.service || 'Booking')} · ${label}</strong>
+                    <span>${escHtml(firstLine)}</span>
+                    ${needsPayment ? `<span class="upcoming-payment-due">Final payment due before service starts</span>` : ''}
+                </div>
             </div>`;
-        }).join('');
-        container.appendChild(banner);
-    }
+        container.appendChild(card);
+    });
 
     filtered.forEach(b => {
         const card = document.createElement('div');
