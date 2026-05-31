@@ -12,7 +12,11 @@ let arTags    = [];
 /* ── called by admin.js when tab is activated ─────────────── */
 window.AdminReviews = {
     async init() {
-        await Promise.all([arLoadTags(), arLoadReviews()]);
+        try {
+            await Promise.all([arLoadTags(), arLoadReviews()]);
+        } catch(e) {
+            console.error('AdminReviews init error:', e);
+        }
         arRender();
     }
 };
@@ -324,13 +328,10 @@ async function refresh() {
     arRender();
 }
 
-/* ── Auto-init once module is ready ─────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
-    const reviewsTabEl = document.getElementById('adminTabReviews');
-    if (reviewsTabEl && reviewsTabEl.style.display !== 'none') {
-        window.AdminReviews.init();
-    }
-});
+/* ── Auto-init if Reviews tab is already visible when module loads ── */
+if (document.getElementById('adminTabReviews')?.style.display !== 'none') {
+    window.AdminReviews.init();
+}
 
 /* ── Helpers ───────────────────────────────────────────────── */
 function starsText(n) { return '★'.repeat(n || 5) + '☆'.repeat(5 - (n || 5)); }
