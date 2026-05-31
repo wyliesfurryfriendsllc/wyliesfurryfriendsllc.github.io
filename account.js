@@ -218,6 +218,14 @@ function isoDate(d) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
+function getDaysUntil(b) {
+    const dates = parseBDates(b).sort();
+    if (!dates.length) return null;
+    const first = new Date(dates[0] + 'T12:00:00');
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    return Math.ceil((first - today) / 86400000);
+}
+
 const STATUS_LABELS = {
     pending:          'Pending',
     deposit_received: 'Reserved',
@@ -261,20 +269,43 @@ function renderBookingsList(bookings) {
         return;
     }
     container.innerHTML = '';
+
+    // Upcoming banner
+    const ACTIVE_STATUSES = new Set(['pending', 'deposit_received', 'paid', 'confirmed', 'in_service']);
+    const upcoming = filtered.filter(b => {
+        const d = getDaysUntil(b);
+        return d !== null && d >= 0 && d <= 3 && ACTIVE_STATUSES.has(b.status);
+    });
+    if (upcoming.length > 0) {
+        const banner = document.createElement('div');
+        banner.className = 'upcoming-banner';
+        banner.innerHTML = upcoming.map(b => {
+            const d = getDaysUntil(b);
+            const label = d === 0 ? 'Today!' : `In ${d} day${d !== 1 ? 's' : ''}`;
+            const firstLine = b.datesText ? b.datesText.trim().split('\n')[0].trim() : '—';
+            return `<div class="upcoming-banner-row">
+                <span class="upcoming-banner-icon">⏰</span>
+                <div><strong>${escHtml(b.service || 'Booking')} · ${label}</strong><span>${escHtml(firstLine)}</span></div>
+            </div>`;
+        }).join('');
+        container.appendChild(banner);
+    }
+
     filtered.forEach(b => {
         const card = document.createElement('div');
         card.className   = 'booking-card' + (b.id === activeBookingId ? ' active' : '');
         card.dataset.bid = b.id;
         card.onclick     = () => openBookingDetail(b.id);
-        const date      = b.createdAt?.toDate
-            ? b.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-            : '';
-        const firstLine = b.datesText ? b.datesText.trim().split('\n')[0] : '—';
+        const firstLine = b.datesText ? b.datesText.trim().split('\n')[0].trim() : '—';
 
         const pets = b.pets || [];
         const firstPet = pets[0] || {};
         const emoji = firstPet.type === 'cat' ? '🐱' : '🐶';
         const petNamesStr = pets.length === 0 ? '—' : pets.map(p => p.name || '?').join(', ');
+
+        const daysUntil = getDaysUntil(b);
+        const showChip = daysUntil !== null && daysUntil >= 0 && daysUntil <= 3 && ACTIVE_STATUSES.has(b.status);
+        const chipLabel = daysUntil === 0 ? 'Today!' : `Starts in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
 
         card.innerHTML = `
             <div class="bc-card-inner">
@@ -289,6 +320,7 @@ function renderBookingsList(bookings) {
                     <div class="bc-svc-name">${escHtml(b.service || '—')}</div>
                     <div class="bc-duration">${b.duration || 30} min</div>
                     <span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span>
+                    ${showChip ? `<div class="bc-upcoming-chip">⏰ ${chipLabel}</div>` : ''}
                     <div class="bc-date-line">${escHtml(firstLine)}</div>
                     <div class="bc-total-line">$${b.total || 0} est.</div>
                 </div>
@@ -411,7 +443,9 @@ function renderBookingDetail(b, panel) {
         ${b.status === 'deposit_received' ? `
         <div class="detail-section detail-payment-notice detail-payment-reserved">
             <div class="detail-section-label">Spot Reserved 🐾</div>
-            <p>Your deposit has been received${b.depositDate ? ' on ' + new Date(b.depositDate + 'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : ''}. Your spot is reserved! The remaining balance of <strong>$${Math.round((b.total || 0) / 2)}</strong> is due before the service begins.</p>
+            <p>Your deposit has been received${b.depositDate ? ' on ' + new Date(b.depositDate + 'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : ''}.</p>
+            <p>Your spot is reserved!</p>
+            <p>The remaining balance of <strong>$${Math.round((b.total || 0) / 2)}</strong> is due before the service begins.</p>
         </div>` : ''}
         ${b.status === 'paid' ? `
         <div class="detail-section detail-payment-notice detail-payment-paid">
