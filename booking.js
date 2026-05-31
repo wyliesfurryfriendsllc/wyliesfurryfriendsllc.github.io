@@ -186,13 +186,14 @@ function renderSelectedDatesList() {
     sorted.forEach((dateStr, index) => {
         const tid = `dt_${dateStr.replace(/-/g,'_')}`;
         const isFirst = index === 0;
-        const state = dateSlotData[dateStr] || { isSame: false, slots: [emptySlot()] };
+        const defaultSame = !isFirst; // non-first dates default to "Same as Day 1"
+        const state = dateSlotData[dateStr] || { isSame: defaultSame, slots: [emptySlot()] };
         if (!dateSlotData[dateStr]) dateSlotData[dateStr] = state;
         const isSame = !isFirst && state.isSame;
         const slots = state.slots.length > 0 ? state.slots : [emptySlot()];
 
         const div = document.createElement('div');
-        div.className = 'date-entry';
+        div.className = isFirst ? 'date-entry date-entry--first' : 'date-entry';
         div.dataset.date = dateStr;
 
         const slotsHtml = slots.map((sl, si) => renderSlotHtml(tid, dateStr, si, sl, slots.length)).join('');
