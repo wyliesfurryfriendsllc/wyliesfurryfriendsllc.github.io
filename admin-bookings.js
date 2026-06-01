@@ -824,17 +824,15 @@ async function exportImage(bookingId) {
             }
         }
 
-        // iOS fallback: open image in new tab, user long-presses to save
+        // iOS fallback: show image in inline modal, user long-presses to save
         if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-            const w = window.open('', '_blank');
-            if (w) {
-                w.document.write(
-                    `<!doctype html><html><head><meta name="viewport" content="width=device-width">` +
-                    `<title>${filename}</title></head><body style="margin:0;background:#000">` +
-                    `<img src="${dataUrl}" style="max-width:100%;display:block"></body></html>`
-                );
-                w.document.close();
-            }
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:16px';
+            overlay.innerHTML =
+                `<p style="color:#fff;font-size:14px;text-align:center;margin:0">长按图片 → 存储到照片</p>` +
+                `<img src="${dataUrl}" style="max-width:100%;max-height:75vh;border-radius:8px;display:block">` +
+                `<button style="background:#fff;border:none;border-radius:10px;padding:10px 28px;font-size:15px;font-weight:600;cursor:pointer" onclick="this.closest('div').remove()">关闭</button>`;
+            document.body.appendChild(overlay);
             return;
         }
 
