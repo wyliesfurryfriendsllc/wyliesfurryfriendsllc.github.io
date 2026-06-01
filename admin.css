@@ -520,6 +520,7 @@ input, select, textarea {
 }
 
 @media (max-width: 768px) {
+    body.admin-page { padding-top: 0; }
     .admin-main { padding: 20px 12px 60px; }
     .admin-header-inner { padding: 0 16px; }
 
