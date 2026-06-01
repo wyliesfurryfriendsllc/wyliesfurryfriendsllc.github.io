@@ -890,8 +890,8 @@ input, select, textarea {
     display: flex; flex-direction: column; align-items: center;
     gap: 2px; min-width: 0; width: 100%;
 }
-.abc-petname   { font-size: 15px; font-weight: 700; color: var(--brown); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
-.abc-ownername { font-size: 13px; color: var(--brown-mid); max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+.abc-petname   { font-size: 15px; font-weight: 700; color: var(--brown); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.abc-ownername { font-size: 13px; color: var(--brown-mid); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
 
 .abc-right { flex: 1; min-width: 0; }
 .abc-service  { font-size: 14px; font-weight: 700; color: var(--brown); margin-bottom: 2px; }

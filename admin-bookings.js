@@ -126,7 +126,24 @@ function renderAdminBookings() {
 
         const cardsEl = group.querySelector('.abc-timeline-cards');
         groups[iso].forEach(b => {
-            const firstLine = b.datesText ? b.datesText.trim().split('\n')[0] : '—';
+            // Build date display: bold date, normal time
+            let cardDate = '';
+            if (b.dateTimes && Object.keys(b.dateTimes).length) {
+                const firstIso = Object.keys(b.dateTimes).sort()[0];
+                const d = new Date(firstIso + 'T12:00:00');
+                const dl = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const slots = (b.dateTimes[firstIso] || []).filter(Boolean).sort();
+                const times = slots.map(t => fmtSlot(t)).join(', ');
+                cardDate = `<strong>${escHtml(dl)}</strong>${times ? ' · ' + escHtml(times) : ''}`;
+            } else if (b.datesText) {
+                const fl = b.datesText.trim().split('\n')[0];
+                const ci = fl.indexOf(':');
+                cardDate = ci > 0
+                    ? `<strong>${escHtml(fl.slice(0, ci))}</strong>${escHtml(fl.slice(ci))}`
+                    : `<strong>${escHtml(fl)}</strong>`;
+            } else {
+                cardDate = '—';
+            }
             const firstPet  = (b.pets || [])[0];
             const petPhoto  = firstPet?.photoUrl || '';
             const petName   = firstPet?.name || '';
@@ -148,10 +165,9 @@ function renderAdminBookings() {
                         </div>
                     </div>
                     <div class="abc-right">
-                        <div class="abc-service">${escHtml(b.service || '')}</div>
-                        <div class="abc-duration">${b.duration || 30} min</div>
+                        <div class="abc-service">${escHtml(b.service || '')} · ${b.duration || 30} min</div>
                         <div style="margin-bottom:4px"><span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span></div>
-                        <div class="abc-dates">${escHtml(firstLine)}</div>
+                        <div class="abc-dates">${cardDate}</div>
                         <div class="abc-price">$${b.total || 0} est.</div>
                     </div>
                 </div>`;
