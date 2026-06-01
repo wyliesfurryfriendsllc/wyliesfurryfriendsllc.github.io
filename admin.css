@@ -337,7 +337,7 @@ input, select, textarea {
     border-color: var(--pink);
     color: #fff;
 }
-.filter-chip-rover { background:#dcff9f; border-color:#dcff9f; color:#627c29; }
+.filter-chip-rover { background:#dcff9f; border-color:#627c29; color:#627c29; }
 .filter-chip-rover:hover { background:#d0f590; border-color:#d0f590; color:#627c29; }
 .filter-chip-rover.active { background:#627c29; border-color:#627c29; color:#fff; }
 .rover-badge { display:inline-block; font-size:11px; font-weight:600; background:#dcff9f; color:#627c29; border:1px solid #c5e87a; border-radius:4px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
