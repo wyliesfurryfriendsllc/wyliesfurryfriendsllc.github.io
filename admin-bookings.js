@@ -544,7 +544,16 @@ function renderDetail(b, panel) {
             </div>
         </div>
 
-        ${isPending && !isAccepted ? `
+        ${isPending && !isAccepted && b.isRover ? `
+        <div class="detail-actions">
+            <button class="admin-btn-primary" onclick="AdminBookings.markRoverConfirmed('${b.id}')">
+                ✓ Confirm Booking
+            </button>
+            <button class="admin-btn-danger" onclick="AdminBookings.rejectBooking('${b.id}')">
+                ✕ Decline
+            </button>
+        </div>` : ''}
+        ${isPending && !isAccepted && !b.isRover ? `
         <div class="detail-actions">
             <button class="admin-btn-primary" onclick="AdminBookings.acceptBooking('${b.id}','${escHtml(b.clientName||'')}',${b.total||0})">
                 ✓ Accept Booking
@@ -671,6 +680,11 @@ async function markPaidInFull(bookingId) {
 async function markInService(bookingId) {
     if (!confirm('Mark this booking as In Service?')) return;
     await updateDoc(doc(db, 'bookings', bookingId), { status: 'in_service' });
+}
+
+async function markRoverConfirmed(bookingId) {
+    if (!confirm('Confirm this Rover booking?')) return;
+    await updateDoc(doc(db, 'bookings', bookingId), { status: 'paid' });
 }
 
 function calcBaseTotal(b) {
@@ -1160,7 +1174,7 @@ window.epSave = async function(bookingId, type) {
 window.AdminBookings = {
     init, setFilter, toggleHideRover, openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
-    markDepositReceived, markPaidInFull, markInService,
+    markDepositReceived, markPaidInFull, markInService, markRoverConfirmed,
     addAdjustment, removeAdjustment, toggleAdjVisits,
     deleteBooking, sendAdminMessage, exportImage,
     openEditDatesModal, openEditPaymentModal

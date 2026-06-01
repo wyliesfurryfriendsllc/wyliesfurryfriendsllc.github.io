@@ -359,7 +359,7 @@ input, select, textarea {
     transition: border-color 0.15s, box-shadow 0.15s;
 }
 .admin-booking-card:hover { border-color: var(--pink-light); box-shadow: 0 2px 12px rgba(61,32,24,0.07); }
-.admin-booking-card.rover-card { background: #f1ffd2; border-color: #627c29; }
+.admin-booking-card.rover-card { background: #f8ffe6; border-color: #627c29; }
 .admin-booking-card.rover-card:hover { border-color: #4e6320; }
 .admin-booking-card.active {
     border-color: var(--pink);
