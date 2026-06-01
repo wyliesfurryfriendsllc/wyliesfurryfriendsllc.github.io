@@ -396,13 +396,17 @@ function paymentRecordsHtml(b) {
     return `<div class="payment-record">
         ${hasDeposit ? `<div class="payment-record-row">
             <span class="payment-record-label">Deposit</span>
-            <span class="payment-record-val">${b.depositAmount != null ? '$' + b.depositAmount : '—'} · ${b.depositDate || '—'}</span>
-            <button class="payment-edit-btn" onclick="AdminBookings.openEditPaymentModal('${b.id}','deposit')" title="Edit deposit">✎</button>
+            <div class="payment-record-right">
+                <span class="payment-record-val">${b.depositAmount != null ? '$' + b.depositAmount : '—'} · ${b.depositDate || '—'}</span>
+                <button class="payment-edit-btn" onclick="AdminBookings.openEditPaymentModal('${b.id}','deposit')" title="Edit deposit">✎</button>
+            </div>
         </div>` : ''}
         ${hasFinal ? `<div class="payment-record-row">
             <span class="payment-record-label">Final payment</span>
-            <span class="payment-record-val">${b.finalPaymentAmount != null ? '$' + b.finalPaymentAmount : '—'} · ${b.finalPaymentDate || '—'}</span>
-            <button class="payment-edit-btn" onclick="AdminBookings.openEditPaymentModal('${b.id}','final')" title="Edit final payment">✎</button>
+            <div class="payment-record-right">
+                <span class="payment-record-val">${b.finalPaymentAmount != null ? '$' + b.finalPaymentAmount : '—'} · ${b.finalPaymentDate || '—'}</span>
+                <button class="payment-edit-btn" onclick="AdminBookings.openEditPaymentModal('${b.id}','final')" title="Edit final payment">✎</button>
+            </div>
         </div>` : ''}
     </div>`;
 }

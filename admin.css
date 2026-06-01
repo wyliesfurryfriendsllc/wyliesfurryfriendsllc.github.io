@@ -1305,8 +1305,9 @@ input, select, textarea {
     display: flex; justify-content: space-between; align-items: center;
     font-size: 13px; padding: 3px 0; gap: 10px;
 }
-.payment-record-label { color: var(--brown-mid); font-weight: 500; white-space: nowrap; min-width: 70px; }
-.payment-record-val   { color: var(--brown); font-weight: 600; white-space: nowrap; margin-left: auto; margin-right: 6px; }
+.payment-record-label { color: var(--brown-mid); font-weight: 500; white-space: nowrap; }
+.payment-record-right { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.payment-record-val   { color: var(--brown); font-weight: 600; white-space: nowrap; }
 .payment-edit-btn {
     background: none; border: none; cursor: pointer;
     color: #b08060; font-size: 15px; padding: 0 2px; line-height: 1;
