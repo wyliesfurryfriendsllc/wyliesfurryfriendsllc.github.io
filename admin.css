@@ -381,8 +381,9 @@ input, select, textarea {
 .status-rejected  { background: #FCE8E8; color: #c0392b; }
 .status-completed { background: var(--cream-2); color: var(--brown-mid); }
 .holiday-rate-badge { display: inline-block; background: #FFF0D6; color: #8a5000; border-radius: 20px; font-size: 10px; font-weight: 700; padding: 0 7px; height: 20px; line-height: 20px; vertical-align: middle; margin-left: 4px; }
-.status-deposit { background: #D6EAF8; color: #1a5276; }
-.status-paid    { background: #D5F5E3; color: #1e8449; }
+.status-deposit     { background: #D6EAF8; color: #1a5276; }
+.status-paid        { background: #D5F5E3; color: #1e8449; }
+.status-in-service  { background: #FFE4EF; color: #c0306e; }
 
 /* Deposit action UI */
 .deposit-action-wrap { width: 100%; margin-bottom: 6px; }
