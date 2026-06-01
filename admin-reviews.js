@@ -49,6 +49,17 @@ function arRender() {
         <div id="arPendingList">${arPendingHtml()}</div>
       </div>
 
+      <!-- A2: Featured on Home -->
+      <div class="admin-section">
+        <div class="admin-section-header">
+          <div>
+            <h2 class="admin-section-title">Featured on Home</h2>
+            <p class="admin-section-sub">Reviews shown on the homepage. Use ↑↓ to set display order.</p>
+          </div>
+        </div>
+        <div id="arFeaturedList">${arFeaturedHtml()}</div>
+      </div>
+
       <!-- B: Approved -->
       <div class="admin-section">
         <div class="admin-section-header">
@@ -117,6 +128,65 @@ function arPendingHtml() {
       </div>
     </div>`).join('');
 }
+
+/* ── Featured on Home HTML ─────────────────────────────────── */
+function arFeaturedHtml() {
+    const list = arReviews
+        .filter(r => r.status === 'approved' && r.featuredOnHome)
+        .sort((a, b) => (a.homeOrder ?? 9999) - (b.homeOrder ?? 9999));
+    if (!list.length) return '<p class="ar-empty">No reviews featured on home yet.</p>';
+    return list.map((r, i) => `
+    <div class="ar-featured-row">
+      <div class="ar-featured-order-btns">
+        <button class="ar-order-btn" onclick="arMoveUp('${r.id}')" ${i === 0 ? 'disabled' : ''}>↑</button>
+        <span class="ar-featured-num">${i + 1}</span>
+        <button class="ar-order-btn" onclick="arMoveDown('${r.id}')" ${i === list.length - 1 ? 'disabled' : ''}>↓</button>
+      </div>
+      <div class="ar-featured-info">
+        <strong>${esc(r.authorName)}</strong>
+        <span class="ar-date">${esc(r.service)} · ${r.dateLabel || ''}</span>
+        <p class="ar-featured-text">"${esc(r.text.length > 80 ? r.text.slice(0, 80) + '…' : r.text)}"</p>
+      </div>
+    </div>`).join('');
+}
+
+async function arMoveUp(id) {
+    const list = arReviews
+        .filter(r => r.status === 'approved' && r.featuredOnHome)
+        .sort((a, b) => (a.homeOrder ?? 9999) - (b.homeOrder ?? 9999));
+    const idx = list.findIndex(r => r.id === id);
+    if (idx <= 0) return;
+    await Promise.all([
+        updateDoc(doc(db, 'reviews', list[idx].id),     { homeOrder: idx - 1 }),
+        updateDoc(doc(db, 'reviews', list[idx - 1].id), { homeOrder: idx }),
+    ]);
+    arReviews = arReviews.map(r => {
+        if (r.id === list[idx].id)     return { ...r, homeOrder: idx - 1 };
+        if (r.id === list[idx - 1].id) return { ...r, homeOrder: idx };
+        return r;
+    });
+    document.getElementById('arFeaturedList').innerHTML = arFeaturedHtml();
+}
+window.arMoveUp = arMoveUp;
+
+async function arMoveDown(id) {
+    const list = arReviews
+        .filter(r => r.status === 'approved' && r.featuredOnHome)
+        .sort((a, b) => (a.homeOrder ?? 9999) - (b.homeOrder ?? 9999));
+    const idx = list.findIndex(r => r.id === id);
+    if (idx >= list.length - 1) return;
+    await Promise.all([
+        updateDoc(doc(db, 'reviews', list[idx].id),     { homeOrder: idx + 1 }),
+        updateDoc(doc(db, 'reviews', list[idx + 1].id), { homeOrder: idx }),
+    ]);
+    arReviews = arReviews.map(r => {
+        if (r.id === list[idx].id)     return { ...r, homeOrder: idx + 1 };
+        if (r.id === list[idx + 1].id) return { ...r, homeOrder: idx };
+        return r;
+    });
+    document.getElementById('arFeaturedList').innerHTML = arFeaturedHtml();
+}
+window.arMoveDown = arMoveDown;
 
 let arApprovedSortOrder = 'newest';
 
@@ -283,8 +353,16 @@ async function arDeleteReview(id) {
 window.arDeleteReview = arDeleteReview;
 
 async function arToggleFeatured(id, val) {
-    await updateDoc(doc(db, 'reviews', id), { featuredOnHome: val });
-    arReviews = arReviews.map(r => r.id === id ? { ...r, featuredOnHome: val } : r);
+    const update = { featuredOnHome: val };
+    if (val) {
+        const maxOrder = Math.max(-1, ...arReviews
+            .filter(r => r.featuredOnHome && r.id !== id)
+            .map(r => r.homeOrder ?? -1));
+        update.homeOrder = maxOrder + 1;
+    }
+    await updateDoc(doc(db, 'reviews', id), update);
+    arReviews = arReviews.map(r => r.id === id ? { ...r, ...update } : r);
+    document.getElementById('arFeaturedList').innerHTML = arFeaturedHtml();
 }
 window.arToggleFeatured = arToggleFeatured;
 

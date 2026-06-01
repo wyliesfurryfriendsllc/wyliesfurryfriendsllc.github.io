@@ -11,7 +11,7 @@ async function loadHomeReviews() {
     );
     const snap = await getDocs(q);
     let reviews = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-        .sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+        .sort((a,b) => (a.homeOrder ?? 9999) - (b.homeOrder ?? 9999));
 
     if (!reviews.length) return; // keep hardcoded fallback
 
