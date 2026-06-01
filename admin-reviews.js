@@ -14,12 +14,32 @@ window.AdminReviews = {
     async init() {
         try {
             await Promise.all([arLoadTags(), arLoadReviews()]);
+            await arNormalizeHomeOrders();
         } catch(e) {
             console.error('AdminReviews init error:', e);
         }
         arRender();
     }
 };
+
+// One-time initialization: assign homeOrder to featured reviews that lack it
+async function arNormalizeHomeOrders() {
+    const featured = arReviews
+        .filter(r => r.status === 'approved' && r.featuredOnHome)
+        .sort((a, b) => {
+            const ao = a.homeOrder, bo = b.homeOrder;
+            if (ao != null && bo != null) return ao - bo;
+            if (ao != null) return -1;
+            if (bo != null) return 1;
+            return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+        });
+    const needsUpdate = featured.some((r, i) => r.homeOrder !== i);
+    if (!needsUpdate) return;
+    await Promise.all(featured.map((r, i) => updateDoc(doc(db, 'reviews', r.id), { homeOrder: i })));
+    featured.forEach((r, i) => {
+        arReviews = arReviews.map(x => x.id === r.id ? { ...x, homeOrder: i } : x);
+    });
+}
 
 async function arLoadReviews() {
     const q    = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'));
