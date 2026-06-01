@@ -831,6 +831,8 @@ input, select, textarea {
     transition: border-color 0.15s;
 }
 .cal-visit-card:hover { border-color: var(--pink); }
+.cal-visit-card.cal-visit-card-rover { background: #f8ffe6; border-color: #627c29; }
+.cal-visit-card.cal-visit-card-rover:hover { border-color: #4e6320; }
 .cal-visit-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
 .cal-visit-svc  { font-weight: 700; font-size: 14px; color: var(--brown); }
 .cal-visit-time { font-size: 13px; color: var(--brown-mid); }

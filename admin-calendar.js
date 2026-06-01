@@ -209,7 +209,7 @@ function showDayBookings(iso) {
         }
 
         const card = document.createElement('div');
-        card.className = 'cal-visit-card';
+        card.className = 'cal-visit-card' + (b.isRover ? ' cal-visit-card-rover' : '');
         card.innerHTML = `
             <div class="cal-visit-info">
                 <div class="cal-visit-svc">${escHtml(svcLabel)}</div>
