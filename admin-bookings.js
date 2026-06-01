@@ -161,7 +161,7 @@ function renderAdminBookings() {
                 ? `<img class="abc-pet-avatar" src="${escHtml(petPhoto)}" alt="${escHtml(petName)}">`
                 : `<div class="abc-pet-avatar abc-pet-emoji">${petEmoji}</div>`;
             const card = document.createElement('div');
-            card.className = 'admin-booking-card' + (b.id === activeBookingId ? ' active' : '');
+            card.className = 'admin-booking-card' + (b.id === activeBookingId ? ' active' : '') + (b.isRover ? ' rover-card' : '');
             card.dataset.bookingId = b.id;
             card.onclick = () => openDetail(b.id);
             card.innerHTML = `
