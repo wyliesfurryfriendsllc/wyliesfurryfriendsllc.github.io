@@ -478,7 +478,11 @@ function renderDetail(b, panel) {
         </div>
 
         <div class="detail-section">
-            <div class="detail-section-label">Price Adjustments</div>
+            <div class="detail-section-label cancel-section-header" onclick="var bd=this.nextElementSibling;bd.classList.toggle('cancel-collapsed');this.querySelector('.cancel-chevron').classList.toggle('cancel-chevron-open')">
+                Price Adjustments
+                <span class="cancel-chevron">▾</span>
+            </div>
+            <div class="cancel-body cancel-collapsed">
             ${renderAdjustmentsHtml(b)}
             ${!isCompleted ? `<div class="adj-add-form">
                 <input type="text" id="adjName" class="adj-input-name" placeholder="Reason (e.g. Special care fee)">
@@ -496,14 +500,20 @@ function renderDetail(b, panel) {
                     <span class="adj-visits-label">visits</span>
                 </div>
             </div>` : ''}
+            </div>
         </div>
 
         <div class="detail-section">
-            <div class="detail-section-label">Contact</div>
-            <div class="detail-row"><span>Name</span><span>${escHtml(b.clientName || '—')}</span></div>
-            <div class="detail-row"><span>Phone</span><span>${escHtml(b.clientPhone || '—')}</span></div>
-            <div class="detail-row"><span>Email</span><span>${escHtml(b.clientEmail || '—')}</span></div>
-            ${b.notes ? `<div class="detail-row"><span>Notes</span><span>${escHtml(b.notes)}</span></div>` : ''}
+            <div class="detail-section-label cancel-section-header" onclick="var bd=this.nextElementSibling;bd.classList.toggle('cancel-collapsed');this.querySelector('.cancel-chevron').classList.toggle('cancel-chevron-open')">
+                Contact
+                <span class="cancel-chevron">▾</span>
+            </div>
+            <div class="cancel-body cancel-collapsed">
+                <div class="detail-row"><span>Name</span><span>${escHtml(b.clientName || '—')}</span></div>
+                <div class="detail-row"><span>Phone</span><span>${escHtml(b.clientPhone || '—')}</span></div>
+                <div class="detail-row"><span>Email</span><span>${escHtml(b.clientEmail || '—')}</span></div>
+                ${b.notes ? `<div class="detail-row"><span>Notes</span><span>${escHtml(b.notes)}</span></div>` : ''}
+            </div>
         </div>
 
         <div class="detail-section">
