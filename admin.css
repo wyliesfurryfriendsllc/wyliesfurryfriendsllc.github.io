@@ -424,7 +424,7 @@ input, select, textarea {
     margin-bottom: 8px;
 }
 .detail-header { margin-bottom: 20px; }
-.detail-title { display: block; font-family: 'Fraunces', serif; font-size: 18px; color: var(--brown); margin-bottom: 8px; }
+.detail-title { display: block; font-family: 'Fraunces', serif; font-size: 22px; color: var(--brown); margin-bottom: 8px; }
 .detail-header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .detail-close {
     background: none; border: none; font-size: 22px;
@@ -559,7 +559,7 @@ input, select, textarea {
     .messages-thread { max-height: 180px; }
 
     /* Detail panel: shrink all text by ~1 size */
-    .admin-booking-inline-detail .detail-title { font-size: 16px; }
+    .admin-booking-inline-detail .detail-title { font-size: 20px; }
     .admin-booking-inline-detail .detail-section-label { font-size: 10px; }
     .admin-booking-inline-detail .detail-service-summary { font-size: 13px; }
     .admin-booking-inline-detail .detail-service-summary strong { font-size: 14px; }
