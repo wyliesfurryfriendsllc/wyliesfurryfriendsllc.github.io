@@ -782,51 +782,71 @@ function escHtml(s) {
 // ─── EXPORT IMAGE ─────────────────────────────────────────
 async function exportImage(bookingId) {
     const target = document.getElementById('detail-export-content');
-    if (!target || typeof html2canvas === 'undefined') return;
+    if (!target || typeof html2canvas === 'undefined') {
+        alert('Export not available.'); return;
+    }
     const btn = document.querySelector('.detail-export-btn');
     const svgIcon = btn?.innerHTML;
     if (btn) { btn.textContent = '…'; btn.disabled = true; }
-    // Temporarily pin badge styles so html2canvas renders text centered
+
     const badges = target.querySelectorAll('.status-badge');
     badges.forEach(badge => {
-        const BADGE_H = 24;
-        badge.style.cssText += `;display:inline-block!important;height:${BADGE_H}px!important;` +
-            `line-height:${BADGE_H}px!important;padding:0 10px!important;` +
-            `font-size:11px!important;box-sizing:border-box!important;`;
+        badge.style.cssText += ';display:inline-block!important;height:24px!important;' +
+            'line-height:24px!important;padding:0 10px!important;' +
+            'font-size:11px!important;box-sizing:border-box!important;';
     });
+
     try {
-        const EXPORT_W = 680;
         const canvas = await html2canvas(target, {
             backgroundColor: '#fffaf7',
             scale: 2,
-            width: EXPORT_W,
-            windowWidth: EXPORT_W,
+            width: 680,
+            windowWidth: 680,
             useCORS: true,
             logging: false
         });
+
         const b = allBookings.find(x => x.id === bookingId);
         const name = (b?.clientName || 'booking').replace(/\s+/g, '-').toLowerCase();
         const filename = `${name}-${new Date().toISOString().slice(0,10)}.png`;
+        const dataUrl = canvas.toDataURL('image/png');
 
-        canvas.toBlob(async blob => {
-            const file = new File([blob], filename, { type: 'image/png' });
-            if (navigator.canShare?.({ files: [file] })) {
-                // iOS/Android: share sheet → user can save to Photos
+        // Try Web Share API with file (iOS 15+ / Android)
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+        const file = new File([blob], filename, { type: 'image/png' });
+        if (navigator.canShare?.({ files: [file] })) {
+            try {
                 await navigator.share({ files: [file], title: filename });
-            } else {
-                // Desktop fallback: download link
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = url;
-                link.click();
-                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                return;
+            } catch(e) {
+                if (e.name === 'AbortError') return;
+                // share failed — fall through to next method
             }
-        }, 'image/png');
+        }
+
+        // iOS fallback: open image in new tab, user long-presses to save
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            const w = window.open('', '_blank');
+            if (w) {
+                w.document.write(
+                    `<!doctype html><html><head><meta name="viewport" content="width=device-width">` +
+                    `<title>${filename}</title></head><body style="margin:0;background:#000">` +
+                    `<img src="${dataUrl}" style="max-width:100%;display:block"></body></html>`
+                );
+                w.document.close();
+            }
+            return;
+        }
+
+        // Desktop: download
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = dataUrl;
+        link.click();
+
     } catch(e) {
         if (e.name !== 'AbortError') alert('Export failed: ' + e.message);
     } finally {
-        // Restore badge styles
         badges.forEach(badge => { badge.style.cssText = badge.style.cssText
             .replace(/display:[^;]+!important;/g,'')
             .replace(/height:[^;]+!important;/g,'')
