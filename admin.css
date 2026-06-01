@@ -367,6 +367,7 @@ input, select, textarea {
     border-radius: 14px 14px 0 0;
     box-shadow: none;
 }
+.admin-booking-card.rover-card.active { border-color: #627c29; border-bottom-color: transparent; }
 
 .abc-top {
     display: flex;
