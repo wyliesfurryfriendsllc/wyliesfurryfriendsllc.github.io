@@ -399,6 +399,7 @@ function renderChargesHtml(b) {
 }
 
 function paymentRecordsHtml(b) {
+    if (b.isRover) return '';
     const hasDeposit = b.depositDate || b.depositAmount != null;
     const hasFinal   = b.finalPaymentDate || b.finalPaymentAmount != null;
     const c          = b.cancellation;
@@ -554,7 +555,7 @@ function renderDetail(b, panel) {
         </div>` : ''}
         ${isAccepted ? `
         <div class="detail-actions">
-            <div class="deposit-action-wrap">
+            ${!b.isRover ? `<div class="deposit-action-wrap">
                 <div class="deposit-action-label">Record deposit payment:</div>
                 <div class="deposit-action-row">
                     <input type="date" id="depositDateInput" value="${todayISO}">
@@ -563,13 +564,13 @@ function renderDetail(b, panel) {
                         ✓ Deposit Received
                     </button>
                 </div>
-            </div>
+            </div>` : ''}
             <button class="admin-btn-danger" onclick="AdminBookings.rejectBooking('${b.id}')">✕ Decline</button>
         </div>` : ''}
         ${isDepositReceived ? `
         <div class="detail-actions">
             ${paymentRecordsHtml(b)}
-            <div class="deposit-action-wrap">
+            ${!b.isRover ? `<div class="deposit-action-wrap">
                 <div class="deposit-action-label">Record final payment:</div>
                 <div class="deposit-action-row">
                     <input type="date" id="finalPayDateInput" value="${todayISO}">
@@ -578,7 +579,7 @@ function renderDetail(b, panel) {
                         💚 Paid in Full
                     </button>
                 </div>
-            </div>
+            </div>` : ''}
             <button class="admin-btn-in-service" onclick="AdminBookings.markInService('${b.id}')">▶ Mark In Service</button>
             <button class="admin-btn-secondary" onclick="AdminBookings.markCompleted('${b.id}')">Mark Completed</button>
             <button class="admin-btn-danger" onclick="AdminBookings.rejectBooking('${b.id}')">✕ Decline</button>
