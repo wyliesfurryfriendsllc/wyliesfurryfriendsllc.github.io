@@ -480,7 +480,7 @@ function renderDetail(b, panel) {
         <div class="detail-section">
             <div class="detail-section-label">Price Adjustments</div>
             ${renderAdjustmentsHtml(b)}
-            <div class="adj-add-form">
+            ${!isCompleted ? `<div class="adj-add-form">
                 <input type="text" id="adjName" class="adj-input-name" placeholder="Reason (e.g. Special care fee)">
                 <div class="adj-add-row">
                     <input type="number" id="adjAmount" class="adj-input-amt" placeholder="$ amount" step="0.01">
@@ -495,7 +495,7 @@ function renderDetail(b, panel) {
                     <input type="number" id="adjVisits" class="adj-input-visits" placeholder="${getNumVisitsFromBooking(b)}" min="1" step="1" value="${getNumVisitsFromBooking(b)}">
                     <span class="adj-visits-label">visits</span>
                 </div>
-            </div>
+            </div>` : ''}
         </div>
 
         <div class="detail-section">
@@ -788,9 +788,9 @@ function renderCancellationHtml(b) {
     const savedOption = c.refundOption    || 'full';
     const savedTip    = c.convertToTip    || false;
     const hasSaved    = c.cancelledVisits != null;
-    const rb = (opt) => opt === 'full' ? tot : opt === 'deposit' ? tot * 0.5 : tot * 0.25;
     const cv = hasSaved ? (c.cancelledVisits * c.pricePerVisit) : 0;
-    const refundBase = hasSaved ? rb(savedOption) : 0;
+    const rbFromCv = (opt) => opt === 'full' ? cv : opt === 'deposit' ? cv * 0.5 : cv * 0.25;
+    const refundBase = hasSaved ? rbFromCv(savedOption) : 0;
     const dispRefund = hasSaved ? (savedTip ? '0.00' : refundBase.toFixed(2)) : '—';
     const dispTip    = hasSaved ? (savedTip ? refundBase.toFixed(2) : '0.00') : '—';
     const labels = { full: 'Full Refund', deposit: 'Deposit Refund', half_deposit: 'Half Deposit Refund' };
@@ -799,11 +799,11 @@ function renderCancellationHtml(b) {
         <div class="cancel-input-row">
             <div class="cancel-field">
                 <label class="cancel-label">Cancelled Visits</label>
-                <input type="number" id="cancelVisits" class="cancel-input" value="${savedVisits}" min="0" placeholder="0" oninput="calcCancellation(${tot})">
+                <input type="number" id="cancelVisits" class="cancel-input" value="${savedVisits}" min="0" placeholder="0" oninput="calcCancellation()">
             </div>
             <div class="cancel-field">
                 <label class="cancel-label">Price Per Visit ($)</label>
-                <input type="number" id="cancelPPV" class="cancel-input" value="${savedPPV}" min="0" step="0.01" placeholder="0.00" oninput="calcCancellation(${tot})">
+                <input type="number" id="cancelPPV" class="cancel-input" value="${savedPPV}" min="0" step="0.01" placeholder="0.00" oninput="calcCancellation()">
             </div>
         </div>
         <div class="cancel-calc-row">
@@ -813,20 +813,20 @@ function renderCancellationHtml(b) {
         <div class="cancel-refund-options">
             <div class="cancel-label" style="margin-bottom:6px">Refund Option</div>
             <label class="cancel-radio-row">
-                <input type="radio" name="cancelRefund" value="full" ${savedOption === 'full' ? 'checked' : ''} onchange="calcCancellation(${tot})">
-                <span>Full Refund <span class="cancel-pct">(100% · $${tot.toFixed(2)})</span></span>
+                <input type="radio" name="cancelRefund" value="full" ${savedOption === 'full' ? 'checked' : ''} onchange="calcCancellation()">
+                <span>Full Refund <span class="cancel-pct">(100% · $<span id="cancelAmtFull">${hasSaved ? cv.toFixed(2) : '0.00'}</span>)</span></span>
             </label>
             <label class="cancel-radio-row">
-                <input type="radio" name="cancelRefund" value="deposit" ${savedOption === 'deposit' ? 'checked' : ''} onchange="calcCancellation(${tot})">
-                <span>Deposit Refund <span class="cancel-pct">(50% · $${(tot * 0.5).toFixed(2)})</span></span>
+                <input type="radio" name="cancelRefund" value="deposit" ${savedOption === 'deposit' ? 'checked' : ''} onchange="calcCancellation()">
+                <span>Deposit Refund <span class="cancel-pct">(50% · $<span id="cancelAmtDeposit">${hasSaved ? (cv * 0.5).toFixed(2) : '0.00'}</span>)</span></span>
             </label>
             <label class="cancel-radio-row">
-                <input type="radio" name="cancelRefund" value="half_deposit" ${savedOption === 'half_deposit' ? 'checked' : ''} onchange="calcCancellation(${tot})">
-                <span>Half Deposit Refund <span class="cancel-pct">(25% · $${(tot * 0.25).toFixed(2)})</span></span>
+                <input type="radio" name="cancelRefund" value="half_deposit" ${savedOption === 'half_deposit' ? 'checked' : ''} onchange="calcCancellation()">
+                <span>Half Deposit Refund <span class="cancel-pct">(25% · $<span id="cancelAmtHalf">${hasSaved ? (cv * 0.25).toFixed(2) : '0.00'}</span>)</span></span>
             </label>
         </div>
         <label class="cancel-tip-row">
-            <input type="checkbox" id="cancelConvertTip" ${savedTip ? 'checked' : ''} onchange="calcCancellation(${tot})">
+            <input type="checkbox" id="cancelConvertTip" ${savedTip ? 'checked' : ''} onchange="calcCancellation()">
             <span>Convert Refund to Tip</span>
         </label>
         <div class="cancel-summary">
@@ -838,42 +838,44 @@ function renderCancellationHtml(b) {
             <div class="cancel-summary-row cancel-summary-total"><span>Tip Amount</span><span id="sumTipAmount">${hasSaved ? '$' + dispTip : '—'}</span></div>
         </div>
         <div style="display:flex;gap:8px;margin-top:14px">
-            <button class="adj-add-btn" onclick="saveCancellation('${b.id}',${tot})">Save</button>
+            <button class="adj-add-btn" onclick="saveCancellation('${b.id}')">Save</button>
             ${hasSaved ? `<button class="cancel-clear-btn" onclick="clearCancellation('${b.id}')">Clear</button>` : ''}
         </div>`;
 }
 
-window.calcCancellation = function(bookingTotal) {
+window.calcCancellation = function() {
     const visits = parseFloat(document.getElementById('cancelVisits')?.value) || 0;
     const ppv    = parseFloat(document.getElementById('cancelPPV')?.value)    || 0;
     const cv     = visits * ppv;
-    const el     = document.getElementById('cancelledValueNum');
-    if (el) el.textContent = cv.toFixed(2);
-    const tot    = parseFloat(bookingTotal) || 0;
+    const set    = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    set('cancelledValueNum', cv.toFixed(2));
+    // Update refund option labels
+    set('cancelAmtFull',    cv.toFixed(2));
+    set('cancelAmtDeposit', (cv * 0.5).toFixed(2));
+    set('cancelAmtHalf',    (cv * 0.25).toFixed(2));
     const option = document.querySelector('input[name="cancelRefund"]:checked')?.value || 'full';
     const toTip  = document.getElementById('cancelConvertTip')?.checked || false;
-    const rb     = option === 'full' ? tot : option === 'deposit' ? tot * 0.5 : tot * 0.25;
+    const rb     = option === 'full' ? cv : option === 'deposit' ? cv * 0.5 : cv * 0.25;
     const labels = { full: 'Full Refund', deposit: 'Deposit Refund', half_deposit: 'Half Deposit Refund' };
-    const set    = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
-    set('sumVisits',          visits || '—');
-    set('sumPPV',             ppv    ? '$' + ppv.toFixed(2) : '—');
-    set('sumCancelledValue',  cv     ? '$' + cv.toFixed(2)  : '—');
-    set('sumRefundOption',    labels[option]);
-    set('sumRefundAmount',    '$' + (toTip ? 0 : rb).toFixed(2));
-    set('sumTipAmount',       '$' + (toTip ? rb : 0).toFixed(2));
+    set('sumVisits',         visits || '—');
+    set('sumPPV',            ppv    ? '$' + ppv.toFixed(2) : '—');
+    set('sumCancelledValue', cv     ? '$' + cv.toFixed(2)  : '—');
+    set('sumRefundOption',   labels[option]);
+    set('sumRefundAmount',   '$' + (toTip ? 0 : rb).toFixed(2));
+    set('sumTipAmount',      '$' + (toTip ? rb : 0).toFixed(2));
 };
 
-window.saveCancellation = async function(bookingId, bookingTotal) {
+window.saveCancellation = async function(bookingId) {
     const visits = parseFloat(document.getElementById('cancelVisits')?.value) || 0;
     const ppv    = parseFloat(document.getElementById('cancelPPV')?.value)    || 0;
+    const cv     = visits * ppv;
     const option = document.querySelector('input[name="cancelRefund"]:checked')?.value || 'full';
     const toTip  = document.getElementById('cancelConvertTip')?.checked || false;
-    const tot    = parseFloat(bookingTotal) || 0;
-    const rb     = option === 'full' ? tot : option === 'deposit' ? tot * 0.5 : tot * 0.25;
+    const rb     = option === 'full' ? cv : option === 'deposit' ? cv * 0.5 : cv * 0.25;
     const cancellation = {
         cancelledVisits: visits,
         pricePerVisit:   ppv,
-        cancelledValue:  visits * ppv,
+        cancelledValue:  cv,
         refundOption:    option,
         convertToTip:    toTip,
         refundAmount:    toTip ? 0 : rb,
