@@ -172,7 +172,7 @@ function arFeaturedHtml() {
       <div class="ar-featured-info">
         <strong>${esc(r.authorName)}</strong>
         <span class="ar-date">${esc(r.service)} · ${r.dateLabel || ''}</span>
-        <p class="ar-featured-text">"${esc(r.text.length > 80 ? r.text.slice(0, 80) + '…' : r.text)}"</p>
+        <p class="ar-featured-text">"${esc(r.text)}"</p>
       </div>
     </div>`).join('');
 }

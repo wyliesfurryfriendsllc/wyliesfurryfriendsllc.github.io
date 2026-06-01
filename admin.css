@@ -1438,7 +1438,7 @@ input, select, textarea {
 .ar-featured-info { flex:1; min-width:0; }
 .ar-featured-info strong { font-size:14px; color:var(--brown); }
 .ar-featured-info .ar-date { margin-left:8px; }
-.ar-featured-text { font-size:12px; color:#888; margin:4px 0 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ar-featured-text { font-size:12px; color:#888; margin:4px 0 0; }
 
 /* ─── CANCELLATION SECTION ──────────────────────── */
 .cancel-section-header { cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
