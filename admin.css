@@ -527,11 +527,14 @@ input, select, textarea {
     .abc-timeline-date { width: 52px; }
     .abc-timeline-date span { font-size: 11px; }
 
-    /* Cards: stack content vertically */
+    /* Cards: stack content vertically, left-align avatar+name */
     .abc-layout { flex-direction: column; gap: 8px; }
     .abc-right { width: 100%; }
     .abc-pet-avatar { width: 48px; height: 48px; }
     .abc-dates { white-space: normal; word-break: break-word; }
+    .abc-left { flex-direction: row; align-items: center; width: auto; gap: 10px; }
+    .abc-left-text { align-items: flex-start; }
+    .abc-ownername { text-align: left; }
 
     /* Inline detail: tighter padding */
     .admin-booking-inline-detail { padding: 16px 14px 20px; }
