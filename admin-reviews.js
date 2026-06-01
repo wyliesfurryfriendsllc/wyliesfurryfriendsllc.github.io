@@ -129,19 +129,26 @@ function arPendingHtml() {
     </div>`).join('');
 }
 
-/* ── Featured on Home HTML ─────────────────────────────────── */
-function arFeaturedHtml() {
-    const list = arReviews
+/* ── Featured on Home HTML (drag + number input) ───────────── */
+function arFeaturedSorted() {
+    return arReviews
         .filter(r => r.status === 'approved' && r.featuredOnHome)
         .sort((a, b) => (a.homeOrder ?? 9999) - (b.homeOrder ?? 9999));
+}
+
+function arFeaturedHtml() {
+    const list = arFeaturedSorted();
     if (!list.length) return '<p class="ar-empty">No reviews featured on home yet.</p>';
     return list.map((r, i) => `
-    <div class="ar-featured-row">
-      <div class="ar-featured-order-btns">
-        <button class="ar-order-btn" onclick="arMoveUp('${r.id}')" ${i === 0 ? 'disabled' : ''}>↑</button>
-        <span class="ar-featured-num">${i + 1}</span>
-        <button class="ar-order-btn" onclick="arMoveDown('${r.id}')" ${i === list.length - 1 ? 'disabled' : ''}>↓</button>
-      </div>
+    <div class="ar-featured-row" id="arf_${r.id}" draggable="true"
+         ondragstart="arDragStart(event,'${r.id}')"
+         ondragover="arDragOver(event)"
+         ondragleave="arDragLeave(event)"
+         ondrop="arDrop(event,'${r.id}')"
+         ondragend="arDragEnd()">
+      <span class="ar-drag-handle">⠿</span>
+      <input type="number" class="ar-order-input" value="${i + 1}" min="1" max="${list.length}"
+             onchange="arSetOrder('${r.id}', +this.value)">
       <div class="ar-featured-info">
         <strong>${esc(r.authorName)}</strong>
         <span class="ar-date">${esc(r.service)} · ${r.dateLabel || ''}</span>
@@ -150,43 +157,68 @@ function arFeaturedHtml() {
     </div>`).join('');
 }
 
-async function arMoveUp(id) {
-    const list = arReviews
-        .filter(r => r.status === 'approved' && r.featuredOnHome)
-        .sort((a, b) => (a.homeOrder ?? 9999) - (b.homeOrder ?? 9999));
-    const idx = list.findIndex(r => r.id === id);
-    if (idx <= 0) return;
-    await Promise.all([
-        updateDoc(doc(db, 'reviews', list[idx].id),     { homeOrder: idx - 1 }),
-        updateDoc(doc(db, 'reviews', list[idx - 1].id), { homeOrder: idx }),
-    ]);
-    arReviews = arReviews.map(r => {
-        if (r.id === list[idx].id)     return { ...r, homeOrder: idx - 1 };
-        if (r.id === list[idx - 1].id) return { ...r, homeOrder: idx };
-        return r;
-    });
-    document.getElementById('arFeaturedList').innerHTML = arFeaturedHtml();
-}
-window.arMoveUp = arMoveUp;
+let _dragSrcId = null;
 
-async function arMoveDown(id) {
-    const list = arReviews
-        .filter(r => r.status === 'approved' && r.featuredOnHome)
-        .sort((a, b) => (a.homeOrder ?? 9999) - (b.homeOrder ?? 9999));
-    const idx = list.findIndex(r => r.id === id);
-    if (idx >= list.length - 1) return;
-    await Promise.all([
-        updateDoc(doc(db, 'reviews', list[idx].id),     { homeOrder: idx + 1 }),
-        updateDoc(doc(db, 'reviews', list[idx + 1].id), { homeOrder: idx }),
-    ]);
-    arReviews = arReviews.map(r => {
-        if (r.id === list[idx].id)     return { ...r, homeOrder: idx + 1 };
-        if (r.id === list[idx + 1].id) return { ...r, homeOrder: idx };
-        return r;
+function arDragStart(e, id) {
+    _dragSrcId = id;
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => { const el = document.getElementById('arf_' + id); if (el) el.classList.add('ar-dragging'); }, 0);
+}
+window.arDragStart = arDragStart;
+
+function arDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.ar-featured-row').forEach(el => el.classList.remove('ar-drag-over'));
+    e.currentTarget.classList.add('ar-drag-over');
+}
+window.arDragOver = arDragOver;
+
+function arDragLeave(e) {
+    if (e.currentTarget.contains(e.relatedTarget)) return;
+    e.currentTarget.classList.remove('ar-drag-over');
+}
+window.arDragLeave = arDragLeave;
+
+function arDragEnd() {
+    document.querySelectorAll('.ar-featured-row').forEach(el => {
+        el.classList.remove('ar-dragging', 'ar-drag-over');
+    });
+}
+window.arDragEnd = arDragEnd;
+
+async function arDrop(e, targetId) {
+    e.preventDefault();
+    arDragEnd();
+    if (!_dragSrcId || _dragSrcId === targetId) return;
+    const list = arFeaturedSorted();
+    const srcIdx = list.findIndex(r => r.id === _dragSrcId);
+    const tgtIdx = list.findIndex(r => r.id === targetId);
+    if (srcIdx < 0 || tgtIdx < 0) return;
+    const [moved] = list.splice(srcIdx, 1);
+    list.splice(tgtIdx, 0, moved);
+    await arSaveOrder(list);
+}
+window.arDrop = arDrop;
+
+async function arSetOrder(id, newPos) {
+    const list = arFeaturedSorted();
+    const srcIdx = list.findIndex(r => r.id === id);
+    const tgtIdx = Math.max(0, Math.min(list.length - 1, newPos - 1));
+    if (srcIdx < 0 || srcIdx === tgtIdx) { document.getElementById('arFeaturedList').innerHTML = arFeaturedHtml(); return; }
+    const [moved] = list.splice(srcIdx, 1);
+    list.splice(tgtIdx, 0, moved);
+    await arSaveOrder(list);
+}
+window.arSetOrder = arSetOrder;
+
+async function arSaveOrder(list) {
+    await Promise.all(list.map((r, i) => updateDoc(doc(db, 'reviews', r.id), { homeOrder: i })));
+    list.forEach((r, i) => {
+        arReviews = arReviews.map(x => x.id === r.id ? { ...x, homeOrder: i } : x);
     });
     document.getElementById('arFeaturedList').innerHTML = arFeaturedHtml();
 }
-window.arMoveDown = arMoveDown;
 
 let arApprovedSortOrder = 'newest';
 
