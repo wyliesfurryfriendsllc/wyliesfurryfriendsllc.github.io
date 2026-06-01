@@ -555,6 +555,29 @@ input, select, textarea {
 
     /* Messages */
     .messages-thread { max-height: 180px; }
+
+    /* Detail panel: shrink all text by ~1 size */
+    .admin-booking-inline-detail .detail-title { font-size: 16px; }
+    .admin-booking-inline-detail .detail-section-label { font-size: 10px; }
+    .admin-booking-inline-detail .detail-service-summary { font-size: 13px; }
+    .admin-booking-inline-detail .detail-service-summary strong { font-size: 14px; }
+    .admin-booking-inline-detail .detail-row { font-size: 13px; }
+    .admin-booking-inline-detail .detail-sched-date { font-size: 14px; }
+    .admin-booking-inline-detail .detail-sched-time { font-size: 13px; }
+    .admin-booking-inline-detail .detail-charge-label { font-size: 13px; }
+    .admin-booking-inline-detail .detail-charge-sub { font-size: 11px; }
+    .admin-booking-inline-detail .detail-charge-amount { font-size: 13px; }
+    .admin-booking-inline-detail .detail-charge-total { font-size: 15px; }
+    .admin-booking-inline-detail .detail-pet-name { font-size: 13px; }
+    .admin-booking-inline-detail .detail-pet-breed,
+    .admin-booking-inline-detail .detail-pet-meta { font-size: 11px; }
+    .admin-booking-inline-detail .status-badge { font-size: 10px; }
+    .admin-booking-inline-detail .payment-record-row { font-size: 12px; }
+    .admin-booking-inline-detail .paid-full-notice { font-size: 13px; }
+    .admin-booking-inline-detail .msg-bubble { font-size: 12px; }
+    .admin-booking-inline-detail .msg-meta { font-size: 10px; }
+    .admin-booking-inline-detail .adj-empty,
+    .admin-booking-inline-detail .detail-charge-sub-total { font-size: 12px; }
 }
 
 /* ================================
