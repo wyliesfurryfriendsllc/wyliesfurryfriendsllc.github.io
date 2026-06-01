@@ -297,6 +297,8 @@ function openNewBookingModal() {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
+    const roverEl = document.getElementById('nbIsRover');
+    if (roverEl) roverEl.checked = false;
     document.getElementById('nbClientSearch').value = '';
     document.getElementById('nbClientSearchResults').style.display = 'none';
     document.getElementById('nbSelectedClient').style.display = 'none';
@@ -723,6 +725,7 @@ async function saveNewBooking() {
     const duration = document.getElementById('nbDuration').value;
     const total    = parseFloat(document.getElementById('nbTotal').value) || 0;
     const notes    = document.getElementById('nbNotes').value.trim();
+    const isRover  = document.getElementById('nbIsRover')?.checked || false;
     const errEl    = document.getElementById('nbError');
 
     if (!name) { errEl.textContent = 'Client name is required.'; return; }
@@ -768,7 +771,7 @@ async function saveNewBooking() {
                 clientName: name, clientPhone: phone, clientEmail: email,
                 service, duration: parseInt(duration),
                 datesText, dates: sortedDates, dateTimes,
-                pets, notes, total,
+                pets, notes, total, isRover,
                 clientId: nbSelectedClientId || null,
                 updatedAt: serverTimestamp()
             });
@@ -780,7 +783,7 @@ async function saveNewBooking() {
                 clientName: name, clientPhone: phone, clientEmail: email,
                 service, duration: parseInt(duration),
                 datesText, dates: sortedDates, dateTimes,
-                pets, notes, total,
+                pets, notes, total, isRover,
                 status: 'pending', adminAccepted: true, source: 'manual',
                 clientId: nbSelectedClientId || null,
                 createdAt: serverTimestamp()
@@ -814,6 +817,8 @@ function openEditBookingModal(bookingId) {
     document.getElementById('nbDuration').value = String(b.duration || 30);
     document.getElementById('nbTotal').value    = b.total != null ? b.total : '';
     document.getElementById('nbNotes').value    = b.notes || '';
+    const roverChk = document.getElementById('nbIsRover');
+    if (roverChk) roverChk.checked = !!b.isRover;
 
     // Pre-fill client
     if (b.clientId) {

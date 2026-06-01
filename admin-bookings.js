@@ -8,6 +8,7 @@ let messagesUnsub = null;
 let allBookings    = [];
 let activeFilter   = 'all';
 let activeBookingId = null;
+let hideRover      = false;
 
 const STATUS_LABELS = {
     pending:          'Pending',
@@ -65,9 +66,16 @@ function init() {
 // ─── FILTER ──────────────────────────────────────────────
 function setFilter(filter) {
     activeFilter = filter;
-    document.querySelectorAll('.filter-chip').forEach(btn => {
+    document.querySelectorAll('.filter-chip[data-filter]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.filter === filter);
     });
+    renderAdminBookings();
+}
+
+function toggleHideRover() {
+    hideRover = !hideRover;
+    const btn = document.getElementById('hideRoverBtn');
+    if (btn) btn.classList.toggle('active', hideRover);
     renderAdminBookings();
 }
 
@@ -76,9 +84,10 @@ function renderAdminBookings() {
     const container = document.getElementById('adminBookingsList');
     if (!container) return;
     const ACTIVE_STATUSES = ['pending','deposit_received','paid','in_service','confirmed'];
-    const filtered = activeFilter === 'all'
+    let filtered = activeFilter === 'all'
         ? allBookings.filter(b => ACTIVE_STATUSES.includes(b.status))
         : allBookings.filter(b => b.status === activeFilter);
+    if (hideRover) filtered = filtered.filter(b => !b.isRover);
 
     if (filtered.length === 0) {
         container.innerHTML = `<p class="empty-msg">No ${activeFilter === 'all' ? '' : activeFilter + ' '}bookings yet.</p>`;
@@ -166,7 +175,7 @@ function renderAdminBookings() {
                     </div>
                     <div class="abc-right">
                         <div class="abc-service">${escHtml(b.service || '')} · ${b.duration || 30} min</div>
-                        <div style="margin-bottom:4px"><span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span></div>
+                        <div style="margin-bottom:4px"><span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span>${b.isRover ? '<span class="rover-badge">Rover</span>' : ''}</div>
                         <div class="abc-dates">${cardDate}</div>
                         <div class="abc-price">$${b.total || 0} est.</div>
                     </div>
@@ -1148,7 +1157,7 @@ window.epSave = async function(bookingId, type) {
 
 // ─── EXPOSE ───────────────────────────────────────────────
 window.AdminBookings = {
-    init, setFilter, openDetail, closeDetail,
+    init, setFilter, toggleHideRover, openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
     markDepositReceived, markPaidInFull, markInService,
     addAdjustment, removeAdjustment, toggleAdjVisits,
