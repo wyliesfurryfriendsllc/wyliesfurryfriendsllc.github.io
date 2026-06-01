@@ -61,6 +61,20 @@ function buildDateMap() {
     return map;
 }
 
+function countVisitsForDate(bookings, iso) {
+    let total = 0;
+    bookings.forEach(b => {
+        let times = [];
+        if (b.dateTimes && b.dateTimes[iso]) {
+            times = [...b.dateTimes[iso]].filter(Boolean);
+        } else if (b.times && Array.isArray(b.times)) {
+            times = [...b.times].filter(Boolean);
+        }
+        total += times.length > 0 ? times.length : 1;
+    });
+    return total;
+}
+
 function setFilter(filter) {
     calActiveFilter = filter;
     document.querySelectorAll('.cal-filter-pill').forEach(btn => {
@@ -94,7 +108,7 @@ function renderCalendar() {
 
     for (let day = 1; day <= daysInMonth; day++) {
         const iso = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-        const count = (dateMap.get(iso) || []).length;
+        const count = countVisitsForDate(dateMap.get(iso) || [], iso);
         const cell = document.createElement('div');
         cell.className = 'cal-cell'
             + (iso === todayISO ? ' cal-today' : '')
