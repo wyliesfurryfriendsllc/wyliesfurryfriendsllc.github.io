@@ -790,11 +790,7 @@ async function exportImage(bookingId) {
     if (btn) { btn.textContent = '…'; btn.disabled = true; }
 
     const badges = target.querySelectorAll('.status-badge');
-    badges.forEach(badge => {
-        badge.style.cssText += ';display:inline-block!important;height:24px!important;' +
-            'line-height:24px!important;padding:0 10px!important;' +
-            'font-size:11px!important;box-sizing:border-box!important;';
-    });
+    badges.forEach(badge => { badge.style.display = 'none'; });
 
     try {
         const canvas = await html2canvas(target, {
@@ -845,13 +841,7 @@ async function exportImage(bookingId) {
     } catch(e) {
         if (e.name !== 'AbortError') alert('Export failed: ' + e.message);
     } finally {
-        badges.forEach(badge => { badge.style.cssText = badge.style.cssText
-            .replace(/display:[^;]+!important;/g,'')
-            .replace(/height:[^;]+!important;/g,'')
-            .replace(/line-height:[^;]+!important;/g,'')
-            .replace(/padding:[^;]+!important;/g,'')
-            .replace(/font-size:[^;]+!important;/g,'')
-            .replace(/box-sizing:[^;]+!important;/g,''); });
+        badges.forEach(badge => { badge.style.display = ''; });
         if (btn) { btn.disabled = false; btn.innerHTML = svgIcon; }
     }
 }
