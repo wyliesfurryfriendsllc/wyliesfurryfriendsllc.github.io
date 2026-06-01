@@ -574,6 +574,7 @@ function renderDetail(b, panel) {
                     </button>
                 </div>
             </div>` : ''}
+            ${b.isRover ? `<button class="admin-btn-primary" onclick="AdminBookings.markRoverConfirmed('${b.id}')">✓ Confirm Booking</button>` : ''}
             <button class="admin-btn-danger" onclick="AdminBookings.rejectBooking('${b.id}')">✕ Decline</button>
         </div>` : ''}
         ${isDepositReceived ? `
