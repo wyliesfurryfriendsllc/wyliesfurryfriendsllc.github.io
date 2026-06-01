@@ -430,6 +430,8 @@ function paymentRecordsHtml(b) {
 }
 
 function renderDetail(b, panel) {
+    if (b.isRover) panel.classList.add('rover-detail');
+    else panel.classList.remove('rover-detail');
     const isPending         = b.status === 'pending';
     const isAccepted        = isPending && !!b.adminAccepted;
     const isDepositReceived = b.status === 'deposit_received';

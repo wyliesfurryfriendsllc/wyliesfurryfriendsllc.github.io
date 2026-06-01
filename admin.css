@@ -418,6 +418,7 @@ input, select, textarea {
     margin-bottom: 4px;
     animation: slideDown 0.18s ease;
 }
+.admin-booking-inline-detail.rover-detail { border-color: #627c29; }
 @keyframes slideDown {
     from { opacity: 0; transform: translateY(-6px); }
     to   { opacity: 1; transform: translateY(0); }
