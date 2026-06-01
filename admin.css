@@ -1302,11 +1302,11 @@ input, select, textarea {
     margin-bottom: 8px; width: 100%; box-sizing: border-box;
 }
 .payment-record-row {
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 13px; padding: 3px 0; gap: 10px;
+    display: flex; align-items: center;
+    font-size: 13px; padding: 4px 0;
 }
 .payment-record-label { color: var(--brown-mid); font-weight: 500; white-space: nowrap; }
-.payment-record-right { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.payment-record-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .payment-record-val   { color: var(--brown); font-weight: 600; white-space: nowrap; }
 .payment-edit-btn {
     background: none; border: none; cursor: pointer;
