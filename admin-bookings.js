@@ -475,6 +475,8 @@ function renderDetail(b, panel) {
             ${renderChargesHtml(b)}
         </div>
 
+        </div>
+
         <div class="detail-section">
             <div class="detail-section-label">Price Adjustments</div>
             ${renderAdjustmentsHtml(b)}
@@ -502,8 +504,6 @@ function renderDetail(b, panel) {
             <div class="detail-row"><span>Phone</span><span>${escHtml(b.clientPhone || '—')}</span></div>
             <div class="detail-row"><span>Email</span><span>${escHtml(b.clientEmail || '—')}</span></div>
             ${b.notes ? `<div class="detail-row"><span>Notes</span><span>${escHtml(b.notes)}</span></div>` : ''}
-        </div>
-
         </div>
 
         ${isPending && !isAccepted ? `
