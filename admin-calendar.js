@@ -299,6 +299,12 @@ function openNewBookingModal() {
     });
     const roverEl = document.getElementById('nbIsRover');
     if (roverEl) roverEl.checked = false;
+    const customFields = document.getElementById('nbCustomFields');
+    if (customFields) customFields.style.display = 'none';
+    const customNameEl = document.getElementById('nbCustomName');
+    if (customNameEl) customNameEl.value = '';
+    const customBaseEl = document.getElementById('nbCustomBase');
+    if (customBaseEl) customBaseEl.value = '';
     document.getElementById('nbClientSearch').value = '';
     document.getElementById('nbClientSearchResults').style.display = 'none';
     document.getElementById('nbSelectedClient').style.display = 'none';
@@ -600,9 +606,17 @@ function nbNextMonth() {
 }
 
 // ─── PRICE CALCULATION ───────────────────────────────────
+function onServiceChange() {
+    const service = document.getElementById('nbService')?.value;
+    const customFields = document.getElementById('nbCustomFields');
+    if (customFields) customFields.style.display = service === 'Custom' ? '' : 'none';
+    calcNbTotal();
+}
+
 function calcNbTotal() {
     const service  = document.getElementById('nbService')?.value || 'Drop-In Visit';
     const duration = parseInt(document.getElementById('nbDuration')?.value || '30');
+    const isCustom = service === 'Custom';
 
     let numVisits = 0;
     for (const slots of nbDateTimes.values()) {
@@ -626,8 +640,13 @@ function calcNbTotal() {
     let perVisit = 0;
     pets.forEach((pet, idx) => {
         if (idx === 0) {
-            const base = isHoliday ? p.holiday : ((service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base);
-            perVisit += base + (is60 ? p.addon60 : 0);
+            let base;
+            if (isCustom) {
+                base = parseFloat(document.getElementById('nbCustomBase')?.value) || 0;
+            } else {
+                base = isHoliday ? p.holiday : ((service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base);
+            }
+            perVisit += base + (is60 ? PRICING.dropin.addon60 : 0);
         } else {
             perVisit += pet.type === 'cat' ? (p.extraCat || p.extraDog) : p.extraDog;
         }
@@ -726,6 +745,10 @@ async function saveNewBooking() {
     const total    = parseFloat(document.getElementById('nbTotal').value) || 0;
     const notes    = document.getElementById('nbNotes').value.trim();
     const isRover  = document.getElementById('nbIsRover')?.checked || false;
+    const isCustom = service === 'Custom';
+    const customServiceName = isCustom ? (document.getElementById('nbCustomName')?.value.trim() || 'Custom Service') : null;
+    const customBasePrice   = isCustom ? (parseFloat(document.getElementById('nbCustomBase')?.value) || 0) : null;
+    const effectiveService  = isCustom ? (customServiceName || 'Custom Service') : service;
     const errEl    = document.getElementById('nbError');
 
     if (!name) { errEl.textContent = 'Client name is required.'; return; }
@@ -769,9 +792,10 @@ async function saveNewBooking() {
         if (editingBookingId) {
             await updateDoc(doc(db, 'bookings', editingBookingId), {
                 clientName: name, clientPhone: phone, clientEmail: email,
-                service, duration: parseInt(duration),
+                service: effectiveService, duration: parseInt(duration),
                 datesText, dates: sortedDates, dateTimes,
                 pets, notes, total, isRover,
+                ...(isCustom ? { customBasePrice } : {}),
                 clientId: nbSelectedClientId || null,
                 updatedAt: serverTimestamp()
             });
@@ -781,9 +805,10 @@ async function saveNewBooking() {
         } else {
             await addDoc(collection(db, 'bookings'), {
                 clientName: name, clientPhone: phone, clientEmail: email,
-                service, duration: parseInt(duration),
+                service: effectiveService, duration: parseInt(duration),
                 datesText, dates: sortedDates, dateTimes,
                 pets, notes, total, isRover,
+                ...(isCustom ? { customBasePrice } : {}),
                 status: 'pending', adminAccepted: true, source: 'manual',
                 clientId: nbSelectedClientId || null,
                 createdAt: serverTimestamp()
@@ -819,6 +844,13 @@ function openEditBookingModal(bookingId) {
     document.getElementById('nbNotes').value    = b.notes || '';
     const roverChk = document.getElementById('nbIsRover');
     if (roverChk) roverChk.checked = !!b.isRover;
+    if (b.customBasePrice != null) {
+        document.getElementById('nbService').value = 'Custom';
+        document.getElementById('nbCustomName').value = b.service || '';
+        document.getElementById('nbCustomBase').value = b.customBasePrice;
+        const cf = document.getElementById('nbCustomFields');
+        if (cf) cf.style.display = '';
+    }
 
     // Pre-fill client
     if (b.clientId) {
@@ -923,7 +955,7 @@ function exportICS() {
 // ─── EXPOSE ──────────────────────────────────────────────
 window.AdminCalendar = {
     init, changeMonth, selectDay, setFilter, exportICS,
-    openNewBookingModal, closeNewBookingModal,
+    openNewBookingModal, closeNewBookingModal, onServiceChange,
     searchClients, selectClient, clearSelectedClient,
     togglePet, saveNewBooking,
     nbPrevMonth, nbNextMonth, calcNbTotal,

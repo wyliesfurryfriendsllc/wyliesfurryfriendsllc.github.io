@@ -263,9 +263,10 @@
             <div class="admin-form-row">
                 <div class="form-group">
                     <label>Service</label>
-                    <select id="nbService" class="admin-select" onchange="AdminCalendar.calcNbTotal()">
+                    <select id="nbService" class="admin-select" onchange="AdminCalendar.onServiceChange()">
                         <option>Drop-In Visit</option>
                         <option>Dog Walking</option>
+                        <option value="Custom">Custom Price</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -274,6 +275,20 @@
                         <option value="30">30 min</option>
                         <option value="60">60 min</option>
                     </select>
+                </div>
+            </div>
+
+            <!-- Custom service fields -->
+            <div id="nbCustomFields" style="display:none">
+                <div class="admin-form-row">
+                    <div class="form-group" style="flex:2">
+                        <label>Service Name</label>
+                        <input type="text" id="nbCustomName" class="admin-input" placeholder="e.g. House Sitting" oninput="AdminCalendar.calcNbTotal()">
+                    </div>
+                    <div class="form-group">
+                        <label>Base Price / visit ($)</label>
+                        <input type="number" id="nbCustomBase" class="admin-input" placeholder="e.g. 30" min="0" step="0.01" oninput="AdminCalendar.calcNbTotal()">
+                    </div>
                 </div>
             </div>
 
