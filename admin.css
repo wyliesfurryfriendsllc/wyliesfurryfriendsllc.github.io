@@ -1428,6 +1428,12 @@ input, select, textarea {
 .ar-sort-row select { border:1.5px solid var(--border); border-radius:8px; padding:5px 10px; font-size:13px; font-family:inherit; background:#fff; color:var(--brown); cursor:pointer; }
 
 /* ─── CANCELLATION SECTION ──────────────────────── */
+.cancel-section-header { cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+.cancel-chevron { font-size: 14px; transition: transform 0.2s; display: inline-block; }
+.cancel-chevron-open { transform: rotate(180deg); }
+.cancel-body { margin-top: 10px; }
+.cancel-body.cancel-collapsed { display: none; }
+
 .cancel-input-row { display: flex; gap: 12px; margin-bottom: 10px; }
 .cancel-field { flex: 1; min-width: 0; }
 .cancel-label { font-size: 12px; font-weight: 600; color: var(--brown-mid); display: block; margin-bottom: 4px; }

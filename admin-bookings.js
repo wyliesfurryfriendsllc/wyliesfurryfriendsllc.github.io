@@ -507,8 +507,13 @@ function renderDetail(b, panel) {
         </div>
 
         <div class="detail-section">
-            <div class="detail-section-label">Cancellation</div>
-            ${renderCancellationHtml(b)}
+            <div class="detail-section-label cancel-section-header" onclick="var bd=this.nextElementSibling;bd.classList.toggle('cancel-collapsed');this.querySelector('.cancel-chevron').classList.toggle('cancel-chevron-open')">
+                Cancellation
+                <span class="cancel-chevron ${b.cancellation ? 'cancel-chevron-open' : ''}">▾</span>
+            </div>
+            <div class="cancel-body${b.cancellation ? '' : ' cancel-collapsed'}">
+                ${renderCancellationHtml(b)}
+            </div>
         </div>
 
         ${isPending && !isAccepted ? `
