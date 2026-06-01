@@ -348,11 +348,13 @@ function renderChargesHtml(b) {
     pets.forEach((pet, idx) => {
         let rate, label;
         if (idx === 0) {
-            const baseRate = isHoliday ? p.holiday : ((service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base);
-            rate = baseRate + (is60 ? p.addon60 : 0);
-            label = service + (isHoliday ? ' · Holiday Rate' : '');
+            const baseRate = b.customBasePrice != null
+                ? b.customBasePrice
+                : (isHoliday ? p.holiday : ((service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base));
+            rate = baseRate + (is60 ? PRICING.dropin.addon60 : 0);
+            label = service + (b.customBasePrice != null ? ' · Custom Rate' : (isHoliday ? ' · Holiday Rate' : ''));
         } else {
-            rate = pet.type === 'cat' ? (p.extraCat || p.extraDog) : p.extraDog;
+            rate = pet.type === 'cat' ? (PRICING.dropin.extraCat || PRICING.dropin.extraDog) : PRICING.dropin.extraDog;
             label = 'Additional ' + (pet.type || 'pet');
         }
         calcBase += rate * numVisits;
@@ -704,10 +706,12 @@ function calcBaseTotal(b) {
     pets.forEach((pet, idx) => {
         let rate;
         if (idx === 0) {
-            const baseRate = isHoliday ? p.holiday : ((service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base);
-            rate = baseRate + (is60 ? p.addon60 : 0);
+            const baseRate = b.customBasePrice != null
+                ? b.customBasePrice
+                : (isHoliday ? p.holiday : ((service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base));
+            rate = baseRate + (is60 ? PRICING.dropin.addon60 : 0);
         } else {
-            rate = pet.type === 'cat' ? (p.extraCat || p.extraDog) : p.extraDog;
+            rate = pet.type === 'cat' ? (PRICING.dropin.extraCat || PRICING.dropin.extraDog) : PRICING.dropin.extraDog;
         }
         total += rate * numVisits;
     });
