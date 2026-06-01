@@ -392,7 +392,9 @@ function renderChargesHtml(b) {
 function paymentRecordsHtml(b) {
     const hasDeposit = b.depositDate || b.depositAmount != null;
     const hasFinal   = b.finalPaymentDate || b.finalPaymentAmount != null;
-    if (!hasDeposit && !hasFinal) return '';
+    const c          = b.cancellation;
+    const hasCancel  = c && (c.refundAmount > 0 || c.tipAmount > 0);
+    if (!hasDeposit && !hasFinal && !hasCancel) return '';
     return `<div class="payment-record">
         ${hasDeposit ? `<div class="payment-record-row">
             <span class="payment-record-label">Deposit</span>
@@ -406,6 +408,12 @@ function paymentRecordsHtml(b) {
             <div class="payment-record-right">
                 <span class="payment-record-val">${b.finalPaymentAmount != null ? '$' + b.finalPaymentAmount : '—'} · ${b.finalPaymentDate || '—'}</span>
                 <button class="payment-edit-btn" onclick="AdminBookings.openEditPaymentModal('${b.id}','final')" title="Edit final payment">✎</button>
+            </div>
+        </div>` : ''}
+        ${hasCancel ? `<div class="payment-record-row" style="border-top:1px dashed var(--border);margin-top:4px;padding-top:6px">
+            <span class="payment-record-label" style="color:${c.convertToTip ? '#b08060' : '#c0392b'}">${c.convertToTip ? 'Refund to Tip' : 'Refund'}</span>
+            <div class="payment-record-right">
+                <span class="payment-record-val" style="color:${c.convertToTip ? '#b08060' : '#c0392b'}">$${(c.convertToTip ? c.tipAmount : c.refundAmount).toFixed(2)}</span>
             </div>
         </div>` : ''}
     </div>`;
