@@ -588,6 +588,23 @@ input, select, textarea {
     .admin-booking-inline-detail .msg-meta { font-size: 10px; }
     .admin-booking-inline-detail .adj-empty,
     .admin-booking-inline-detail .detail-charge-sub-total { font-size: 12px; }
+
+    /* Client cards: right side stacks info + buttons */
+    .client-card { padding: 14px 14px; }
+    .client-card-layout { gap: 12px; }
+    .client-card-right {
+        flex-direction: column; align-items: flex-start; gap: 6px;
+        padding-left: 12px;
+    }
+    .client-card-right-info { width: 100%; }
+    .client-card-actions {
+        width: 100%; display: flex; flex-direction: row; gap: 8px; margin-top: 2px;
+    }
+    .client-card-actions .admin-btn-primary,
+    .client-card-actions .admin-btn-secondary {
+        flex: 1; justify-content: center; text-align: center;
+    }
+    .client-detail { white-space: normal; }
 }
 
 /* ================================
@@ -687,6 +704,19 @@ input, select, textarea {
 /* ================================
    CLIENTS
 ================================ */
+.client-search-input {
+    width: 100%; box-sizing: border-box;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--brown);
+    background: #fff;
+    margin-bottom: 16px;
+    outline: none;
+    font-family: inherit;
+}
+.client-search-input:focus { border-color: var(--pink); }
 .clients-list {
     display: flex; flex-direction: column; gap: 10px;
 }
@@ -716,11 +746,16 @@ input, select, textarea {
 }
 .cc-pet-name { font-size: 15px; font-weight: 700; color: var(--brown); }
 .cc-no-pets { font-size: 14px; color: var(--brown-mid); }
-.client-card-right { flex: 1; min-width: 0; border-left: 1.5px solid var(--border); padding-left: 18px; }
-.client-name { font-weight: 700; font-size: 17px; color: var(--brown); margin-bottom: 3px; }
-.client-detail { font-size: 14px; color: var(--brown-mid); margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.client-card-right {
+    flex: 1; min-width: 0;
+    border-left: 1.5px solid var(--border); padding-left: 18px;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.client-card-right-info { min-width: 0; }
+.client-name { font-weight: 700; font-size: 17px; color: var(--brown); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.client-detail { font-size: 14px; color: var(--brown-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .client-address { font-size: 13px; }
-.client-card-actions { flex-shrink: 0; }
+.client-card-actions { display: flex; flex-direction: row; gap: 8px; margin-top: 8px; }
 
 /* Pet rows inside client modal */
 .cpet-list { display: flex; flex-direction: column; gap: 8px; }
@@ -908,28 +943,44 @@ input, select, textarea {
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
-    width: 130px;
+    width: 234px;
+}
+.abc-avatar-stack {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
 }
 .abc-pet-avatar {
-    width: 60px; height: 60px;
+    width: 52px; height: 52px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--border);
+    border: 2px solid #fff;
+    flex-shrink: 0;
+}
+.abc-pet-avatar + .abc-pet-avatar {
+    margin-left: -16px;
 }
 .abc-pet-emoji {
-    width: 60px; height: 60px;
+    width: 52px; height: 52px;
     border-radius: 50%;
     background: var(--pink-light);
     display: flex; align-items: center; justify-content: center;
-    font-size: 30px;
-    border: 2px solid var(--border);
+    font-size: 26px;
+    border: 2px solid #fff;
+    flex-shrink: 0;
+}
+.abc-pet-emoji + .abc-pet-emoji,
+.abc-pet-avatar + .abc-pet-emoji,
+.abc-pet-emoji + .abc-pet-avatar {
+    margin-left: -16px;
 }
 .abc-left-text {
     display: flex; flex-direction: column; align-items: center;
     gap: 2px; min-width: 0; width: 100%;
 }
-.abc-petname   { font-size: 15px; font-weight: 700; color: var(--brown); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-.abc-ownername { font-size: 13px; color: var(--brown-mid); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+.abc-petname   { font-size: 15px; font-weight: 700; color: var(--brown); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.abc-ownername { font-size: 13px; color: var(--brown-mid); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
 
 .abc-right { flex: 1; min-width: 0; }
 .abc-service  { font-size: 14px; font-weight: 700; color: var(--brown); margin-bottom: 2px; }

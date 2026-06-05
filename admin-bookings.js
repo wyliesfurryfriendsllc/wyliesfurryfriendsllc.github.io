@@ -153,13 +153,14 @@ function renderAdminBookings() {
             } else {
                 cardDate = '—';
             }
-            const firstPet  = (b.pets || [])[0];
-            const petPhoto  = firstPet?.photoUrl || '';
-            const petName   = firstPet?.name || '';
-            const petEmoji  = firstPet?.type === 'cat' ? '🐱' : '🐶';
-            const avatarHtml = petPhoto
-                ? `<img class="abc-pet-avatar" src="${escHtml(petPhoto)}" alt="${escHtml(petName)}">`
-                : `<div class="abc-pet-avatar abc-pet-emoji">${petEmoji}</div>`;
+            const allPets = b.pets || [];
+            const avatarStackHtml = allPets.length
+                ? allPets.map(p => p.photoUrl
+                    ? `<img class="abc-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name || '')}">`
+                    : `<div class="abc-pet-avatar abc-pet-emoji">${p.type === 'cat' ? '🐱' : '🐶'}</div>`
+                  ).join('')
+                : `<div class="abc-pet-avatar abc-pet-emoji">🐶</div>`;
+            const petNames = allPets.map(p => p.name).filter(Boolean).join(', ') || '—';
             const card = document.createElement('div');
             card.className = 'admin-booking-card' + (b.id === activeBookingId ? ' active' : '') + (b.isRover ? ' rover-card' : '');
             card.dataset.bookingId = b.id;
@@ -167,9 +168,9 @@ function renderAdminBookings() {
             card.innerHTML = `
                 <div class="abc-layout">
                     <div class="abc-left">
-                        ${avatarHtml}
+                        <div class="abc-avatar-stack">${avatarStackHtml}</div>
                         <div class="abc-left-text">
-                            <span class="abc-petname">${escHtml(petName || '—')}</span>
+                            <span class="abc-petname">${escHtml(petNames)}</span>
                             <span class="abc-ownername">${escHtml(b.clientName || '—')}</span>
                         </div>
                     </div>

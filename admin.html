@@ -94,6 +94,7 @@
                     Add Client
                 </button>
             </div>
+            <input id="clientSearchInput" type="text" placeholder="Search by pet or owner name…" oninput="AdminClients.onSearch(this.value)" class="client-search-input">
             <div id="adminClientsList" class="clients-list">
                 <p class="empty-msg">Loading…</p>
             </div>

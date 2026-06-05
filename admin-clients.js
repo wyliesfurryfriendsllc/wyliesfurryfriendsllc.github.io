@@ -5,6 +5,7 @@ import {
 
 let clientsUnsub = null;
 let allClients = [];
+let clientSearchQuery = '';
 let editingClientId = null;
 let petEntries = [];
 
@@ -28,20 +29,37 @@ function init() {
     }, err => console.error('Clients error:', err));
 }
 
+// ─── SEARCH ──────────────────────────────────────────────
+function onSearch(val) {
+    clientSearchQuery = val.trim().toLowerCase();
+    renderClients();
+}
+
 // ─── LIST ────────────────────────────────────────────────
 function renderClients() {
     const container = document.getElementById('adminClientsList');
     if (!container) return;
+    const filtered = clientSearchQuery
+        ? allClients.filter(c => {
+            const ownerMatch = (c.name || '').toLowerCase().includes(clientSearchQuery);
+            const petMatch = (c.pets || []).some(p => (p.name || '').toLowerCase().includes(clientSearchQuery));
+            return ownerMatch || petMatch;
+        })
+        : allClients;
     if (allClients.length === 0) {
         container.innerHTML = '<p class="empty-msg">No clients yet. Add your first client.</p>';
         return;
     }
+    if (filtered.length === 0) {
+        container.innerHTML = '<p class="empty-msg">No clients match your search.</p>';
+        return;
+    }
     container.innerHTML = '';
-    allClients.forEach(c => {
+    filtered.forEach(c => {
         const card = document.createElement('div');
         card.className = 'client-card';
         const pets = c.pets || [];
-        const petsHtml = pets.slice(0, 3).map(p => {
+        const petsHtml = pets.map(p => {
             const emoji = p.type === 'cat' ? '🐱' : '🐶';
             // Use placeholder; set src via JS to avoid base64-in-innerHTML issues
             const avatarSlot = p.photoUrl
@@ -56,19 +74,21 @@ function renderClients() {
                     ${petsHtml || '<span class="cc-no-pets">No pets</span>'}
                 </div>
                 <div class="client-card-right">
-                    <div class="client-name">${escHtml(c.name || '—')}</div>
-                    ${c.email  ? `<div class="client-detail">${escHtml(c.email)}</div>`  : ''}
-                    ${c.phone  ? `<div class="client-detail">${escHtml(c.phone)}</div>`  : ''}
-                    ${c.address? `<div class="client-detail client-address">${escHtml(c.address)}</div>` : ''}
-                </div>
-                <div class="client-card-actions">
-                    <button class="admin-btn-primary" onclick="AdminClients.bookClient('${c.id}')">+ Book</button>
-                    <button class="admin-btn-secondary" onclick="AdminClients.openModal('${c.id}')">Edit</button>
+                    <div class="client-card-right-info">
+                        <div class="client-name">${escHtml(c.name || '—')}</div>
+                        ${c.phone  ? `<div class="client-detail">${escHtml(c.phone)}</div>`  : ''}
+                        ${c.email  ? `<div class="client-detail">${escHtml(c.email)}</div>`  : ''}
+                        ${c.address? `<div class="client-detail client-address">${escHtml(c.address)}</div>` : ''}
+                    </div>
+                    <div class="client-card-actions">
+                        <button class="admin-btn-primary" onclick="AdminClients.bookClient('${c.id}')">+ Book</button>
+                        <button class="admin-btn-secondary" onclick="AdminClients.openModal('${c.id}')">Edit</button>
+                    </div>
                 </div>
             </div>
         `;
         // Set pet avatar src via DOM to avoid base64 in innerHTML
-        pets.slice(0, 3).forEach((p, idx) => {
+        pets.forEach((p, idx) => {
             if (p.photoUrl) {
                 const imgEl = card.querySelectorAll('.cc-pet-avatar-img')[idx];
                 if (imgEl) imgEl.src = p.photoUrl;
@@ -362,7 +382,7 @@ function escHtml(s) {
 
 // ─── EXPOSE ──────────────────────────────────────────────
 window.AdminClients = {
-    init, openModal, closeModal, saveModal,
+    init, openModal, closeModal, saveModal, onSearch,
     addPet, removePet, updatePet, refreshPetPreview, getAllClients,
     searchAddress, pickAddress, uploadPetPhoto, calcAge, bookClient, setBdayMode
 };
