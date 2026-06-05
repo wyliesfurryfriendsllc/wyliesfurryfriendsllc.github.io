@@ -781,7 +781,6 @@ details.deposit-policy[open] summary { color: var(--pink); }
     font-weight: 500;
     color: var(--brown);
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
 }
 .cal-day:hover:not(.cal-past):not(.cal-blank) {
     background: var(--pink-light);
