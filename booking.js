@@ -148,7 +148,7 @@ function updateCalendarTriggerText() {
 
 // ─── SELECTED DATES LIST ─────────────────────────────────
 function emptySlot() {
-    return { type: 'specific', specHr: '', specMin: '00', fromHr: '', fromMin: '00', toHr: '', toMin: '00' };
+    return { type: 'window', specHr: '', specMin: '00', fromHr: '', fromMin: '00', toHr: '', toMin: '00' };
 }
 
 function saveCurrentDateState() {
@@ -223,18 +223,19 @@ function renderSelectedDatesList() {
 }
 
 function renderSlotHtml(tid, dateStr, si, sl, totalSlots) {
-    const isSpecific = (sl.type || 'specific') !== 'window';
+    const isSpecific = sl.type === 'specific';
     return `
         <div class="date-slot" data-si="${si}">
+            <div class="slot-type-tip">💡 <strong>Recommended</strong> — Flexible time ranges help us coordinate visits more efficiently and increase scheduling availability.</div>
             <div class="slot-header">
                 <div class="slot-type-pills">
                     <label class="pill-option">
-                        <input type="radio" name="slotType_${tid}_${si}" value="specific" ${isSpecific?'checked':''} onchange="toggleSlotType('${tid}',${si})">
-                        <span>Time</span>
-                    </label>
-                    <label class="pill-option">
                         <input type="radio" name="slotType_${tid}_${si}" value="window" ${!isSpecific?'checked':''} onchange="toggleSlotType('${tid}',${si})">
                         <span>Range</span>
+                    </label>
+                    <label class="pill-option">
+                        <input type="radio" name="slotType_${tid}_${si}" value="specific" ${isSpecific?'checked':''} onchange="toggleSlotType('${tid}',${si})">
+                        <span>Exact Time</span>
                     </label>
                 </div>
                 ${totalSlots > 1 ? `<button type="button" class="slot-remove-btn" onclick="removeSlot('${dateStr}',${si})" title="Remove">

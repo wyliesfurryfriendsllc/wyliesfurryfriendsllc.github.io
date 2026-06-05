@@ -364,6 +364,16 @@
     border-top: 1px solid var(--border);
 }
 
+.slot-type-tip {
+    font-size: 12px;
+    color: var(--brown-mid);
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
 .slot-header {
     display: flex;
     align-items: center;
