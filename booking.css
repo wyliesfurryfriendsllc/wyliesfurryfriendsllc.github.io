@@ -63,6 +63,31 @@
     color: var(--brown);
     margin-bottom: 20px;
 }
+.contact-from-acct-banner {
+    font-size: 13px;
+    color: var(--brown-mid);
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 14px;
+    margin-bottom: 16px;
+}
+.contact-from-acct-banner button {
+    background: none;
+    border: none;
+    color: var(--pink);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+}
+.contact-from-acct-banner button:hover { text-decoration: underline; }
+#clientName[readonly], #clientPhone[readonly], #clientEmail[readonly] {
+    background: var(--cream);
+    color: var(--brown-mid);
+    cursor: default;
+}
 
 .step-num {
     width: 28px;

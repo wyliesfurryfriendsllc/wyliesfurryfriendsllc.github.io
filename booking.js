@@ -1163,14 +1163,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const wff = window.WFF;
     if (wff && wff.auth && wff.onAuthStateChanged) {
         wff.onAuthStateChanged(wff.auth, async user => {
-            if (!user) return; // not logged in — keep manual form
+            if (!user) return;
             try {
                 const snap = await wff.getDoc(wff.doc(wff.db, 'users', user.uid));
-                const pets = snap.exists() ? (snap.data().pets || []) : [];
-                renderSavedPetCards(pets);
+                const data = snap.exists() ? snap.data() : {};
+                renderSavedPetCards(data.pets || []);
+                // Pre-fill contact info from account
+                if (data.name || data.phone || data.email) {
+                    if (data.name)  document.getElementById('clientName').value  = data.name;
+                    if (data.phone) document.getElementById('clientPhone').value = data.phone;
+                    if (data.email) document.getElementById('clientEmail').value = data.email;
+                    ['clientName','clientPhone','clientEmail'].forEach(id => {
+                        document.getElementById(id).readOnly = true;
+                    });
+                    document.getElementById('contactFromAccount').style.display = '';
+                }
             } catch (e) {
-                console.warn('Could not load saved pets:', e);
+                console.warn('Could not load user profile:', e);
             }
         });
     }
 });
+
+function useManualContactInfo() {
+    ['clientName','clientPhone','clientEmail'].forEach(id => {
+        const el = document.getElementById(id);
+        el.readOnly = false;
+        el.value = '';
+    });
+    document.getElementById('contactFromAccount').style.display = 'none';
+    document.getElementById('clientName').focus();
+}

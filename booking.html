@@ -207,6 +207,10 @@
             <!-- STEP 4: Contact -->
             <div class="form-section">
                 <div class="form-section-label"><span class="step-num">4</span> Your Contact Info</div>
+                <div id="contactFromAccount" class="contact-from-acct-banner" style="display:none">
+                    Using info from your account &nbsp;·&nbsp;
+                    <button type="button" onclick="useManualContactInfo()">Use different info</button>
+                </div>
                 <div class="form-row">
                     <div class="form-group half"><label>Your name</label><input type="text" id="clientName" placeholder="Full name" required></div>
                     <div class="form-group half"><label>Phone number</label><input type="tel" id="clientPhone" placeholder="(xxx) xxx-xxxx" required></div>
