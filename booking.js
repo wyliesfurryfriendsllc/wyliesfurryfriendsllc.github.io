@@ -226,7 +226,7 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots) {
     const isSpecific = sl.type === 'specific';
     return `
         <div class="date-slot" data-si="${si}">
-            <div class="slot-type-tip">💡 <strong>Recommended</strong> — Flexible time ranges help us coordinate visits more efficiently and increase scheduling availability.</div>
+            <div class="slot-type-tip">💡 <strong>Recommended</strong> — Flexible time ranges help with scheduling.</div>
             <div class="slot-header">
                 <div class="slot-type-pills">
                     <label class="pill-option">
