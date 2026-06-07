@@ -81,7 +81,9 @@ const _revealObserver = new IntersectionObserver(entries => {
 let _photos = [];
 let _lightboxIndex = 0;
 const MOBILE_STEP = 3;
-let _mobileVisible = MOBILE_STEP; // how many sections visible on mobile
+let _mobileVisible = MOBILE_STEP;
+const DESKTOP_INITIAL_ROWS = 3;
+let _desktopShowAll = false;
 
 function makeItem(url, absoluteIndex) {
     const item = document.createElement('div');
@@ -127,10 +129,11 @@ function renderGallery() {
     // ── Desktop: justified rows + masonry tail ──
     const groupedSet = new Set(GALLERY_GROUPS.flat());
 
-    GALLERY_GROUPS.forEach(indices => {
+    GALLERY_GROUPS.forEach((indices, rowIndex) => {
         const rowEl = document.createElement('div');
         rowEl.className = 'gallery-row';
-        grid.appendChild(rowEl); // must be in DOM before onLoad runs (cached images call onLoad synchronously)
+        if (!_desktopShowAll && rowIndex >= DESKTOP_INITIAL_ROWS) rowEl.style.display = 'none';
+        grid.appendChild(rowEl);
 
         const imgs = [];
         let loaded = 0;
@@ -138,7 +141,7 @@ function renderGallery() {
         indices.forEach(i => {
             if (i >= _photos.length) return;
             const { item, img } = makeItem(_photos[i], i);
-            img.loading = 'eager';
+            img.loading = rowIndex < DESKTOP_INITIAL_ROWS ? 'eager' : 'lazy';
             item.appendChild(img);
             rowEl.appendChild(item);
             imgs.push(img);
@@ -159,6 +162,7 @@ function renderGallery() {
     if (tailIndices.length > 0) {
         const tailEl = document.createElement('div');
         tailEl.className = 'gallery-grid-tail';
+        if (!_desktopShowAll) tailEl.style.display = 'none';
 
         tailIndices.forEach(i => {
             const { item, img } = makeItem(_photos[i], i);
@@ -174,11 +178,16 @@ function renderGallery() {
 
     grid.classList.add('visible');
     const moreWrap = document.getElementById('galleryMoreWrap');
-    if (moreWrap) moreWrap.style.display = 'none';
+    const hasMore = !_desktopShowAll && (GALLERY_GROUPS.length > DESKTOP_INITIAL_ROWS || tailIndices.length > 0);
+    if (moreWrap) moreWrap.style.display = hasMore ? 'block' : 'none';
 }
 
 function showMoreGallery() {
-    _mobileVisible += MOBILE_STEP;
+    if (window.innerWidth <= 768) {
+        _mobileVisible += MOBILE_STEP;
+    } else {
+        _desktopShowAll = true;
+    }
     renderGallery();
 }
 
