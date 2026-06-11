@@ -85,7 +85,7 @@ function toggleHideRover() {
 function renderAdminBookings() {
     const container = document.getElementById('adminBookingsList');
     if (!container) return;
-    const ACTIVE_STATUSES = ['pending','deposit_received','paid','in_service','confirmed','rejected','completed'];
+    const ACTIVE_STATUSES = ['pending','deposit_received','paid','in_service','confirmed'];
     let filtered = activeFilter === 'all'
         ? allBookings.filter(b => ACTIVE_STATUSES.includes(b.status))
         : allBookings.filter(b => b.status === activeFilter);
