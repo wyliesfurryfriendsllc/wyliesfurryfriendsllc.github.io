@@ -51,7 +51,7 @@ function toISO(d) {
 function buildDateMap() {
     const map = new Map();
     calBookings.forEach(b => {
-        if (b.status === 'rejected' || b.status === 'cancelled') return;
+        if (b.status === 'rejected' || b.status === 'cancelled' || b.status === 'deleted') return;
         if (calActiveFilter !== 'all' && b.status !== calActiveFilter) return;
         parseDates(b).forEach(iso => {
             if (!map.has(iso)) map.set(iso, []);

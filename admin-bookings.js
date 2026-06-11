@@ -17,7 +17,8 @@ const STATUS_LABELS = {
     in_service:       'In Service',
     rejected:         'Declined',
     completed:        'Completed',
-    confirmed:        'Confirmed'   // backward compat
+    confirmed:        'Confirmed',  // backward compat
+    deleted:          'Deleted'
 };
 const STATUS_COLORS = {
     pending:          'status-pending',
@@ -26,7 +27,8 @@ const STATUS_COLORS = {
     in_service:       'status-in-service',
     rejected:         'status-rejected',
     completed:        'status-completed',
-    confirmed:        'status-paid'  // backward compat
+    confirmed:        'status-paid',  // backward compat
+    deleted:          'status-rejected'
 };
 
 // ─── INIT ─────────────────────────────────────────────────
@@ -83,7 +85,7 @@ function toggleHideRover() {
 function renderAdminBookings() {
     const container = document.getElementById('adminBookingsList');
     if (!container) return;
-    const ACTIVE_STATUSES = ['pending','deposit_received','paid','in_service','confirmed'];
+    const ACTIVE_STATUSES = ['pending','deposit_received','paid','in_service','confirmed','rejected','completed'];
     let filtered = activeFilter === 'all'
         ? allBookings.filter(b => ACTIVE_STATUSES.includes(b.status))
         : allBookings.filter(b => b.status === activeFilter);
@@ -457,6 +459,7 @@ function renderDetail(b, panel) {
     panel.innerHTML = `
         <div class="detail-top-bar">
             <div class="detail-header-actions">
+                ${b.status !== 'deleted' ? `
                 <button class="detail-edit-btn" onclick="AdminCalendar.openEditBookingModal('${b.id}')" title="Edit booking">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
@@ -465,7 +468,10 @@ function renderDetail(b, panel) {
                 </button>
                 <button class="detail-delete-btn" onclick="AdminBookings.deleteBooking('${b.id}','${escHtml(b.clientName||'this booking')}')" title="Delete booking">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-                </button>
+                </button>` : `
+                <button class="detail-delete-btn" onclick="AdminBookings.permanentlyDeleteBooking('${b.id}','${escHtml(b.clientName||'this booking')}')" title="Permanently delete" style="color:#c0392b">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                </button>`}
                 <button class="detail-close" onclick="AdminBookings.closeDetail()">×</button>
             </div>
         </div>
@@ -780,8 +786,13 @@ function renderAdjustmentsHtml(b) {
 }
 
 async function deleteBooking(bookingId, clientName) {
-    if (!confirm(`Delete booking for ${clientName}?\n\nThis cannot be undone.`)) return;
-    if (!confirm(`Are you sure? This booking will be permanently deleted.`)) return;
+    if (!confirm(`Move booking for ${clientName} to Deleted?`)) return;
+    await updateDoc(doc(db, 'bookings', bookingId), { status: 'deleted' });
+    closeDetail();
+}
+
+async function permanentlyDeleteBooking(bookingId, clientName) {
+    if (!confirm(`Permanently delete booking for ${clientName}?\n\nThis cannot be undone.`)) return;
     await deleteDoc(doc(db, 'bookings', bookingId));
     closeDetail();
 }
@@ -1184,7 +1195,7 @@ window.AdminBookings = {
     acceptBooking, rejectBooking, markCompleted,
     markDepositReceived, markPaidInFull, markInService, markRoverConfirmed,
     addAdjustment, removeAdjustment, toggleAdjVisits,
-    deleteBooking, sendAdminMessage, exportImage,
+    deleteBooking, permanentlyDeleteBooking, sendAdminMessage, exportImage,
     openEditDatesModal, openEditPaymentModal
 };
 
