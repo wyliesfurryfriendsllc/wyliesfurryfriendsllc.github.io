@@ -640,6 +640,11 @@ function calcNbTotal() {
         const c = clients.find(x => x.id === nbSelectedClientId);
         if (c && c.pets) pets = [...nbSelectedPets].map(i => c.pets[i]).filter(Boolean);
     }
+    // When editing a booking with no linked client, preserve original pets (including photos)
+    if (editingBookingId && pets.length === 0) {
+        const orig = calBookings.find(x => x.id === editingBookingId);
+        if (orig?.pets?.length) pets = orig.pets;
+    }
     if (!pets.length) pets = [{ type: 'dog' }];
 
     let perVisit = 0;
