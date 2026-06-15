@@ -1681,3 +1681,18 @@ input, select, textarea {
     resize: vertical;
     box-sizing: border-box;
 }
+
+.cc-pet-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+.cc-pet-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cc-pet-meta { font-size: 11px; color: #9b7b6e; }
+.cc-pet-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+.cc-pet-tag {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: #f0ebe8;
+    color: #7a5c4e;
+    border: 1px solid #e0d6d0;
+}
+.cc-pet-notes { font-size: 11px; color: #9b7b6e; font-style: italic; }
+.cc-client-notes { font-style: italic; color: #9b7b6e; font-size: 12px; }

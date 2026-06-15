@@ -61,11 +61,28 @@ function renderClients() {
         const pets = c.pets || [];
         const petsHtml = pets.map(p => {
             const emoji = p.type === 'cat' ? '🐱' : '🐶';
-            // Use placeholder; set src via JS to avoid base64-in-innerHTML issues
             const avatarSlot = p.photoUrl
                 ? `<img class="cc-pet-avatar cc-pet-avatar-img" alt="${escHtml(p.name || '')}">`
                 : `<div class="cc-pet-avatar cc-pet-emoji">${emoji}</div>`;
-            return `<div class="cc-pet-item" data-photo="${p.photoUrl ? '1' : ''}">${avatarSlot}<span class="cc-pet-name">${escHtml(p.name || '—')}</span></div>`;
+            const tags = [
+                p.sex ? `<span class="cc-pet-tag">${escHtml(p.sex)}</span>` : '',
+                p.spayedNeutered === 'yes' ? `<span class="cc-pet-tag">Spayed/Neutered</span>` : '',
+                p.microchipped === 'yes' ? `<span class="cc-pet-tag">Microchipped</span>` : '',
+            ].filter(Boolean).join('');
+            const meta = [
+                p.breed ? escHtml(p.breed) : '',
+                p.weight ? `${escHtml(String(p.weight))} lbs` : '',
+            ].filter(Boolean).join(' · ');
+            return `
+            <div class="cc-pet-item" data-photo="${p.photoUrl ? '1' : ''}">
+                ${avatarSlot}
+                <div class="cc-pet-info">
+                    <span class="cc-pet-name">${escHtml(p.name || '—')}</span>
+                    ${meta ? `<span class="cc-pet-meta">${meta}</span>` : ''}
+                    ${tags ? `<div class="cc-pet-tags">${tags}</div>` : ''}
+                    ${p.notes ? `<div class="cc-pet-notes">${escHtml(p.notes)}</div>` : ''}
+                </div>
+            </div>`;
         }).join('');
 
         card.innerHTML = `
@@ -79,6 +96,7 @@ function renderClients() {
                         ${c.phone  ? `<div class="client-detail">${escHtml(c.phone)}</div>`  : ''}
                         ${c.email  ? `<div class="client-detail">${escHtml(c.email)}</div>`  : ''}
                         ${c.address? `<div class="client-detail client-address">${escHtml(c.address)}</div>` : ''}
+                        ${c.notes  ? `<div class="client-detail cc-client-notes">${escHtml(c.notes)}</div>` : ''}
                     </div>
                     <div class="client-card-actions">
                         <button class="admin-btn-primary" onclick="AdminClients.bookClient('${c.id}')">+ Book</button>
