@@ -583,6 +583,7 @@
     align-items: center;
     gap: 10px;
     background: var(--pink-light);
+    border: 1.5px solid var(--border);
     border-radius: 10px;
     padding: 12px 14px;
     font-size: 14px;
@@ -714,6 +715,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
     width: 22px;
     height: 22px;
     background: var(--cream-2);
+    border: 1.5px solid var(--border);
     border-radius: 50%;
     display: flex;
     align-items: center;
