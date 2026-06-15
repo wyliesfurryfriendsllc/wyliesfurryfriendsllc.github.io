@@ -673,12 +673,11 @@ function compressImage(file, maxW = 500, q = 0.85) {
 async function handlePetPhotoUpload(input) {
     const file = input.files[0];
     if (!file) return;
-    const placeholder = document.getElementById('petModalPhotoPlaceholder');
-    if (placeholder) placeholder.textContent = 'Processing…';
-    const base64 = await compressImage(file);
+    input.value = '';
+    const base64 = await window.openCropModal(file);
+    if (!base64) return;
     document.getElementById('petModalPhotoUrl').value = base64;
     updatePhotoPreview();
-    input.value = '';
 }
 
 function updatePhotoPreview() {

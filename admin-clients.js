@@ -410,13 +410,14 @@ function compressImage(file, maxW = 500, q = 0.85) {
 async function uploadPetPhoto(input, i) {
     const file = input.files[0];
     if (!file) return;
+    input.value = '';
     try {
-        const base64 = await compressImage(file);
+        const base64 = await window.openCropModal(file);
+        if (!base64) return;
         if (petEntries[i]) petEntries[i].photoUrl = base64;
         renderModalPets();
     } catch(e) {
         alert(e.message);
-        input.value = '';
     }
 }
 

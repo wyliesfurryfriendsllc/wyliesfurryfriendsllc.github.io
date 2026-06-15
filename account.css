@@ -955,24 +955,26 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     font-weight: 600;
 }
 
-/* Photo preview */
+/* Photo preview — circular */
 .pet-photo-preview-wrap {
-    width: 100%;
-    height: 160px;
+    width: 140px;
+    height: 140px;
     border: 2px dashed var(--border);
-    border-radius: 14px;
+    border-radius: 50%;
     overflow: hidden;
-    margin-bottom: 12px;
+    margin: 4px auto 12px;
     background: var(--cream);
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 .pet-photo-preview-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
+    border-radius: 50%;
 }
 .pet-photo-preview-wrap:hover {
     border-color: var(--pink);

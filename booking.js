@@ -1115,24 +1115,13 @@ function bkUpdatePhotoPreview() {
 async function bkHandlePhoto(input) {
     const file = input.files[0];
     if (!file) return;
-    const base64 = await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = e => {
-            const img = new Image();
-            img.onload = () => {
-                const s = Math.min(1, 500 / img.width);
-                const c = document.createElement('canvas');
-                c.width = img.width * s; c.height = img.height * s;
-                c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-                resolve(c.toDataURL('image/jpeg', 0.85));
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
+    input.value = '';
+    const base64 = await window.openCropModal(file);
+    if (!base64) return;
     document.getElementById('bkPetPhotoUrl').value = base64;
     bkUpdatePhotoPreview();
 }
+
 
 async function saveBookingPet() {
     const wff = window.WFF;

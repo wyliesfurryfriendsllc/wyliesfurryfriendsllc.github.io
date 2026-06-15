@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="booking.css">
     <link rel="stylesheet" href="account.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
 </head>
 <body class="booking-page">
 
@@ -337,14 +338,11 @@
             <div id="bkPetPhotoPlaceholder" class="pet-photo-placeholder">No photo yet</div>
         </div>
         <input type="file" id="bkPetPhotoFile" accept="image/*" style="display:none" onchange="bkHandlePhoto(this)">
+        <input type="hidden" id="bkPetPhotoUrl">
         <button type="button" class="photo-upload-btn" onclick="document.getElementById('bkPetPhotoFile').click()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             Upload Photo from Device
         </button>
-        <div class="form-group" style="margin-top:10px">
-            <label>Photo URL <span class="optional">(or paste a link)</span></label>
-            <input type="url" id="bkPetPhotoUrl" placeholder="https://..." oninput="bkUpdatePhotoPreview()">
-        </div>
 
         <div class="modal-section-header">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="6" cy="6.5" rx="2" ry="2.5"/><ellipse cx="18" cy="6.5" rx="2" ry="2.5"/><ellipse cx="10.5" cy="3" rx="1.5" ry="2"/><ellipse cx="13.5" cy="3" rx="1.5" ry="2"/><path d="M12 21c-4 0-7-2-7-5.5 0-2 1.5-4 3.5-5.5h7c2 1.5 3.5 3.5 3.5 5.5C19 19 16 21 12 21z"/></svg>
@@ -453,6 +451,8 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<script src="crop-helper.js"></script>
 <script type="module" src="firebase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>emailjs.init('1NXDYWOxvlUMtCIRL');</script>
