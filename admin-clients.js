@@ -195,7 +195,7 @@ function renderModalPets() {
 
         const emoji = p.type === 'cat' ? '🐱' : '🐶';
         const row = document.createElement('div');
-        row.className = 'cpet-row';
+        row.className = 'cpet-card';
         row.innerHTML = `
             <div class="cpet-top-row">
                 <div class="cpet-avatar-wrap">

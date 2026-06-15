@@ -1700,3 +1700,5 @@ input, select, textarea {
 }
 .cc-pet-notes { font-size: 11px; color: #9b7b6e; font-style: italic; }
 .cc-client-notes { font-style: italic; color: #9b7b6e; font-size: 12px; }
+
+.cpet-card { width: 100%; }
