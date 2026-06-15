@@ -1607,3 +1607,46 @@ input, select, textarea {
     box-sizing: border-box;
     min-width: 0;
 }
+
+.nb-manual-pet-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.nb-manual-pet-name {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+.nb-manual-pet-type {
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+}
+.nb-remove-pet-btn {
+    background: none;
+    border: none;
+    color: #c97b8a;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+.nb-remove-pet-btn:hover { background: #fdf0f2; }
+.nb-add-manual-pet-btn {
+    margin-top: 8px;
+    background: none;
+    border: 1px dashed #c97b8a;
+    color: #c97b8a;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.nb-add-manual-pet-btn:hover { background: #fdf0f2; }

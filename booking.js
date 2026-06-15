@@ -695,6 +695,16 @@ function reviewOrder(e) {
         return;
     }
 
+    // Validate: at least one pet
+    const _savedPets = getSelectedSavedPets();
+    const _petEntries = document.querySelectorAll('.pet-entry');
+    if (_savedPets.length + _petEntries.length === 0) {
+        alert('Please add at least one pet before submitting.');
+        document.querySelector('.form-section:has(#petSection), #petSection')
+            ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
+
     // Validate: at least one date
     const dateMode = document.querySelector('input[name="dateMode"]:checked')?.value || 'pick';
     if (dateMode === 'pick' && selectedDates.size === 0) {

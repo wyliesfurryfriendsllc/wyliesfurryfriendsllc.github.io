@@ -278,6 +278,7 @@ function isHolidayBooking(dates) {
 
 let nbSelectedClientId = null;
 let nbSelectedPets = new Set();
+let nbManualPets = [];
 let nbDateTimes = new Map(); // Map<isoDate, slot[]> — slot: { mode, start, end }
 let nbSameTimeAll = false;
 let editingBookingId = null;
@@ -314,6 +315,8 @@ function openNewBookingModal() {
     document.getElementById('nbClientSearchResults').style.display = 'none';
     document.getElementById('nbSelectedClient').style.display = 'none';
     document.getElementById('nbPetSection').style.display = 'none';
+    nbManualPets = [];
+    renderManualPets();
     document.getElementById('nbService').value = 'Drop-In Visit';
     document.getElementById('nbDuration').value = '30';
     document.getElementById('nbError').textContent = '';
@@ -710,6 +713,8 @@ function selectClient(clientId) {
     document.getElementById('nbSelectedClient').style.display = 'flex';
 
     const pets = c.pets || [];
+    nbManualPets = [];
+    document.getElementById('nbPetSection').style.display = '';
     if (pets.length > 0) {
         pets.forEach((_, i) => nbSelectedPets.add(i));
         document.getElementById('nbPetCheckboxes').innerHTML = pets.map((p, i) => {
@@ -724,10 +729,12 @@ function selectClient(clientId) {
                 <span>${escHtml(p.name || '—')} <em style="color:var(--brown-mid);font-style:normal">${escHtml(p.type||'')}</em></span>
             </label>`;
         }).join('');
-        document.getElementById('nbPetSection').style.display = '';
+        document.getElementById('nbAddManualPetBtn').style.display = 'none';
     } else {
-        document.getElementById('nbPetSection').style.display = 'none';
+        document.getElementById('nbPetCheckboxes').innerHTML = '';
+        document.getElementById('nbAddManualPetBtn').style.display = '';
     }
+    renderManualPets();
 }
 
 function clearSelectedClient() {
@@ -735,9 +742,45 @@ function clearSelectedClient() {
     nbSelectedPets = new Set();
     document.getElementById('nbSelectedClient').style.display = 'none';
     document.getElementById('nbPetSection').style.display = 'none';
+    document.getElementById('nbPetCheckboxes').innerHTML = '';
+    nbManualPets = [];
+    renderManualPets();
     document.getElementById('nbName').value = '';
     document.getElementById('nbPhone').value = '';
     document.getElementById('nbEmail').value = '';
+}
+
+function renderManualPets() {
+    const el = document.getElementById('nbManualPetList');
+    const btn = document.getElementById('nbAddManualPetBtn');
+    if (!el) return;
+    el.innerHTML = nbManualPets.map((p, i) => `
+        <div class="nb-manual-pet-row">
+            <input type="text" value="${escHtml(p.name)}" placeholder="Pet name"
+                oninput="AdminCalendar.updateManualPet(${i},'name',this.value)" class="nb-manual-pet-name">
+            <select onchange="AdminCalendar.updateManualPet(${i},'type',this.value)" class="nb-manual-pet-type">
+                <option value="dog"${p.type==='dog'?' selected':''}>Dog</option>
+                <option value="cat"${p.type==='cat'?' selected':''}>Cat</option>
+            </select>
+            <button type="button" onclick="AdminCalendar.removeManualPet(${i})" class="nb-remove-pet-btn">✕</button>
+        </div>`).join('');
+    if (btn) btn.style.display = '';
+}
+
+function addManualPet() {
+    nbManualPets.push({ name: '', type: 'dog' });
+    renderManualPets();
+    const section = document.getElementById('nbPetSection');
+    if (section) section.style.display = '';
+}
+
+function updateManualPet(i, field, val) {
+    if (nbManualPets[i]) nbManualPets[i][field] = val;
+}
+
+function removeManualPet(i) {
+    nbManualPets.splice(i, 1);
+    renderManualPets();
 }
 
 function togglePet(i) {
@@ -793,6 +836,9 @@ async function saveNewBooking() {
         const clients = window.AdminClients?.getAllClients() || [];
         const c = clients.find(x => x.id === nbSelectedClientId);
         if (c && c.pets) pets = [...nbSelectedPets].map(i => c.pets[i]).filter(Boolean);
+    }
+    if (nbManualPets.length > 0) {
+        pets = [...pets, ...nbManualPets.filter(p => p.name.trim())];
     }
     if (editingBookingId && pets.length === 0) {
         const orig = calBookings.find(x => x.id === editingBookingId);
@@ -887,6 +933,16 @@ function openEditBookingModal(bookingId) {
         document.getElementById('nbName').value  = b.clientName  || '';
         document.getElementById('nbPhone').value = b.clientPhone || '';
         document.getElementById('nbEmail').value = b.clientEmail || '';
+        // Load existing pets for no-client bookings
+        if (b.pets && b.pets.length > 0) {
+            nbManualPets = b.pets.map(p => ({ name: p.name || '', type: p.type || 'dog' }));
+        } else {
+            nbManualPets = [];
+        }
+        document.getElementById('nbPetSection').style.display = '';
+        document.getElementById('nbPetCheckboxes').innerHTML = '';
+        document.getElementById('nbAddManualPetBtn').style.display = '';
+        renderManualPets();
     }
 
     // Pre-fill dates/times
@@ -972,6 +1028,7 @@ window.AdminCalendar = {
     openNewBookingModal, closeNewBookingModal, onServiceChange,
     searchClients, selectClient, clearSelectedClient,
     togglePet, saveNewBooking,
+    addManualPet, removeManualPet, updateManualPet,
     nbPrevMonth, nbNextMonth, calcNbTotal,
     addTimeToDate, removeTimeFromDate, updateDatetimeHour, updateDatetimeMin,
     toggleSameTime, setSlotMode,
