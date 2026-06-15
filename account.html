@@ -219,7 +219,7 @@
 </div>
 
 <!-- Pet Modal -->
-<div id="petModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closePetModal()">
+<div id="petModal" class="modal-overlay" style="display:none" onclick="if(event.target===this&&!window.getSelection().toString())closePetModal()">
     <div class="modal-card modal-card-wide">
         <div class="modal-header">
             <h3 id="petModalTitle">Add a Pet</h3>

@@ -322,7 +322,7 @@
 </div>
 
 <!-- Pet Modal (for logged-in users adding a new pet from booking page) -->
-<div id="bkPetModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBookingPetModal()">
+<div id="bkPetModal" class="modal-overlay" style="display:none" onclick="if(event.target===this&&!window.getSelection().toString())closeBookingPetModal()">
     <div class="modal-card modal-card-wide">
         <div class="modal-header">
             <h3>Add a Pet</h3>
