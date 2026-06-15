@@ -680,7 +680,7 @@ input, select, textarea {
 .admin-modal-card {
     background: #fff;
     border-radius: 20px;
-    width: 100%; max-width: 520px;
+    width: 100%; max-width: 700px;
     max-height: 90vh; overflow-y: auto;
     box-shadow: 0 8px 40px rgba(61,32,24,0.18);
 }
@@ -1656,10 +1656,13 @@ input, select, textarea {
     gap: 6px;
     margin-bottom: 6px;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    width: 100%;
 }
-.cpet-weight { width: 110px; flex: none; }
-.cpet-pills-row { gap: 4px; }
+.cpet-row-inline .cpet-input { flex: 1; min-width: 0; }
+.cpet-row-inline .cpet-select { flex: 0 0 130px; }
+.cpet-weight { flex: 0 0 110px !important; }
+.cpet-pills-row { gap: 6px; flex-wrap: wrap; }
 .cpet-pill-label { font-size: 12px; color: #7a5c4e; white-space: nowrap; }
 .cpet-pill {
     padding: 3px 10px;

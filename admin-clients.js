@@ -225,7 +225,9 @@ function renderModalPets() {
                         <label class="cpet-pill-label">Sex:</label>
                         <button type="button" class="cpet-pill${p.sex==='male'?' active':''}" onclick="AdminClients.updatePet(${i},'sex','male');AdminClients.renderModalPets()">Male</button>
                         <button type="button" class="cpet-pill${p.sex==='female'?' active':''}" onclick="AdminClients.updatePet(${i},'sex','female');AdminClients.renderModalPets()">Female</button>
-                        <label class="cpet-pill-label" style="margin-left:8px">Spayed/Neutered:</label>
+                    </div>
+                    <div class="cpet-row-inline cpet-pills-row">
+                        <label class="cpet-pill-label">Spayed/Neutered:</label>
                         <button type="button" class="cpet-pill${p.spayedNeutered==='yes'?' active':''}" onclick="AdminClients.updatePet(${i},'spayedNeutered','yes');AdminClients.renderModalPets()">Yes</button>
                         <button type="button" class="cpet-pill${p.spayedNeutered==='no'?' active':''}" onclick="AdminClients.updatePet(${i},'spayedNeutered','no');AdminClients.renderModalPets()">No</button>
                     </div>
