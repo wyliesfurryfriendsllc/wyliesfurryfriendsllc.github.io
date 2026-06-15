@@ -214,6 +214,7 @@ function renderModalPets() {
                             <option value="cat"   ${p.type==='cat'   ?'selected':''}>🐱 Cat</option>
                             <option value="other" ${p.type==='other' ?'selected':''}>🐾 Other</option>
                         </select>
+                        <button class="cpet-remove" onclick="AdminClients.removePet(${i})">×</button>
                     </div>
                     <div class="cpet-row-inline">
                         <input class="cpet-input" type="text" placeholder="Breed" value="${escHtml(p.breed || '')}"
@@ -248,7 +249,6 @@ function renderModalPets() {
                     <textarea class="cpet-input cpet-notes" placeholder="Pet notes (special needs, allergies, behavior...)" rows="2"
                         oninput="AdminClients.updatePet(${i},'notes',this.value)">${escHtml(p.notes || '')}</textarea>
                 </div>
-                <button class="cpet-remove" onclick="AdminClients.removePet(${i})">×</button>
             </div>
         `;
 

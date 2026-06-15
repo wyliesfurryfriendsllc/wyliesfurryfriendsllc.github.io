@@ -778,8 +778,9 @@ input, select, textarea {
 .cpet-input:focus, .cpet-select:focus { border-color: var(--pink); }
 .cpet-remove {
     background: none; border: none; color: var(--brown-mid);
-    font-size: 18px; cursor: pointer; padding: 0; line-height: 1;
+    font-size: 18px; cursor: pointer; padding: 0 0 0 4px; line-height: 1;
     display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
 }
 .cpet-remove:hover { color: #c0392b; }
 
