@@ -1182,15 +1182,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const wff = window.WFF;
     if (wff && wff.auth && wff.onAuthStateChanged) {
         wff.onAuthStateChanged(wff.auth, async user => {
-            const loginPrompt    = document.getElementById('step4LoginPrompt');
-            const contactFields  = document.getElementById('step4ContactFields');
+            const loginSection  = document.getElementById('step1LoginSection');
+            const bookingSteps  = document.getElementById('bookingSteps');
+            const submitBtn     = document.getElementById('submitBtn');
             if (!user) {
-                if (loginPrompt)   loginPrompt.style.display  = '';
-                if (contactFields) contactFields.style.display = 'none';
+                if (loginSection)  loginSection.style.display  = '';
+                if (bookingSteps)  bookingSteps.style.display   = 'none';
+                if (submitBtn)     submitBtn.style.display       = 'none';
                 return;
             }
-            if (loginPrompt)   loginPrompt.style.display  = 'none';
-            if (contactFields) contactFields.style.display = '';
+            if (loginSection)  loginSection.style.display  = 'none';
+            if (bookingSteps)  bookingSteps.style.display   = '';
+            if (submitBtn)     submitBtn.style.display       = '';
             try {
                 const snap = await wff.getDoc(wff.doc(wff.db, 'users', user.uid));
                 const data = snap.exists() ? snap.data() : {};
