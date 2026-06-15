@@ -1650,3 +1650,34 @@ input, select, textarea {
     cursor: pointer;
 }
 .nb-add-manual-pet-btn:hover { background: #fdf0f2; }
+
+.cpet-row-inline {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.cpet-weight { width: 110px; flex: none; }
+.cpet-pills-row { gap: 4px; }
+.cpet-pill-label { font-size: 12px; color: #7a5c4e; white-space: nowrap; }
+.cpet-pill {
+    padding: 3px 10px;
+    border-radius: 14px;
+    border: 1px solid #ddd;
+    background: #f8f5f3;
+    font-size: 12px;
+    cursor: pointer;
+    color: #7a5c4e;
+}
+.cpet-pill.active {
+    background: var(--pink, #c97b8a);
+    color: #fff;
+    border-color: var(--pink, #c97b8a);
+}
+.cpet-notes {
+    width: 100%;
+    margin-top: 6px;
+    resize: vertical;
+    box-sizing: border-box;
+}

@@ -108,6 +108,7 @@ function openModal(clientId = null) {
     document.getElementById('cModalPhone').value   = '';
     document.getElementById('cModalEmail').value   = '';
     document.getElementById('cModalAddress').value = '';
+    document.getElementById('cModalNotes').value   = '';
     document.getElementById('cModalError').textContent = '';
 
     if (clientId) {
@@ -117,6 +118,7 @@ function openModal(clientId = null) {
             document.getElementById('cModalPhone').value   = c.phone   || '';
             document.getElementById('cModalEmail').value   = c.email   || '';
             document.getElementById('cModalAddress').value = c.address || '';
+            document.getElementById('cModalNotes').value   = c.notes   || '';
             petEntries = (c.pets || []).map(p => ({ ...p }));
         }
     }
@@ -186,13 +188,34 @@ function renderModalPets() {
                     </label>
                 </div>
                 <div class="cpet-fields">
-                    <input class="cpet-input" type="text" placeholder="Pet name" value="${escHtml(p.name || '')}"
-                        oninput="AdminClients.updatePet(${i},'name',this.value)">
-                    <select class="cpet-select" onchange="AdminClients.updatePet(${i},'type',this.value)">
-                        <option value="dog"   ${p.type==='dog'   ?'selected':''}>🐶 Dog</option>
-                        <option value="cat"   ${p.type==='cat'   ?'selected':''}>🐱 Cat</option>
-                        <option value="other" ${p.type==='other' ?'selected':''}>🐾 Other</option>
-                    </select>
+                    <div class="cpet-row-inline">
+                        <input class="cpet-input" type="text" placeholder="Pet name" value="${escHtml(p.name || '')}"
+                            oninput="AdminClients.updatePet(${i},'name',this.value)">
+                        <select class="cpet-select" onchange="AdminClients.updatePet(${i},'type',this.value)">
+                            <option value="dog"   ${p.type==='dog'   ?'selected':''}>🐶 Dog</option>
+                            <option value="cat"   ${p.type==='cat'   ?'selected':''}>🐱 Cat</option>
+                            <option value="other" ${p.type==='other' ?'selected':''}>🐾 Other</option>
+                        </select>
+                    </div>
+                    <div class="cpet-row-inline">
+                        <input class="cpet-input" type="text" placeholder="Breed" value="${escHtml(p.breed || '')}"
+                            oninput="AdminClients.updatePet(${i},'breed',this.value)">
+                        <input class="cpet-input cpet-weight" type="number" placeholder="Weight (lbs)" value="${escHtml(String(p.weight || ''))}"
+                            oninput="AdminClients.updatePet(${i},'weight',this.value)">
+                    </div>
+                    <div class="cpet-row-inline cpet-pills-row">
+                        <label class="cpet-pill-label">Sex:</label>
+                        <button type="button" class="cpet-pill${p.sex==='male'?' active':''}" onclick="AdminClients.updatePet(${i},'sex','male');AdminClients.renderModalPets()">Male</button>
+                        <button type="button" class="cpet-pill${p.sex==='female'?' active':''}" onclick="AdminClients.updatePet(${i},'sex','female');AdminClients.renderModalPets()">Female</button>
+                        <label class="cpet-pill-label" style="margin-left:8px">Spayed/Neutered:</label>
+                        <button type="button" class="cpet-pill${p.spayedNeutered==='yes'?' active':''}" onclick="AdminClients.updatePet(${i},'spayedNeutered','yes');AdminClients.renderModalPets()">Yes</button>
+                        <button type="button" class="cpet-pill${p.spayedNeutered==='no'?' active':''}" onclick="AdminClients.updatePet(${i},'spayedNeutered','no');AdminClients.renderModalPets()">No</button>
+                    </div>
+                    <div class="cpet-row-inline cpet-pills-row">
+                        <label class="cpet-pill-label">Microchipped:</label>
+                        <button type="button" class="cpet-pill${p.microchipped==='yes'?' active':''}" onclick="AdminClients.updatePet(${i},'microchipped','yes');AdminClients.renderModalPets()">Yes</button>
+                        <button type="button" class="cpet-pill${p.microchipped==='no'?' active':''}" onclick="AdminClients.updatePet(${i},'microchipped','no');AdminClients.renderModalPets()">No</button>
+                    </div>
                     <div class="cpet-bday-section">
                         <div class="cpet-bday-tabs">
                             <button type="button" class="cpet-bday-tab ${mode==='date'?'active':''}"
@@ -202,6 +225,8 @@ function renderModalPets() {
                         </div>
                         ${bdayContent}
                     </div>
+                    <textarea class="cpet-input cpet-notes" placeholder="Pet notes (special needs, allergies, behavior...)" rows="2"
+                        oninput="AdminClients.updatePet(${i},'notes',this.value)">${escHtml(p.notes || '')}</textarea>
                 </div>
                 <button class="cpet-remove" onclick="AdminClients.removePet(${i})">×</button>
             </div>
@@ -233,7 +258,7 @@ function setBdayMode(i, mode) {
 }
 
 function addPet() {
-    petEntries.push({ name: '', type: 'dog', birthDate: '', photoUrl: '', birthMode: 'date', ageYears: '', ageMonths: '' });
+    petEntries.push({ name: '', type: 'dog', birthDate: '', photoUrl: '', birthMode: 'date', ageYears: '', ageMonths: '', breed: '', weight: '', sex: '', spayedNeutered: '', microchipped: '', notes: '' });
     renderModalPets();
 }
 
@@ -267,13 +292,14 @@ async function saveModal() {
     const phone   = document.getElementById('cModalPhone').value.trim();
     const email   = document.getElementById('cModalEmail').value.trim();
     const address = document.getElementById('cModalAddress').value.trim();
+    const notes   = document.getElementById('cModalNotes').value.trim();
     const errEl   = document.getElementById('cModalError');
 
     if (!name) { errEl.textContent = 'Name is required.'; return; }
     errEl.textContent = '';
 
     const data = {
-        name, phone, email, address,
+        name, phone, email, address, notes,
         pets: petEntries.filter(p => p.name.trim()),
         updatedAt: serverTimestamp()
     };
@@ -384,5 +410,6 @@ function escHtml(s) {
 window.AdminClients = {
     init, openModal, closeModal, saveModal, onSearch,
     addPet, removePet, updatePet, refreshPetPreview, getAllClients,
-    searchAddress, pickAddress, uploadPetPhoto, calcAge, bookClient, setBdayMode
+    searchAddress, pickAddress, uploadPetPhoto, calcAge, bookClient, setBdayMode,
+    renderModalPets
 };
