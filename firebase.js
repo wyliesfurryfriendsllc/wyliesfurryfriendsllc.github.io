@@ -7,7 +7,7 @@ import {
 import {
     getAuth, createUserWithEmailAndPassword,
     signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile,
-    GoogleAuthProvider, signInWithPopup, signInAnonymously
+    GoogleAuthProvider, signInWithPopup, signInAnonymously, sendPasswordResetEmail
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 const firebaseConfig = {
@@ -28,7 +28,7 @@ export {
     query, orderBy, onSnapshot, where, serverTimestamp,
     getDoc, setDoc, createUserWithEmailAndPassword,
     signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile,
-    GoogleAuthProvider, signInWithPopup
+    GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail
 };
 
 // Also expose via window for non-module scripts (booking.js, admin.js)

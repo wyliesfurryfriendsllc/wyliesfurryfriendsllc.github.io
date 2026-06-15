@@ -4,7 +4,7 @@ import {
     query, where, onSnapshot, orderBy, serverTimestamp,
     createUserWithEmailAndPassword, signInWithEmailAndPassword,
     signOut, onAuthStateChanged, updateProfile,
-    GoogleAuthProvider, signInWithPopup
+    GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail
 } from './firebase.js';
 
 let currentUser    = null;
@@ -73,6 +73,30 @@ function switchAuthMode(mode) {
     document.getElementById('authTabLogin').classList.toggle('active', mode === 'login');
     document.getElementById('authTabRegister').classList.toggle('active', mode === 'register');
     document.getElementById('authError').textContent = '';
+}
+
+function showForgotPassword(show = true) {
+    document.getElementById('loginForm').style.display       = show ? 'none' : '';
+    document.getElementById('forgotPasswordForm').style.display = show ? '' : 'none';
+    document.getElementById('authError').textContent = '';
+    const msg = document.getElementById('forgotMsg');
+    if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+}
+
+async function doForgotPassword() {
+    const email = document.getElementById('forgotEmail').value.trim();
+    const msg   = document.getElementById('forgotMsg');
+    if (!email) { msg.textContent = 'Please enter your email.'; msg.style.color = '#c0392b'; msg.style.display = ''; return; }
+    try {
+        await sendPasswordResetEmail(auth, email);
+        msg.textContent = 'Reset email sent! Check your inbox.';
+        msg.style.color = '#2e7d32';
+        msg.style.display = '';
+    } catch (err) {
+        msg.textContent = getFriendlyError(err.code);
+        msg.style.color = '#c0392b';
+        msg.style.display = '';
+    }
 }
 
 async function doLogin() {
@@ -1180,6 +1204,8 @@ async function loadReviewStatus(bookingId) {
 
 // ─── EXPOSE TO HTML ───────────────────────────────────────
 window.switchAuthMode    = switchAuthMode;
+window.showForgotPassword = showForgotPassword;
+window.doForgotPassword  = doForgotPassword;
 window.doLogin           = doLogin;
 window.doRegister        = doRegister;
 window.doGoogleLogin     = doGoogleLogin;

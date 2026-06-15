@@ -53,8 +53,21 @@
                 <input type="password" id="loginPassword" placeholder="Password" required>
             </div>
             <button type="submit" id="loginBtn" class="btn-auth">Sign In</button>
+            <p class="auth-switch"><button type="button" class="link-btn" onclick="showForgotPassword()">Forgot password?</button></p>
             <p class="auth-switch">New here? <button type="button" class="link-btn" onclick="switchAuthMode('register')">Create an account</button></p>
         </form>
+
+        <!-- Forgot Password -->
+        <div id="forgotPasswordForm" style="display:none">
+            <p class="auth-switch" style="margin-bottom:12px">Enter your email and we'll send you a reset link.</p>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="forgotEmail" placeholder="you@example.com">
+            </div>
+            <p id="forgotMsg" style="display:none;font-size:13px;margin-bottom:8px"></p>
+            <button type="button" class="btn-auth" onclick="doForgotPassword()">Send Reset Email</button>
+            <p class="auth-switch"><button type="button" class="link-btn" onclick="showForgotPassword(false)">Back to Sign In</button></p>
+        </div>
 
         <!-- Register -->
         <form id="registerForm" style="display:none" onsubmit="event.preventDefault(); doRegister()">
