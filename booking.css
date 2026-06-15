@@ -1180,3 +1180,52 @@ details.deposit-policy[open] summary { color: var(--pink); }
     transition: opacity 0.15s;
 }
 .btn-go-add-pet:hover { opacity: 0.88; }
+
+.login-required-banner {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 0 0 16px;
+    color: #856404;
+    font-size: 0.95rem;
+}
+.login-required-banner a { color: #b8860b; font-weight: 600; }
+
+.step4-login-prompt {
+    text-align: center;
+    padding: 24px 16px;
+}
+.step4-login-prompt p {
+    color: #7a5c4e;
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+.step4-auth-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+.btn-step4-create {
+    background: var(--pink, #c97b8a);
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 24px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: opacity 0.15s;
+}
+.btn-step4-create:hover { opacity: 0.85; }
+.btn-step4-login {
+    background: transparent;
+    color: var(--pink, #c97b8a);
+    padding: 12px 28px;
+    border-radius: 24px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: 2px solid var(--pink, #c97b8a);
+    transition: background 0.15s, color 0.15s;
+}
+.btn-step4-login:hover { background: var(--pink, #c97b8a); color: #fff; }

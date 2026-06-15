@@ -794,6 +794,10 @@ async function saveNewBooking() {
         const c = clients.find(x => x.id === nbSelectedClientId);
         if (c && c.pets) pets = [...nbSelectedPets].map(i => c.pets[i]).filter(Boolean);
     }
+    if (editingBookingId && pets.length === 0) {
+        const orig = calBookings.find(x => x.id === editingBookingId);
+        if (orig?.pets?.length) pets = orig.pets;
+    }
 
     const btn = document.getElementById('nbSaveBtn');
     btn.disabled = true; btn.textContent = 'Saving…';

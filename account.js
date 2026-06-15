@@ -52,6 +52,9 @@ function showAuthUI() {
 }
 
 function showAccountUI(user, profile) {
+    const params = new URLSearchParams(window.location.search);
+    const ret = params.get('return');
+    if (ret === 'booking') { window.location.href = 'booking.html'; return; }
     document.getElementById('authSection').style.display    = 'none';
     document.getElementById('accountSection').style.display = '';
     const name = profile.name || user.displayName || user.email.split('@')[0];
@@ -166,9 +169,11 @@ function showTab(tab) {
 // ─── MY BOOKINGS ─────────────────────────────────────────
 function loadMyBookings(user) {
     if (bookingsUnsub) bookingsUnsub();
-    const q = query(collection(db, 'bookings'), where('clientEmail', '==', user.email));
-    bookingsUnsub = onSnapshot(q, snap => {
-        allBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    let byId = [], byEmail = [];
+    const merge = () => {
+        const map = new Map();
+        [...byId, ...byEmail].forEach(b => map.set(b.id, b));
+        allBookings = [...map.values()];
         renderBookingsList(allBookings);
         if (activeBookingId) {
             const updated = allBookings.find(b => b.id === activeBookingId);
@@ -180,11 +185,26 @@ function loadMyBookings(user) {
         const dayPanel = document.getElementById('acctDayPanel');
         if (dayPanel && dayPanel.dataset.iso) showCalDay(dayPanel.dataset.iso);
         renderAccountCal();
-    }, err => {
+    };
+    const handleErr = err => {
         console.error('Bookings load error:', err);
         document.getElementById('bookingsList').innerHTML =
             '<p class="empty-msg">Unable to load bookings. Please try again later.</p>';
-    });
+    };
+    const unsubId = onSnapshot(
+        query(collection(db, 'bookings'), where('clientId', '==', user.uid)),
+        snap => { byId = snap.docs.map(d => ({ id: d.id, ...d.data() })); merge(); },
+        handleErr
+    );
+    let unsubEmail = () => {};
+    if (user.email) {
+        unsubEmail = onSnapshot(
+            query(collection(db, 'bookings'), where('clientEmail', '==', user.email)),
+            snap => { byEmail = snap.docs.map(d => ({ id: d.id, ...d.data() })); merge(); },
+            handleErr
+        );
+    }
+    bookingsUnsub = () => { unsubId(); unsubEmail(); };
 }
 
 function setBookingFilter(f) {
@@ -1189,3 +1209,9 @@ window.onPetBdayYearChange  = onPetBdayYearChange;
 window.onPetBdayMonthChange = onPetBdayMonthChange;
 window.setReviewStar        = setReviewStar;
 window.submitReview         = submitReview;
+
+// Handle ?tab= URL param to pre-select login/register tab
+(function() {
+    const tab = new URLSearchParams(window.location.search).get('tab');
+    if (tab === 'register') switchAuthMode('register');
+})();

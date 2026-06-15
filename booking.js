@@ -306,7 +306,7 @@ function removeSlot(dateStr, si) {
 
 // ─── TIME HELPERS ─────────────────────────────────────────
 function hrOptions(sel) {
-    let h = '<option value="">Hr</option>';
+    let h = '';
     for (let i = 0; i <= 23; i++) {
         h += `<option value="${i}"${String(sel)===String(i)?'selected':''}>${i}</option>`;
     }
@@ -688,6 +688,13 @@ function collectDatesText() {
 function reviewOrder(e) {
     e.preventDefault();
 
+    const currentUser = window.WFF?.auth?.currentUser;
+    if (!currentUser) {
+        const el = document.getElementById('loginRequiredMsg');
+        if (el) { el.style.display = 'block'; el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        return;
+    }
+
     // Validate: at least one date
     const dateMode = document.querySelector('input[name="dateMode"]:checked')?.value || 'pick';
     if (dateMode === 'pick' && selectedDates.size === 0) {
@@ -930,6 +937,7 @@ function sendRequest() {
             });
             wff.addDoc(wff.collection(wff.db, 'bookings'), {
                 clientName, clientEmail, clientPhone,
+                clientId: wff.auth?.currentUser?.uid || null,
                 service, duration,
                 datesText: collectDatesText(),
                 pets: petsData,
@@ -1164,12 +1172,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const wff = window.WFF;
     if (wff && wff.auth && wff.onAuthStateChanged) {
         wff.onAuthStateChanged(wff.auth, async user => {
-            if (!user) return;
+            const loginPrompt    = document.getElementById('step4LoginPrompt');
+            const contactFields  = document.getElementById('step4ContactFields');
+            if (!user) {
+                if (loginPrompt)   loginPrompt.style.display  = '';
+                if (contactFields) contactFields.style.display = 'none';
+                return;
+            }
+            if (loginPrompt)   loginPrompt.style.display  = 'none';
+            if (contactFields) contactFields.style.display = '';
             try {
                 const snap = await wff.getDoc(wff.doc(wff.db, 'users', user.uid));
                 const data = snap.exists() ? snap.data() : {};
                 renderSavedPetCards(data.pets || []);
-                // Pre-fill contact info from account
                 if (data.name || data.phone || data.email) {
                     if (data.name)  document.getElementById('clientName').value  = data.name;
                     if (data.phone) document.getElementById('clientPhone').value = data.phone;

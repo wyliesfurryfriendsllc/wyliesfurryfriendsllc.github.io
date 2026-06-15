@@ -207,18 +207,34 @@
             <!-- STEP 4: Contact -->
             <div class="form-section">
                 <div class="form-section-label"><span class="step-num">4</span> Your Contact Info</div>
-                <div id="contactFromAccount" class="contact-from-acct-banner" style="display:none">
-                    Using info from your account &nbsp;·&nbsp;
-                    <button type="button" onclick="useManualContactInfo()">Use different info</button>
+
+                <!-- Shown when NOT logged in -->
+                <div id="step4LoginPrompt" class="step4-login-prompt">
+                    <p>To complete your booking, please create an account or log in.</p>
+                    <div class="step4-auth-btns">
+                        <a href="account.html?tab=register&return=booking" class="btn-step4-create">Create Account</a>
+                        <a href="account.html?tab=login&return=booking" class="btn-step4-login">Log In</a>
+                    </div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group half"><label>Your name</label><input type="text" id="clientName" placeholder="Full name" required></div>
-                    <div class="form-group half"><label>Phone number</label><input type="tel" id="clientPhone" placeholder="(xxx) xxx-xxxx" required></div>
+
+                <!-- Shown when logged in -->
+                <div id="step4ContactFields" style="display:none">
+                    <div id="contactFromAccount" class="contact-from-acct-banner" style="display:none">
+                        Using info from your account &nbsp;·&nbsp;
+                        <button type="button" onclick="useManualContactInfo()">Use different info</button>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half"><label>Your name</label><input type="text" id="clientName" placeholder="Full name"></div>
+                        <div class="form-group half"><label>Phone number</label><input type="tel" id="clientPhone" placeholder="(xxx) xxx-xxxx"></div>
+                    </div>
+                    <div class="form-group"><label>Email address</label><input type="email" id="clientEmail" placeholder="you@example.com"></div>
+                    <div class="form-group"><label>Notes <span class="optional">(optional)</span></label><textarea id="clientNotes" rows="3" placeholder="Special instructions, medical needs, feeding schedule..."></textarea></div>
                 </div>
-                <div class="form-group"><label>Email address</label><input type="email" id="clientEmail" placeholder="you@example.com" required></div>
-                <div class="form-group"><label>Notes <span class="optional">(optional)</span></label><textarea id="clientNotes" rows="3" placeholder="Special instructions, medical needs, feeding schedule..."></textarea></div>
             </div>
 
+            <div id="loginRequiredMsg" style="display:none" class="login-required-banner">
+                Please <a href="account.html">log in or create an account</a> before submitting a booking.
+            </div>
             <button type="submit" class="submit-btn" id="submitBtn">
                 Review Your Order
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
