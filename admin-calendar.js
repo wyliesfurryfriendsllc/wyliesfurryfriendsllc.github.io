@@ -832,10 +832,12 @@ async function saveNewBooking() {
     });
 
     let pets = [];
+    let resolvedClientId = nbSelectedClientId || null;
     if (nbSelectedClientId) {
         const clients = window.AdminClients?.getAllClients() || [];
         const c = clients.find(x => x.id === nbSelectedClientId);
         if (c && c.pets) pets = [...nbSelectedPets].map(i => c.pets[i]).filter(Boolean);
+        if (c?.uid) resolvedClientId = c.uid;
     }
     if (nbManualPets.length > 0) {
         pets = [...pets, ...nbManualPets.filter(p => p.name.trim())];
@@ -856,7 +858,7 @@ async function saveNewBooking() {
                 datesText, dates: sortedDates, dateTimes,
                 pets, notes, total, isRover,
                 ...(isCustom ? { customBasePrice } : {}),
-                clientId: nbSelectedClientId || null,
+                clientId: resolvedClientId,
                 updatedAt: serverTimestamp()
             });
             const bid = editingBookingId;
@@ -870,7 +872,7 @@ async function saveNewBooking() {
                 pets, notes, total, isRover,
                 ...(isCustom ? { customBasePrice } : {}),
                 status: 'pending', adminAccepted: true, source: 'manual',
-                clientId: nbSelectedClientId || null,
+                clientId: resolvedClientId,
                 createdAt: serverTimestamp()
             });
             closeNewBookingModal();
