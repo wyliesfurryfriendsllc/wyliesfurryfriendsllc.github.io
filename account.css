@@ -1552,10 +1552,30 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
 .tip-pill-skip { color: var(--brown-mid); font-weight: 500; }
 .tip-pill-amt {
     display: block;
+    font-size: 15px;
+    font-weight: 700;
+    margin-top: 0;
+}
+.tip-pill-pct {
+    display: block;
     font-size: 11px;
-    font-weight: 500;
-    opacity: 0.75;
+    font-weight: 400;
+    opacity: 0.65;
     margin-top: 1px;
+}
+.tip-zelle-hint {
+    font-size: 12px;
+    color: var(--brown-mid);
+    line-height: 1.6;
+}
+.tip-zelle-email {
+    display: inline-block;
+    margin-top: 4px;
+    font-weight: 600;
+    color: var(--pink);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 .tip-custom-input {
     width: 140px;

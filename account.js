@@ -527,10 +527,10 @@ function renderBookingDetail(b, panel) {
         </div>` : ''}
         ${b.status === 'completed' ? (() => {
             const bTotal = b.finalTotal != null ? b.finalTotal : (b.total || 0);
-            const tipPcts = [10, 15, 18, 20];
+            const tipPcts = [10, 15, 20];
             const tipPillsHtml = tipPcts.map(pct => {
                 const amt = Math.round(bTotal * pct / 100 * 100) / 100;
-                return `<button class="tip-pill" data-val="${amt}" data-pct="${pct}" onclick="selectTip('${b.id}',${amt},this)">${pct}%<span class="tip-pill-amt">$${amt}</span></button>`;
+                return `<button class="tip-pill" data-val="${amt}" data-pct="${pct}" onclick="selectTip('${b.id}',${amt},this)"><span class="tip-pill-amt">$${amt}</span><span class="tip-pill-pct">${pct}%</span></button>`;
             }).join('') +
             `<button class="tip-pill" data-val="custom" onclick="selectTip('${b.id}','custom',this)">Custom</button>` +
             `<button class="tip-pill tip-pill-skip" data-val="0" onclick="selectTip('${b.id}',0,this)">No tip</button>`;
@@ -551,7 +551,7 @@ function renderBookingDetail(b, panel) {
             </div>
             <div class="detail-section-label tip-section-label">Leave a Tip</div>
             <div id="tipSection_${b.id}">
-                ${b.tip ? `<p class="tip-thanks" style="margin-bottom:12px">Tip: $${b.tip} — Thank you! Please send via Zelle to <strong>wyliesfurryfriendsllc@gmail.com</strong></p>` : `
+                ${b.tip ? `<p class="tip-thanks" style="margin-bottom:12px">Tip: $${b.tip} — Thank you! 🐾<br><span class="tip-zelle-hint">We truly appreciate your generosity. All tips are sent via Zelle to our account —<br><span class="tip-zelle-email" onclick="copyZelleEmail(this)" title="Tap to copy">wyliesfurryfriendsllc@gmail.com</span></span></p>` : `
                 <p class="tip-note">100% goes to your pet's caregiver.</p>
                 <div class="tip-pills" id="tipPills_${b.id}">${tipPillsHtml}</div>
                 <div id="tipCustomWrap_${b.id}" style="display:none;margin-top:10px">
@@ -1323,7 +1323,7 @@ async function submitAll(bookingId) {
             const tipAmt = updates.tip || booking?.tip;
             wrap.innerHTML = `<div class="detail-section-label">Thank You!</div>
                 <p class="tip-thanks">Your review, tip, and feedback have been submitted. 🐾</p>
-                ${tipAmt > 0 ? `<p class="tip-thanks" style="margin-top:8px">Please send your <strong>$${tipAmt} tip</strong> via Zelle to <strong>wyliesfurryfriendsllc@gmail.com</strong></p>` : ''}`;
+                ${tipAmt > 0 ? `<p class="tip-thanks" style="margin-top:8px">We truly appreciate your generous tip of <strong>$${tipAmt}</strong>! 🙏<br><span class="tip-zelle-hint">All tips are sent via Zelle to our account —<br><span class="tip-zelle-email" onclick="copyZelleEmail(this)" title="Tap to copy">wyliesfurryfriendsllc@gmail.com</span></span></p>` : ''}`;
         }
     } catch(e) {
         console.error('submitAll:', e);
@@ -1394,6 +1394,14 @@ window.submitReview         = submitReview;
 window.selectTip            = selectTip;
 window.confirmTip           = confirmTip;
 window.submitAll            = submitAll;
+window.copyZelleEmail       = function(el) {
+    navigator.clipboard.writeText('wyliesfurryfriendsllc@gmail.com').then(() => {
+        const orig = el.textContent;
+        el.textContent = 'Copied!';
+        el.style.color = '#2d6a2d';
+        setTimeout(() => { el.textContent = orig; el.style.color = ''; }, 2000);
+    }).catch(() => {});
+};
 
 // Handle ?tab= URL param to pre-select login/register tab
 (function() {
