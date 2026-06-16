@@ -355,6 +355,7 @@ function renderBookingsList(bookings) {
         const daysUntil = getDaysUntil(b);
         const showChip = daysUntil !== null && daysUntil >= 0 && daysUntil <= 3 && ACTIVE_STATUSES.has(b.status);
         const chipLabel = daysUntil === 0 ? 'Today!' : `Starts in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
+        const needsDeposit = (b.status === 'pending' && b.adminAccepted) || b.status === 'confirmed';
 
         card.innerHTML = `
             <div class="bc-card-inner">
@@ -369,6 +370,7 @@ function renderBookingsList(bookings) {
                     <div class="bc-svc-name">${escHtml(b.service || '—')}</div>
                     <div class="bc-duration">${b.duration || 30} min</div>
                     <span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span>
+                    ${needsDeposit ? `<div class="bc-deposit-chip">Deposit Required</div>` : ''}
                     ${showChip ? `<div class="bc-upcoming-chip">⏰ ${chipLabel}</div>` : ''}
                     <div class="bc-date-line">${escHtml(firstLine)}</div>
                     <div class="bc-total-line">$${b.finalTotal != null ? b.finalTotal : (b.total || 0)} est.</div>
