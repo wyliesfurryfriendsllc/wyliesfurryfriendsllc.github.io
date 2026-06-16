@@ -435,6 +435,13 @@
             </div>
         </div>
         <div class="form-group">
+            <label>Spayed / Neutered? <span class="req">*</span></label>
+            <div class="pet-pills" id="bkPetSpayedGroup">
+                <button type="button" class="pet-pill" data-value="yes" onclick="bkTogglePill(this,'single')">Yes</button>
+                <button type="button" class="pet-pill" data-value="no" onclick="bkTogglePill(this,'single')">No</button>
+            </div>
+        </div>
+        <div class="form-group">
             <label>Breed <span class="optional">(optional)</span></label>
             <input type="text" id="bkPetBreed" placeholder="e.g. Golden Retriever">
         </div>

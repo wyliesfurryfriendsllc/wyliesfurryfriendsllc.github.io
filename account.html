@@ -335,6 +335,13 @@
             </div>
         </div>
         <div class="form-group">
+            <label>Spayed / Neutered? <span class="req">*</span></label>
+            <div class="pet-pills" id="petSpayedGroup">
+                <button type="button" class="pet-pill" data-value="yes" onclick="togglePill(this,'single')">Yes</button>
+                <button type="button" class="pet-pill" data-value="no" onclick="togglePill(this,'single')">No</button>
+            </div>
+        </div>
+        <div class="form-group">
             <label>Breed <span class="optional">(optional)</span></label>
             <input type="text" id="petModalBreed" placeholder="e.g. Golden Retriever · Mixed breeds welcome">
         </div>
@@ -346,13 +353,6 @@
                 Additional Details
             </summary>
             <div class="modal-details-body">
-                <div class="form-group">
-                    <label>Spayed / Neutered?</label>
-                    <div class="pet-pills" id="petSpayedGroup">
-                        <button type="button" class="pet-pill" data-value="yes" onclick="togglePill(this,'single')">Is spayed/neutered</button>
-                        <button type="button" class="pet-pill" data-value="no" onclick="togglePill(this,'single')">Not spayed/neutered</button>
-                    </div>
-                </div>
                 <div class="form-group">
                     <label>Microchipped?</label>
                     <div class="pet-pills" id="petMicrochipGroup">

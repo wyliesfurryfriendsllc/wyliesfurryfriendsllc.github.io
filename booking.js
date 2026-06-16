@@ -1078,7 +1078,7 @@ function openBookingPetModal() {
     document.getElementById('bkPetPhotoPreview').style.display = 'none';
     document.getElementById('bkPetPhotoPlaceholder').style.display = '';
     document.querySelectorAll('#bkPetTypeGroup .pet-type-card').forEach((b,i) => b.classList.toggle('active', i===0));
-    document.querySelectorAll('#bkPetSexGroup .pet-pill').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#bkPetSexGroup .pet-pill, #bkPetSpayedGroup .pet-pill').forEach(b => b.classList.remove('active'));
     const exactR = document.querySelector('input[name="bkPetAgeMode"][value="exact"]');
     if (exactR) { exactR.checked = true; bkSwitchAgeMode('exact'); }
     document.getElementById('bkPetBdayText').textContent = 'Choose birthday...';
@@ -1132,15 +1132,17 @@ async function saveBookingPet() {
     const birthday  = bkAgeMode === 'exact'     ? (document.getElementById('bkPetBirthday').value || '') : '';
     const ageYear   = bkAgeMode === 'yearmonth' ? (document.getElementById('bkPetAgeYear').value.trim() || '') : '';
     const ageMonth  = bkAgeMode === 'yearmonth' ? (document.getElementById('bkPetAgeMonth').value || '') : '';
-    const sex       = bkGetPillValue('bkPetSexGroup');
+    const sex           = bkGetPillValue('bkPetSexGroup');
+    const spayedNeutered = bkGetPillValue('bkPetSpayedGroup');
 
     if (!birthday && !ageYear) { alert("Please enter your pet's birthday or birth year."); return; }
     if (!sex) { alert("Please select your pet's sex."); return; }
+    if (!spayedNeutered) { alert("Please indicate if your pet is spayed/neutered."); return; }
 
     const pet = {
         name,
         type:     bkGetPillValue('bkPetTypeGroup') || 'dog',
-        sex, birthday, ageYear, ageMonth,
+        sex, spayedNeutered, birthday, ageYear, ageMonth,
         weight:   document.getElementById('bkPetWeight').value.trim(),
         breed:    document.getElementById('bkPetBreed').value.trim(),
         careNotes:document.getElementById('bkPetNotes').value.trim(),

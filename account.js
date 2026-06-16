@@ -911,6 +911,7 @@ async function savePetModal() {
     if (!pet.name) { alert("Please enter your pet's name."); return; }
     if (!birthday && !ageYear) { alert('Please enter your pet\'s birthday or birth year.'); return; }
     if (!sex) { alert('Please select your pet\'s sex.'); return; }
+    if (!pet.spayedNeutered) { alert('Please indicate if your pet is spayed/neutered.'); return; }
     if (idx === -1) { userPets.push(pet); } else { userPets[idx] = pet; }
     await updateDoc(doc(db, 'users', currentUser.uid), { pets: userPets });
     await syncToClients(currentUser, { name: currentUser.displayName || '', email: currentUser.email, phone: '', pets: userPets });
