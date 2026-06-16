@@ -562,12 +562,7 @@ function renderBookingDetail(b, panel) {
                     <span class="tip-zelle-email" onclick="copyZelleEmail(this)" title="Tap to copy">wyliesfurryfriendsllc@gmail.com</span>
                 </div>`}
             </div>
-            <div class="detail-section-label tip-section-label">Leave Feedback</div>
-            <div id="feedbackSection_${b.id}">
-                ${b.privateFeedback ? `<p class="tip-thanks" style="margin-bottom:12px">Feedback submitted!</p>` : `
-                <textarea class="review-textarea" id="feedbackText_${b.id}" placeholder="Anything else you'd like to share..."></textarea>`}
-            </div>
-            <button class="review-submit-btn feedback-submit-btn" id="submitAllBtn_${b.id}" onclick="submitAll('${b.id}')">Submit Feedback</button>
+            <button class="review-submit-btn feedback-submit-btn" id="submitAllBtn_${b.id}" onclick="submitAll('${b.id}')">Submit</button>
         </div>`;
         })() : ''}
         <div class="detail-section">
