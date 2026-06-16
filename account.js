@@ -533,6 +533,24 @@ function renderBookingDetail(b, panel) {
                 <textarea class="review-textarea" id="reviewText_${b.id}" placeholder="Share your experience..."></textarea>
                 <button class="review-submit-btn" onclick="submitReview('${b.id}')">Submit Review</button>
             </div>
+        </div>
+        <div class="detail-section tip-section" id="tipSection_${b.id}">
+            <div class="detail-section-label">Leave a Tip</div>
+            ${b.tip ? `<p class="tip-thanks">Thank you for your $${b.tip} tip! 🐾<br><span style="font-size:12px">Please send via Zelle to <strong>wyliesfurryfriendsllc@gmail.com</strong></span></p>` : `
+            <p class="tip-note">100% goes to your pet's caregiver.</p>
+            <div class="tip-pills" id="tipPills_${b.id}">
+                ${[5,10,15,20].map(amt=>`<button class="tip-pill" data-val="${amt}" onclick="selectTip('${b.id}',${amt},this)">$${amt}</button>`).join('')}
+                <button class="tip-pill" data-val="custom" onclick="selectTip('${b.id}','custom',this)">Custom</button>
+                <button class="tip-pill tip-pill-skip" data-val="0" onclick="selectTip('${b.id}',0,this)">No tip</button>
+            </div>
+            <div id="tipCustomWrap_${b.id}" style="display:none;margin-top:10px">
+                <input type="number" class="tip-custom-input" id="tipCustomAmt_${b.id}" placeholder="Enter amount ($)" min="1" step="1">
+            </div>
+            <div id="tipZelle_${b.id}" style="display:none" class="tip-zelle-notice">
+                <p>Please send your tip via Zelle to:</p>
+                <p><strong>wyliesfurryfriendsllc@gmail.com</strong></p>
+                <button class="tip-confirm-btn" onclick="confirmTip('${b.id}')">I've sent the tip</button>
+            </div>`}
         </div>` : ''}
         <div class="detail-section">
             <div class="detail-section-label">Messages with Wylie</div>
@@ -1222,6 +1240,50 @@ async function loadReviewStatus(bookingId) {
     }
 }
 
+function selectTip(bookingId, val, btn) {
+    document.querySelectorAll(`#tipPills_${bookingId} .tip-pill`).forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const customWrap = document.getElementById(`tipCustomWrap_${bookingId}`);
+    const zelleDiv   = document.getElementById(`tipZelle_${bookingId}`);
+    if (val === 'custom') {
+        customWrap.style.display = '';
+        zelleDiv.style.display = '';
+    } else if (val === 0) {
+        customWrap.style.display = 'none';
+        zelleDiv.style.display = 'none';
+    } else {
+        customWrap.style.display = 'none';
+        zelleDiv.style.display = '';
+        zelleDiv.dataset.amount = val;
+    }
+}
+
+async function confirmTip(bookingId) {
+    const zelleDiv   = document.getElementById(`tipZelle_${bookingId}`);
+    const customInput = document.getElementById(`tipCustomAmt_${bookingId}`);
+    const activePill  = document.querySelector(`#tipPills_${bookingId} .tip-pill.active`);
+    let amount = activePill?.dataset.val === 'custom'
+        ? parseFloat(customInput?.value)
+        : parseFloat(activePill?.dataset.val || 0);
+    if (!amount || amount <= 0) { alert('Please enter a valid tip amount.'); return; }
+
+    const btn = zelleDiv?.querySelector('.tip-confirm-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+    try {
+        await updateDoc(doc(db, 'bookings', bookingId), { tip: amount });
+        const tipSection = document.getElementById(`tipSection_${bookingId}`);
+        if (tipSection) {
+            tipSection.innerHTML = `<div class="detail-section-label">Leave a Tip</div>
+                <p class="tip-thanks">Thank you for your $${amount} tip! 🐾<br>
+                <span style="font-size:12px">Please send via Zelle to <strong>wyliesfurryfriendsllc@gmail.com</strong></span></p>`;
+        }
+    } catch(e) {
+        console.error('confirmTip:', e);
+        if (btn) { btn.disabled = false; btn.textContent = 'I\'ve sent the tip'; }
+        alert('Failed to save. Please try again.');
+    }
+}
+
 // ─── EXPOSE TO HTML ───────────────────────────────────────
 window.switchAuthMode    = switchAuthMode;
 window.showForgotPassword = showForgotPassword;
@@ -1255,6 +1317,8 @@ window.onPetBdayYearChange  = onPetBdayYearChange;
 window.onPetBdayMonthChange = onPetBdayMonthChange;
 window.setReviewStar        = setReviewStar;
 window.submitReview         = submitReview;
+window.selectTip            = selectTip;
+window.confirmTip           = confirmTip;
 
 // Handle ?tab= URL param to pre-select login/register tab
 (function() {

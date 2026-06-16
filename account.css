@@ -1508,3 +1508,69 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     padding: 8px 0;
 }
 
+/* ─── TIP ──────────────────────────────────────────── */
+.tip-section { border-top: 1px solid var(--border); }
+.tip-note { font-size: 13px; color: var(--brown-mid); margin-bottom: 10px; }
+.tip-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+.tip-pill {
+    padding: 7px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    background: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--brown);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.tip-pill:hover { border-color: var(--pink); color: var(--pink); }
+.tip-pill.active { background: var(--pink); border-color: var(--pink); color: #fff; }
+.tip-pill-skip { color: var(--brown-mid); font-weight: 500; }
+.tip-custom-input {
+    width: 140px;
+    padding: 8px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    background: #fff;
+    box-sizing: border-box;
+}
+.tip-custom-input:focus { outline: none; border-color: var(--pink); }
+.tip-zelle-notice {
+    margin-top: 12px;
+    background: #f0f7f0;
+    border: 1px solid #b2d8b2;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+.tip-zelle-notice p { font-size: 13px; color: #2e7d32; margin-bottom: 4px; }
+.tip-confirm-btn {
+    margin-top: 10px;
+    background: #2e7d32;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: opacity 0.15s;
+}
+.tip-confirm-btn:hover { opacity: 0.85; }
+.tip-confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.tip-thanks {
+    font-size: 14px;
+    color: #2e7d32;
+    font-weight: 500;
+    padding: 8px 0;
+    line-height: 1.6;
+}
+
