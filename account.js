@@ -556,6 +556,10 @@ function renderBookingDetail(b, panel) {
                 <div class="tip-pills" id="tipPills_${b.id}">${tipPillsHtml}</div>
                 <div id="tipCustomWrap_${b.id}" style="display:none;margin-top:10px">
                     <input type="number" class="tip-custom-input" id="tipCustomAmt_${b.id}" placeholder="Enter amount ($)" min="1" step="1">
+                </div>
+                <div id="tipZelle_${b.id}" class="tip-zelle-notice" style="display:none">
+                    We truly appreciate your generosity! 🙏 All tips are sent via Zelle to our account —<br>
+                    <span class="tip-zelle-email" onclick="copyZelleEmail(this)" title="Tap to copy">wyliesfurryfriendsllc@gmail.com</span>
                 </div>`}
             </div>
             <div class="detail-section-label tip-section-label">Leave Feedback</div>

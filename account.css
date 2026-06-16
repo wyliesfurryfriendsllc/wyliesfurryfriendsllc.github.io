@@ -1563,6 +1563,16 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     opacity: 0.65;
     margin-top: 1px;
 }
+.tip-zelle-notice {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #f9f6f2;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--brown-mid);
+    line-height: 1.7;
+}
 .tip-zelle-hint {
     font-size: 12px;
     color: var(--brown-mid);
