@@ -1587,6 +1587,27 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     text-decoration: underline;
     text-underline-offset: 2px;
 }
+.tip-sent-btn {
+    display: block;
+    margin-top: 10px;
+    padding: 7px 16px;
+    background: #fff;
+    border: 1.5px solid var(--pink);
+    border-radius: 20px;
+    color: var(--pink);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.tip-sent-btn:hover { background: var(--pink); color: #fff; }
+.tip-sent-btn.tip-sent-confirmed {
+    background: #e8f5e9;
+    border-color: #66bb6a;
+    color: #2e7d32;
+    cursor: default;
+}
 .tip-custom-input {
     width: 140px;
     padding: 8px 12px;

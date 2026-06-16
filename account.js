@@ -560,6 +560,7 @@ function renderBookingDetail(b, panel) {
                 <div id="tipZelle_${b.id}" class="tip-zelle-notice" style="display:none">
                     We truly appreciate your generosity! 🙏 All tips are sent via Zelle to our account —<br>
                     <span class="tip-zelle-email" onclick="copyZelleEmail(this)" title="Tap to copy">wyliesfurryfriendsllc@gmail.com</span>
+                    <button class="tip-sent-btn" id="tipSentBtn_${b.id}" onclick="markTipSent('${b.id}',this)">I've sent the tip</button>
                 </div>`}
             </div>
             <button class="review-submit-btn feedback-submit-btn" id="submitAllBtn_${b.id}" onclick="submitAll('${b.id}')">Submit</button>
@@ -1393,6 +1394,11 @@ window.submitReview         = submitReview;
 window.selectTip            = selectTip;
 window.confirmTip           = confirmTip;
 window.submitAll            = submitAll;
+window.markTipSent = function(bookingId, btn) {
+    btn.textContent = 'Tip sent ✓';
+    btn.classList.add('tip-sent-confirmed');
+    btn.disabled = true;
+};
 window.copyZelleEmail       = function(el) {
     navigator.clipboard.writeText('wyliesfurryfriendsllc@gmail.com').then(() => {
         const orig = el.textContent;
