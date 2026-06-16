@@ -1519,6 +1519,11 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     padding: 8px 0;
 }
 
+/* ─── FEEDBACK WRAP (review + tip + feedback combined) ── */
+.feedback-wrap { border-top: 1px solid var(--border); padding-top: 16px; }
+.tip-section-label { margin-top: 18px; margin-bottom: 8px; }
+.feedback-submit-btn { margin-top: 16px; width: 100%; }
+
 /* ─── TIP ──────────────────────────────────────────── */
 .tip-section, .feedback-section { border-top: 1px solid var(--border); padding-top: 16px; }
 .tip-note { font-size: 13px; color: var(--brown-mid); margin-bottom: 10px; }

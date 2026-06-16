@@ -534,37 +534,36 @@ function renderBookingDetail(b, panel) {
             }).join('') +
             `<button class="tip-pill" data-val="custom" onclick="selectTip('${b.id}','custom',this)">Custom</button>` +
             `<button class="tip-pill tip-pill-skip" data-val="0" onclick="selectTip('${b.id}',0,this)">No tip</button>`;
+            const alreadyDone = b.hasReview && b.tip != null && b.privateFeedback;
+            if (alreadyDone) return `
+        <div class="detail-section feedback-section">
+            <p class="tip-thanks">Thank you for your review, tip, and feedback! 🐾</p>
+        </div>`;
             return `
-        <div class="detail-section" id="reviewSection_${b.id}">
+        <div class="detail-section feedback-wrap" id="feedbackWrap_${b.id}">
             <div class="detail-section-label">Leave a Review</div>
-            <div class="review-form-wrap" id="reviewFormWrap_${b.id}">
+            <div id="reviewFormWrap_${b.id}">
+                ${b.hasReview ? `<p class="tip-thanks" style="margin-bottom:12px">Review submitted!</p>` : `
                 <div class="review-star-picker" id="reviewStars_${b.id}" data-rating="0">
                     ${[1,2,3,4,5].map(n=>`<span class="review-star" data-val="${n}" onclick="setReviewStar('${b.id}',${n})">★</span>`).join('')}
                 </div>
-                <textarea class="review-textarea" id="reviewText_${b.id}" placeholder="Share your experience..."></textarea>
-                <button class="review-submit-btn" onclick="submitReview('${b.id}')">Submit Review</button>
+                <textarea class="review-textarea" id="reviewText_${b.id}" placeholder="Share your experience..."></textarea>`}
             </div>
-        </div>
-        <div class="detail-section tip-section" id="tipSection_${b.id}">
-            <div class="detail-section-label">Leave a Tip</div>
-            ${b.tip ? `<p class="tip-thanks">Thank you for your $${b.tip} tip! 🐾<br><span style="font-size:12px">Please send via Zelle to <strong>wyliesfurryfriendsllc@gmail.com</strong></span></p>` : `
-            <p class="tip-note">100% goes to your pet's caregiver.</p>
-            <div class="tip-pills" id="tipPills_${b.id}">${tipPillsHtml}</div>
-            <div id="tipCustomWrap_${b.id}" style="display:none;margin-top:10px">
-                <input type="number" class="tip-custom-input" id="tipCustomAmt_${b.id}" placeholder="Enter amount ($)" min="1" step="1">
+            <div class="detail-section-label tip-section-label">Leave a Tip</div>
+            <div id="tipSection_${b.id}">
+                ${b.tip ? `<p class="tip-thanks" style="margin-bottom:12px">Tip: $${b.tip} — Thank you! Please send via Zelle to <strong>wyliesfurryfriendsllc@gmail.com</strong></p>` : `
+                <p class="tip-note">100% goes to your pet's caregiver.</p>
+                <div class="tip-pills" id="tipPills_${b.id}">${tipPillsHtml}</div>
+                <div id="tipCustomWrap_${b.id}" style="display:none;margin-top:10px">
+                    <input type="number" class="tip-custom-input" id="tipCustomAmt_${b.id}" placeholder="Enter amount ($)" min="1" step="1">
+                </div>`}
             </div>
-            <div id="tipZelle_${b.id}" style="display:none" class="tip-zelle-notice">
-                <p>Please send your tip via Zelle to:</p>
-                <p><strong>wyliesfurryfriendsllc@gmail.com</strong></p>
-                <button class="tip-confirm-btn" onclick="confirmTip('${b.id}')">I've sent the tip</button>
-            </div>`}
-        </div>
-        <div class="detail-section feedback-section" id="feedbackSection_${b.id}">
-            <div class="detail-section-label">Leave Feedback</div>
-            ${b.privateFeedback ? `<p class="tip-thanks">Thank you for your feedback!</p>` : `
-            <p class="tip-note">Private message to Wylie — won't be published.</p>
-            <textarea class="review-textarea" id="feedbackText_${b.id}" placeholder="Anything else you'd like to share..."></textarea>
-            <button class="review-submit-btn" onclick="submitFeedback('${b.id}')">Send Feedback</button>`}
+            <div class="detail-section-label tip-section-label">Leave Feedback</div>
+            <div id="feedbackSection_${b.id}">
+                ${b.privateFeedback ? `<p class="tip-thanks" style="margin-bottom:12px">Feedback submitted!</p>` : `
+                <textarea class="review-textarea" id="feedbackText_${b.id}" placeholder="Anything else you'd like to share..."></textarea>`}
+            </div>
+            <button class="review-submit-btn feedback-submit-btn" id="submitAllBtn_${b.id}" onclick="submitAll('${b.id}')">Submit Feedback</button>
         </div>`;
         })() : ''}
         <div class="detail-section">
@@ -1274,20 +1273,62 @@ function selectTip(bookingId, val, btn) {
     }
 }
 
-async function submitFeedback(bookingId) {
-    const textarea = document.getElementById(`feedbackText_${bookingId}`);
-    const text = textarea?.value.trim();
-    if (!text) { alert('Please enter your feedback.'); return; }
-    const btn = document.querySelector(`#feedbackSection_${bookingId} .review-submit-btn`);
-    if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+async function submitAll(bookingId) {
+    const btn = document.getElementById(`submitAllBtn_${bookingId}`);
+    if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+    const booking = allBookings.find(x => x.id === bookingId);
+    const updates = {};
     try {
-        await updateDoc(doc(db, 'bookings', bookingId), { privateFeedback: text });
-        const section = document.getElementById(`feedbackSection_${bookingId}`);
-        if (section) section.innerHTML = `<div class="detail-section-label">Leave Feedback</div><p class="tip-thanks">Thank you for your feedback!</p>`;
+        // Review
+        if (!booking?.hasReview) {
+            const rating = Number(document.getElementById(`reviewStars_${bookingId}`)?.dataset.rating || 0);
+            const text   = document.getElementById(`reviewText_${bookingId}`)?.value.trim();
+            if (rating && text) {
+                const name = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Client';
+                const authorName = name.split(' ')[0] + (name.split(' ')[1] ? ' ' + name.split(' ')[1][0] + '.' : '');
+                const serviceMap = { 'drop-in': 'Drop-In Visit', 'walking': 'Dog Walking' };
+                const service = serviceMap[booking?.serviceType] || booking?.service || '';
+                const dateLabel = new Date().toLocaleString('en-US', { month: 'short', year: 'numeric' });
+                await addDoc(collection(db, 'reviews'), {
+                    text, rating, authorName, service, dateLabel,
+                    createdAt: serverTimestamp(), status: 'pending', source: 'client',
+                    bookingId, userId: currentUser?.uid || null,
+                    featuredOnHome: false, colorVariant: 'rc-pink', tags: []
+                });
+                updates.hasReview = true;
+            }
+        }
+        // Tip
+        if (booking?.tip == null) {
+            const activePill = document.querySelector(`#tipPills_${bookingId} .tip-pill.active`);
+            if (activePill) {
+                const val = activePill.dataset.val === 'custom'
+                    ? parseFloat(document.getElementById(`tipCustomAmt_${bookingId}`)?.value)
+                    : parseFloat(activePill.dataset.val);
+                if (val && val > 0) updates.tip = val;
+                else if (activePill.dataset.val === '0') updates.tip = 0;
+            }
+        }
+        // Private feedback
+        if (!booking?.privateFeedback) {
+            const fbText = document.getElementById(`feedbackText_${bookingId}`)?.value.trim();
+            if (fbText) updates.privateFeedback = fbText;
+        }
+        if (Object.keys(updates).length > 0) {
+            await updateDoc(doc(db, 'bookings', bookingId), updates);
+        }
+        // Show tip Zelle notice if tip was set
+        const wrap = document.getElementById(`feedbackWrap_${bookingId}`);
+        if (wrap) {
+            const tipAmt = updates.tip || booking?.tip;
+            wrap.innerHTML = `<div class="detail-section-label">Thank You!</div>
+                <p class="tip-thanks">Your review, tip, and feedback have been submitted. 🐾</p>
+                ${tipAmt > 0 ? `<p class="tip-thanks" style="margin-top:8px">Please send your <strong>$${tipAmt} tip</strong> via Zelle to <strong>wyliesfurryfriendsllc@gmail.com</strong></p>` : ''}`;
+        }
     } catch(e) {
-        console.error('submitFeedback:', e);
-        if (btn) { btn.disabled = false; btn.textContent = 'Send Feedback'; }
-        alert('Failed to send. Please try again.');
+        console.error('submitAll:', e);
+        if (btn) { btn.disabled = false; btn.textContent = 'Submit Feedback'; }
+        alert('Something went wrong. Please try again.');
     }
 }
 
@@ -1352,7 +1393,7 @@ window.setReviewStar        = setReviewStar;
 window.submitReview         = submitReview;
 window.selectTip            = selectTip;
 window.confirmTip           = confirmTip;
-window.submitFeedback       = submitFeedback;
+window.submitAll            = submitAll;
 
 // Handle ?tab= URL param to pre-select login/register tab
 (function() {
