@@ -371,7 +371,7 @@ function renderBookingsList(bookings) {
                     <span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span>
                     ${showChip ? `<div class="bc-upcoming-chip">⏰ ${chipLabel}</div>` : ''}
                     <div class="bc-date-line">${escHtml(firstLine)}</div>
-                    <div class="bc-total-line">$${b.total || 0} est.</div>
+                    <div class="bc-total-line">$${b.finalTotal != null ? b.finalTotal : (b.total || 0)} est.</div>
                 </div>
             </div>
         `;
@@ -429,28 +429,46 @@ function buildDatesText(b) {
 }
 
 function buildChargesHtml(b) {
-    const pb   = b.priceBreakdown;
-    const pets = b.pets || [];
-    const total = b.total || 0;
+    const pb         = b.priceBreakdown;
+    const pets       = b.pets || [];
+    const adjs       = b.adjustments || [];
+    const baseTotal  = b.total || 0;
+    const finalTotal = b.finalTotal != null ? b.finalTotal : baseTotal;
+    const hasAdj     = adjs.length > 0;
+
+    function adjRows(fallbackVisits) {
+        let h = `<div class="detail-row charge-sub-total"><span>Base Total</span><span>$${baseTotal}</span></div>`;
+        adjs.forEach(a => {
+            const v      = a.type === 'per_visit' ? (a.visits || fallbackVisits || 1) : 1;
+            const adjAmt = a.amount * v;
+            const sign   = adjAmt >= 0 ? `+$${adjAmt}` : `-$${Math.abs(adjAmt)}`;
+            const vLabel = a.type === 'per_visit' ? ` · $${a.amount} × ${v} ${v === 1 ? 'visit' : 'visits'}` : '';
+            const cls    = adjAmt >= 0 ? 'charge-adj-pos' : 'charge-adj-neg';
+            h += `<div class="detail-row charge-adj-item"><span>${escHtml(a.name)}${vLabel}</span><span class="${cls}">${sign}</span></div>`;
+        });
+        return h;
+    }
+
     if (!pb) {
         let html = '';
         pets.forEach(p => { html += `<div class="charge-pet-label">${escHtml(p.name || '—')}</div>`; });
-        html += `<div class="detail-row charge-total"><span>Total</span><span>$${total}</span></div>`;
+        if (hasAdj) html += adjRows(1);
+        html += `<div class="detail-row charge-total"><span>${hasAdj ? 'Final Total' : 'Total'}</span><span>$${finalTotal}</span></div>`;
         return html;
     }
+
     const { numVisits, serviceLabel, basePerVisit, extraRate, numExtra, isCat } = pb;
-    const visitWord = numVisits === 1 ? 'visit' : 'visits';
+    const visitWord  = numVisits === 1 ? 'visit' : 'visits';
     let html = '';
-    const firstName = pets[0]?.name || '—';
-    html += `<div class="charge-pet-label">${escHtml(firstName)}</div>`;
+    html += `<div class="charge-pet-label">${escHtml(pets[0]?.name || '—')}</div>`;
     html += `<div class="detail-row charge-item"><span>${escHtml(serviceLabel)} · $${basePerVisit} × ${numVisits} ${visitWord}</span><span>$${basePerVisit * numVisits}</span></div>`;
     const extraLabel = isCat ? 'Additional cat' : 'Additional dog';
     for (let i = 1; i <= numExtra; i++) {
-        const petName = pets[i]?.name || '—';
-        html += `<div class="charge-pet-label">${escHtml(petName)}</div>`;
+        html += `<div class="charge-pet-label">${escHtml(pets[i]?.name || '—')}</div>`;
         html += `<div class="detail-row charge-item"><span>${extraLabel} · $${extraRate} × ${numVisits} ${visitWord}</span><span>$${extraRate * numVisits}</span></div>`;
     }
-    html += `<div class="detail-row charge-total"><span>Total</span><span>$${total}</span></div>`;
+    if (hasAdj) html += adjRows(numVisits);
+    html += `<div class="detail-row charge-total"><span>${hasAdj ? 'Final Total' : 'Total'}</span><span>$${finalTotal}</span></div>`;
     return html;
 }
 
@@ -477,7 +495,7 @@ function renderBookingDetail(b, panel) {
         <div class="detail-section detail-payment-notice">
             <div class="detail-section-label">Deposit Required</div>
             <p>Your booking has been accepted!</p>
-            <p>Please send a <strong>$${Math.round((b.total || 0) / 2)} deposit</strong> via Zelle to <strong>wyliesfurryfriendsllc@gmail.com</strong> to secure your spot.</p>
+            <p>Please send a <strong>$${Math.round((b.finalTotal || b.total || 0) / 2)} deposit</strong> via Zelle to <strong>wyliesfurryfriendsllc@gmail.com</strong> to secure your spot.</p>
             <p>The remaining balance is due before the service begins.</p>
             <details class="detail-deposit-policy">
                 <summary>Deposit Policy</summary>
@@ -496,7 +514,7 @@ function renderBookingDetail(b, panel) {
             <div class="detail-section-label">Spot Reserved 🐾</div>
             <p>Your deposit has been received${b.depositDate ? ' on ' + new Date(b.depositDate + 'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : ''}.</p>
             <p>Your spot is reserved!</p>
-            <p>The remaining balance of <strong>$${Math.round((b.total || 0) / 2)}</strong> is due before the service begins.</p>
+            <p>The remaining balance of <strong>$${Math.round((b.finalTotal || b.total || 0) / 2)}</strong> is due before the service begins.</p>
         </div>` : ''}
         ${b.status === 'paid' ? `
         <div class="detail-section detail-payment-notice detail-payment-paid">
