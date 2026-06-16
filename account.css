@@ -1520,7 +1520,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
 }
 
 /* ─── TIP ──────────────────────────────────────────── */
-.tip-section { border-top: 1px solid var(--border); }
+.tip-section, .feedback-section { border-top: 1px solid var(--border); padding-top: 16px; }
 .tip-note { font-size: 13px; color: var(--brown-mid); margin-bottom: 10px; }
 .tip-pills {
     display: flex;
@@ -1531,7 +1531,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
 .tip-pill {
     padding: 7px 16px;
     border: 1.5px solid var(--border);
-    border-radius: 20px;
+    border-radius: 14px;
     background: #fff;
     font-size: 14px;
     font-weight: 600;
@@ -1539,10 +1539,19 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     cursor: pointer;
     font-family: 'Inter', sans-serif;
     transition: border-color 0.15s, background 0.15s, color 0.15s;
+    text-align: center;
+    line-height: 1.2;
 }
 .tip-pill:hover { border-color: var(--pink); color: var(--pink); }
 .tip-pill.active { background: var(--pink); border-color: var(--pink); color: #fff; }
 .tip-pill-skip { color: var(--brown-mid); font-weight: 500; }
+.tip-pill-amt {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 0.75;
+    margin-top: 1px;
+}
 .tip-custom-input {
     width: 140px;
     padding: 8px 12px;
