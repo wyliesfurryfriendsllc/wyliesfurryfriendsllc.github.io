@@ -558,7 +558,7 @@ function renderBookingDetail(b, panel) {
                     <input type="number" class="tip-custom-input" id="tipCustomAmt_${b.id}" placeholder="Enter amount ($)" min="1" step="1">
                 </div>
                 <div id="tipZelle_${b.id}" class="tip-zelle-notice" style="display:none">
-                    We truly appreciate your generosity! 🙏 All tips are sent via Zelle to our account —<br>
+                    We truly appreciate your generosity! ❤️<br>All tips are sent via Zelle to our account —<br>
                     <span class="tip-zelle-email" onclick="copyZelleEmail(this)" title="Tap to copy">wyliesfurryfriendsllc@gmail.com</span>
                     <button class="tip-sent-btn" id="tipSentBtn_${b.id}" onclick="markTipSent('${b.id}',this)">I've sent the tip</button>
                 </div>`}
