@@ -1275,6 +1275,15 @@ function selectTip(bookingId, val, btn) {
 
 async function submitAll(bookingId) {
     const booking = allBookings.find(x => x.id === bookingId);
+    // Require star rating
+    if (!booking?.hasReview) {
+        const rating = Number(document.getElementById(`reviewStars_${bookingId}`)?.dataset.rating || 0);
+        if (!rating) {
+            const stars = document.getElementById(`reviewStars_${bookingId}`);
+            if (stars) { stars.style.outline = '2px solid var(--pink)'; stars.style.borderRadius = '6px'; stars.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => { stars.style.outline = ''; }, 1800); }
+            return;
+        }
+    }
     // Require tip selection
     if (booking?.tip == null) {
         const activePill = document.querySelector(`#tipPills_${bookingId} .tip-pill.active`);
