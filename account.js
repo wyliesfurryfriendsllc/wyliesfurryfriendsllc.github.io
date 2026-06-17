@@ -1274,9 +1274,20 @@ function selectTip(bookingId, val, btn) {
 }
 
 async function submitAll(bookingId) {
+    const booking = allBookings.find(x => x.id === bookingId);
+    // Require tip selection
+    if (booking?.tip == null) {
+        const activePill = document.querySelector(`#tipPills_${bookingId} .tip-pill.active`);
+        if (!activePill) {
+            const notice = document.getElementById(`tipZelle_${bookingId}`);
+            if (notice) { notice.style.display = ''; notice.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+            const pills = document.getElementById(`tipPills_${bookingId}`);
+            if (pills) { pills.style.outline = '2px solid var(--pink)'; pills.style.borderRadius = '10px'; setTimeout(() => { pills.style.outline = ''; }, 1800); }
+            return;
+        }
+    }
     const btn = document.getElementById(`submitAllBtn_${bookingId}`);
     if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
-    const booking = allBookings.find(x => x.id === bookingId);
     const updates = {};
     try {
         // Review
