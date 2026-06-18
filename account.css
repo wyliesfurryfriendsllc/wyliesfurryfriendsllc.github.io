@@ -961,6 +961,13 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     background: var(--pink-light);
     color: var(--brown);
 }
+.pet-type-icon {
+    width: 22px;
+    height: 22px;
+    vertical-align: middle;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
 
 /* Pill buttons */
 .pet-pills {
