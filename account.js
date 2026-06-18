@@ -155,8 +155,9 @@ async function doGoogleLogin() {
             await syncToClients(cred.user, { name: cred.user.displayName || '', email: cred.user.email, phone: '', pets: [] });
         }
     } catch (err) {
+        console.error('Google login error:', err.code, err.message);
         if (err.code !== 'auth/popup-closed-by-user') {
-            document.getElementById('authError').textContent = 'Google sign-in failed. Please try again.';
+            document.getElementById('authError').textContent = `Google sign-in failed: ${err.code || err.message}`;
         }
         if (btn) { btn.disabled = false; btn.textContent = 'Continue with Google'; }
     }
