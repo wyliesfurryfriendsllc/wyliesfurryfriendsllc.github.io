@@ -532,6 +532,18 @@ function renderDetail(b, panel) {
             </div>
         </div>
 
+        ${b.status === 'completed' && (b.hasReview || b.tip != null) ? `
+        <div class="detail-section">
+            <div class="detail-section-label cancel-section-header" onclick="var bd=this.nextElementSibling;bd.classList.toggle('cancel-collapsed');this.querySelector('.cancel-chevron').classList.toggle('cancel-chevron-open')">
+                Client Feedback
+                <span class="cancel-chevron">▾</span>
+            </div>
+            <div class="cancel-body">
+                ${b.hasReview ? `<div class="detail-row"><span>Review</span><span style="color:#2e7d32">✓ Submitted (pending approval)</span></div>` : ''}
+                ${b.tip != null ? `<div class="detail-row"><span>Tip</span><span>${b.tip > 0 ? `$${b.tip}` : 'No tip'}</span></div>` : ''}
+            </div>
+        </div>` : ''}
+
         <div class="detail-section">
             <div class="detail-section-label cancel-section-header" onclick="var bd=this.nextElementSibling;bd.classList.toggle('cancel-collapsed');this.querySelector('.cancel-chevron').classList.toggle('cancel-chevron-open')">
                 Contact

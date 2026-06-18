@@ -356,7 +356,7 @@ function renderBookingsList(bookings) {
         const showChip = daysUntil !== null && daysUntil >= 0 && daysUntil <= 3 && ACTIVE_STATUSES.has(b.status);
         const chipLabel = daysUntil === 0 ? 'Today!' : `Starts in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
         const needsDeposit = (b.status === 'pending' && b.adminAccepted) || b.status === 'confirmed';
-        const needsReview  = b.status === 'completed' && !b.hasReview;
+        const needsReview  = b.status === 'completed' && !b.hasReview && b.tip == null;
 
         card.innerHTML = `
             <div class="bc-card-inner">
@@ -1342,8 +1342,7 @@ async function submitAll(bookingId) {
         if (wrap) {
             const tipAmt = updates.tip || booking?.tip;
             wrap.innerHTML = `<div class="detail-section-label">Thank You!</div>
-                <p class="tip-thanks">Your review, tip, and feedback have been submitted. 🐾</p>
-                ${tipAmt > 0 ? `<p class="tip-thanks" style="margin-top:8px">We truly appreciate your generous tip of <strong>$${tipAmt}</strong>! 🙏<br><span class="tip-zelle-hint">All tips are sent via Zelle to our account —<br><span class="tip-zelle-email" onclick="copyZelleEmail(this)" title="Tap to copy">wyliesfurryfriendsllc@gmail.com</span></span></p>` : ''}`;
+                <p class="tip-thanks">Your review, tip, and feedback have been submitted.<br>${tipAmt > 0 ? `We truly appreciate your tip of $${tipAmt}! ❤️` : 'We truly appreciate your support! ❤️'}</p>`;
         }
     } catch(e) {
         console.error('submitAll:', e);
