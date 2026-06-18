@@ -967,6 +967,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     vertical-align: middle;
     margin-right: 4px;
     flex-shrink: 0;
+    display: inline-block;
 }
 
 /* Pill buttons */

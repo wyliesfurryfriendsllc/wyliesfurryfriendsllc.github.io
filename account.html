@@ -250,9 +250,9 @@
         <div class="form-group">
             <label>What type of pet? <span class="req">*</span></label>
             <div class="pet-type-cards" id="petTypeGroup">
-                <button type="button" class="pet-type-card active" data-value="dog" onclick="togglePill(this,'single')"><svg class="pet-type-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 20 C14 20 10 16 10 10 C10 6 13 4 16 6 L20 10"/><path d="M50 20 C50 20 54 16 54 10 C54 6 51 4 48 6 L44 10"/><path d="M20 10 C22 8 26 7 32 7 C38 7 42 8 44 10 C50 14 52 22 52 28 C52 40 43 52 32 52 C21 52 12 40 12 28 C12 22 14 14 20 10Z"/><circle cx="24" cy="28" r="2.5" fill="currentColor" stroke="none"/><circle cx="40" cy="28" r="2.5" fill="currentColor" stroke="none"/><path d="M27 38 C28.5 40 35.5 40 37 38"/><path d="M29 34 L32 36 L35 34"/></svg> Dog</button>
-                <button type="button" class="pet-type-card" data-value="cat" onclick="togglePill(this,'single')"><svg class="pet-type-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8 L12 22"/><path d="M48 8 L52 22"/><path d="M12 22 C12 22 10 26 10 30 C10 44 20 54 32 54 C44 54 54 44 54 30 C54 26 52 22 52 22 C48 14 44 8 40 10 L36 18 C34.7 17.4 33.4 17 32 17 C30.6 17 29.3 17.4 28 18 L24 10 C20 8 16 14 16 22"/><circle cx="24" cy="32" r="2.5" fill="currentColor" stroke="none"/><circle cx="40" cy="32" r="2.5" fill="currentColor" stroke="none"/><path d="M32 36 L30 39"/><path d="M32 36 L34 39"/><path d="M26 37 C28 38.5 36 38.5 38 37"/><path d="M18 30 L8 28"/><path d="M18 33 L8 33"/><path d="M46 30 L56 28"/><path d="M46 33 L56 33"/></svg> Cat</button>
-                <button type="button" class="pet-type-card" data-value="other" onclick="togglePill(this,'single')"><svg class="pet-type-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="32" cy="42" rx="12" ry="10"/><ellipse cx="18" cy="30" rx="5" ry="7"/><ellipse cx="46" cy="30" rx="5" ry="7"/><ellipse cx="24" cy="20" rx="4" ry="6"/><ellipse cx="40" cy="20" rx="4" ry="6"/></svg> Other</button>
+                <button type="button" class="pet-type-card active" data-value="dog" onclick="togglePill(this,'single')"><i data-lucide="dog" class="pet-type-icon"></i> Dog</button>
+                <button type="button" class="pet-type-card" data-value="cat" onclick="togglePill(this,'single')"><i data-lucide="cat" class="pet-type-icon"></i> Cat</button>
+                <button type="button" class="pet-type-card" data-value="other" onclick="togglePill(this,'single')"><i data-lucide="rabbit" class="pet-type-icon"></i> Other</button>
             </div>
         </div>
         <div class="form-row">
@@ -486,6 +486,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
 <script src="crop-helper.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 <script type="module" src="account.js"></script>
 <script>
     document.getElementById('hamburger').addEventListener('click', () =>
