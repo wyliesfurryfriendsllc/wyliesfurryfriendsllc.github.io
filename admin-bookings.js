@@ -562,15 +562,26 @@ function renderDetail(b, panel) {
             </div>
         </div>
 
-        ${b.status === 'completed' && (b.hasReview || b.tip != null) ? `
+        ${b.status === 'completed' ? `
         <div class="detail-section">
             <div class="detail-section-label cancel-section-header" onclick="var bd=this.nextElementSibling;bd.classList.toggle('cancel-collapsed');this.querySelector('.cancel-chevron').classList.toggle('cancel-chevron-open')">
                 Client Feedback
                 <span class="cancel-chevron">▾</span>
             </div>
             <div class="cancel-body">
-                ${b.hasReview ? `<div class="detail-row"><span>Review</span><span style="color:#2e7d32">✓ Submitted (pending approval)</span></div>` : ''}
-                ${b.tip != null ? `<div class="detail-row"><span>Tip</span><span>${b.tip > 0 ? `$${b.tip}` : 'No tip'}</span></div>` : ''}
+                ${b.hasReview ? `<div class="detail-row"><span>Review</span><span style="color:#2e7d32">✓ Submitted (pending approval)</span></div>` : '<div class="detail-row"><span>Review</span><span style="color:#999">Not yet submitted</span></div>'}
+                <div class="detail-row" style="align-items:center">
+                    <span>Tip</span>
+                    <span style="display:flex;gap:6px;align-items:center">
+                        ${b.tip != null ? `<span style="color:#2e7d32">$${b.tip > 0 ? b.tip : '0 (no tip)'}</span>` : ''}
+                        <input type="number" id="adminTipInput_${b.id}" min="0" step="0.01"
+                            placeholder="${b.tip != null ? 'Edit amount' : 'Enter tip ($)'}"
+                            value="${b.tip != null ? b.tip : ''}"
+                            style="width:110px;padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px">
+                        <button class="admin-btn-secondary" style="padding:4px 10px;font-size:12px"
+                            onclick="AdminBookings.saveAdminTip('${b.id}')">Save</button>
+                    </span>
+                </div>
             </div>
         </div>` : ''}
 
@@ -1257,6 +1268,17 @@ window.epSave = async function(bookingId, type) {
     }
 };
 
+// ─── ADMIN TIP ────────────────────────────────────────────
+async function saveAdminTip(bookingId) {
+    const input = document.getElementById(`adminTipInput_${bookingId}`);
+    const raw = input?.value;
+    if (raw === '' || raw == null) return;
+    const val = parseFloat(raw);
+    if (isNaN(val) || val < 0) return;
+    await updateDoc(doc(db, 'bookings', bookingId), { tip: val });
+    openDetail(bookingId);
+}
+
 // ─── CLIENT LINKING ───────────────────────────────────────
 async function addToClients(bookingId) {
     const b = allBookings.find(x => x.id === bookingId);
@@ -1293,7 +1315,7 @@ window.AdminBookings = {
     addAdjustment, removeAdjustment, toggleAdjVisits,
     deleteBooking, permanentlyDeleteBooking, sendAdminMessage, exportImage,
     openEditDatesModal, openEditPaymentModal,
-    addToClients, linkToAccount
+    addToClients, linkToAccount, saveAdminTip
 };
 
 window.openEditDatesModal = openEditDatesModal;

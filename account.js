@@ -357,7 +357,7 @@ function renderBookingsList(bookings) {
         const showChip = daysUntil !== null && daysUntil >= 0 && daysUntil <= 3 && ACTIVE_STATUSES.has(b.status);
         const chipLabel = daysUntil === 0 ? 'Today!' : `Starts in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
         const needsDeposit = (b.status === 'pending' && b.adminAccepted) || b.status === 'confirmed';
-        const needsReview  = b.status === 'completed' && !b.hasReview && b.tip == null;
+        const needsReview  = b.status === 'completed' && !b.hasReview;
 
         card.innerHTML = `
             <div class="bc-card-inner">
