@@ -376,10 +376,6 @@
     flex-wrap: wrap;
 }
 
-.time-range-inline .time-hm-wrap select {
-    flex: none;
-    width: auto;
-}
 
 .time-range-label {
     font-size: 13px;
@@ -968,7 +964,8 @@ details.deposit-policy[open] summary { color: var(--pink); }
     gap: 6px;
 }
 .time-hm-wrap select {
-    flex: 1;
+    flex: none;
+    width: auto;
     padding: 11px 8px;
     border: 1.5px solid var(--border);
     border-radius: 10px;
