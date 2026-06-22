@@ -9,6 +9,7 @@ let allBookings    = [];
 let activeFilter   = 'all';
 let activeBookingId = null;
 let hideRover      = false;
+let completedSortDesc = true;
 
 const STATUS_LABELS = {
     pending:          'Pending',
@@ -81,6 +82,13 @@ function toggleHideRover() {
     renderAdminBookings();
 }
 
+function toggleCompletedSort() {
+    completedSortDesc = !completedSortDesc;
+    const btn = document.getElementById('completedSortBtn');
+    if (btn) btn.textContent = completedSortDesc ? '↓ Newest first' : '↑ Oldest first';
+    renderAdminBookings();
+}
+
 // ─── LIST ─────────────────────────────────────────────────
 function renderAdminBookings() {
     const container = document.getElementById('adminBookingsList');
@@ -105,7 +113,29 @@ function renderAdminBookings() {
         }
         return '9999-12-31';
     }
-    filtered.sort((a, b) => getFirstDate(a).localeCompare(getFirstDate(b)));
+    const isCompleted = activeFilter === 'completed';
+    filtered.sort((a, b) => {
+        const cmp = getFirstDate(a).localeCompare(getFirstDate(b));
+        return isCompleted && completedSortDesc ? -cmp : cmp;
+    });
+
+    // Sort toggle button for completed
+    const existing = document.getElementById('completedSortBtn');
+    if (isCompleted) {
+        if (!existing) {
+            const btn = document.createElement('button');
+            btn.id = 'completedSortBtn';
+            btn.className = 'filter-chip active';
+            btn.style.marginBottom = '8px';
+            btn.textContent = completedSortDesc ? '↓ Newest first' : '↑ Oldest first';
+            btn.onclick = () => AdminBookings.toggleCompletedSort();
+            container.parentNode.insertBefore(btn, container);
+        } else {
+            existing.textContent = completedSortDesc ? '↓ Newest first' : '↑ Oldest first';
+        }
+    } else {
+        if (existing) existing.remove();
+    }
 
     // Build date groups
     const groups = {};
@@ -1203,7 +1233,7 @@ window.epSave = async function(bookingId, type) {
 
 // ─── EXPOSE ───────────────────────────────────────────────
 window.AdminBookings = {
-    init, setFilter, toggleHideRover, openDetail, closeDetail,
+    init, setFilter, toggleHideRover, toggleCompletedSort, openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
     markDepositReceived, markPaidInFull, markInService, markRoverConfirmed,
     addAdjustment, removeAdjustment, toggleAdjVisits,
