@@ -308,6 +308,20 @@ function removeSlot(dateStr, si) {
 }
 
 // ─── TIME HELPERS ─────────────────────────────────────────
+function hrOptions(sel) {
+    let h = '';
+    for (let i = 0; i <= 23; i++) {
+        h += `<option value="${i}"${String(sel)===String(i)?'selected':''}>${i}</option>`;
+    }
+    return h;
+}
+
+function minOptions(sel) {
+    return ['00','15','30','45'].map(m =>
+        `<option value="${m}"${sel===m?'selected':''}>${m}</option>`
+    ).join('');
+}
+
 function getHMTime(hrId, minId) {
     const hr  = document.getElementById(hrId)?.value;
     const min = document.getElementById(minId)?.value;
