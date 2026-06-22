@@ -1445,3 +1445,14 @@ window.copyZelleEmail       = function(el) {
     const tab = new URLSearchParams(window.location.search).get('tab');
     if (tab === 'register') switchAuthMode('register');
 })();
+
+// On resize to wide screen, restore booking detail panel to its original grid position
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 900) {
+        const panel = document.getElementById('bookingDetail');
+        const bookingsPanel = document.querySelector('.bookings-panel');
+        if (panel && bookingsPanel && panel.parentElement !== bookingsPanel) {
+            bookingsPanel.appendChild(panel);
+        }
+    }
+});
