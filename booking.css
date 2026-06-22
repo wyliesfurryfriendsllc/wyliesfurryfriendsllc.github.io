@@ -376,6 +376,11 @@
     flex-wrap: wrap;
 }
 
+.time-range-inline .time-hm-wrap select {
+    flex: none;
+    width: auto;
+}
+
 .time-range-label {
     font-size: 13px;
     font-weight: 600;
