@@ -689,7 +689,7 @@ function updateSummary() {
     const service  = getService();
     const duration = getDuration();
     const names    = { dropin: 'Drop-In Visit', walking: 'Dog Walking' };
-    const durationLabel = duration === 'combo' ? '30+60 min combo' : `${duration} min`;
+    const durationLabel = duration === 'combo' ? '30 & 60 min' : `${duration} min`;
     document.getElementById('summaryServiceName').textContent = `${names[service]} · ${durationLabel}`;
 
     // Dates
@@ -956,7 +956,7 @@ function reviewOrder(e) {
     const clientEmail = document.getElementById('clientEmail').value;
     const clientNotes = document.getElementById('clientNotes').value;
 
-    const durationLabel = duration === 'combo' ? '30+60 min combo' : `${duration} min`;
+    const durationLabel = duration === 'combo' ? '30 & 60 min' : `${duration} min`;
     document.getElementById('confirmDetails').innerHTML = `
         <div class="confirm-section">
             <div class="confirm-section-title">Service</div>
@@ -1033,7 +1033,7 @@ function reviewOrder(e) {
     // Save for sendRequest
     _bookingData = {
         service: names[service],
-        duration: duration === 'combo' ? '30+60 min combo' : duration,
+        duration: duration === 'combo' ? '30 & 60 min' : duration,
         isHoliday, total,
         clientName, clientPhone, clientEmail, clientNotes,
         dateTimes: dateMode === 'pick' ? dateTimesObj : null,
