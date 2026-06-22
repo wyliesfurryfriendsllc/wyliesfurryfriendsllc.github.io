@@ -938,10 +938,12 @@ footer {
     line-height: 1.7;
     font-size: 15px;
 }
-.about-bio-full p { margin: 0 0 10px; line-height: 1.7; font-size: 15px; }
+.about-bio-full { color: var(--brown); }
+.about-bio-full p { margin: 0 0 10px; line-height: 1.7; font-size: 15px; color: var(--brown); }
+.about-bio-full strong { color: var(--brown); font-size: 15px; }
 .about-bio-ellipsis { margin: 2px 0 0; color: var(--brown-mid); font-size: 15px; line-height: 1; }
-.about-attitude-list { margin: 0 0 10px 20px; padding: 0; }
-.about-attitude-list li { margin-bottom: 6px; line-height: 1.6; }
+.about-attitude-list { margin: 0 0 10px 0; padding-left: 28px; font-size: 15px; color: var(--brown); line-height: 1.7; }
+.about-attitude-list li { margin-bottom: 6px; }
 .about-read-more {
     background: none; border: none; padding: 2px 0;
     color: var(--pink); font-size: 14px; font-weight: 600;
