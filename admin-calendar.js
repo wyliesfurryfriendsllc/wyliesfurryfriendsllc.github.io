@@ -702,7 +702,6 @@ function selectClient(clientId) {
     if (!c) return;
 
     nbSelectedClientId = clientId;
-    nbSelectedPets = new Set();
 
     document.getElementById('nbName').value  = c.name  || '';
     document.getElementById('nbPhone').value = c.phone || '';
@@ -712,6 +711,10 @@ function selectClient(clientId) {
     document.getElementById('nbSelectedClientName').textContent = c.name;
     document.getElementById('nbSelectedClient').style.display = 'flex';
 
+    // When editing an existing booking, only update client info — preserve original pets
+    if (editingBookingId) return;
+
+    nbSelectedPets = new Set();
     const pets = c.pets || [];
     nbManualPets = [];
     document.getElementById('nbPetSection').style.display = '';
