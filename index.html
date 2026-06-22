@@ -189,11 +189,12 @@
             <div class="section-label">About Me</div>
             <h2 class="section-title">Hi, I'm Xiaotong —<br>and I love your pets.</h2>
             <div class="about-bio-wrap">
-                <div class="about-bio-preview">
-                    <p><strong>Part 1: My Background:</strong></p>
-                    <p>I have a wealth of experience with pets, being both patient and affectionate towards them. I have a deep fondness for animals, and I currently share my home with two cats. The first one, adopted in 2018 before my university graduation, was a year and a half old, weighing just 3 lbs and in a pitiable state.</p>
+                <div class="about-bio-preview" id="aboutBioPreview">
+                    <strong>Part 1: My Background:</strong> I have a wealth of experience with pets, being both patient and affectionate towards them. I have a deep fondness for animals, and I currently share my home with two cats. The first one, adopted in 2018 before my university graduation, was a year and a half old, weighing just 3 lbs and in a pitiable state.
                 </div>
                 <div class="about-bio-full" id="aboutBioFull" style="display:none">
+                    <p><strong>Part 1: My Background:</strong></p>
+                    <p>I have a wealth of experience with pets, being both patient and affectionate towards them. I have a deep fondness for animals, and I currently share my home with two cats. The first one, adopted in 2018 before my university graduation, was a year and a half old, weighing just 3 lbs and in a pitiable state.</p>
                     <p>Over time, she has thrived and now weighs a healthy 11 pounds. The second cat joined our family last year. Through my training efforts, both cats have learned basic commands like 'sit' and 'shake hands,' and they enjoy each other's company harmoniously.</p>
                     <p>Back in 2016, I also welcomed a dog into my life. However, after coming to the US, I entrusted my dog's care to my parents, who adore the dog and are reluctant to part with him. During my time at home, I took charge of daily tasks like bathing, nail clipping, and tidying up their fur. My experience extends to hamsters as well—I've cared for six of them, even tending to newborns, and all have grown up thriving.</p>
                     <p><strong>Part 2: My Attitude:</strong></p>
@@ -216,19 +217,19 @@
             </div>
             <div class="about-highlights">
                 <div class="highlight-item">
-                    <span class="highlight-icon"><i data-lucide="house" style="width:20px;height:20px"></i></span>
+                    <span class="highlight-icon"><span class="hi-circle"><i data-lucide="house" style="width:18px;height:18px"></i></span></span>
                     <span>Photos & video updates</span>
                 </div>
                 <div class="highlight-item">
-                    <span class="highlight-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.001 15.085A1.5 1.5 0 0 1 9 16.5"/><circle cx="18.5" cy="8.5" r="3.5"/><circle cx="7.5" cy="16.5" r="5.5"/><circle cx="7.5" cy="4.5" r="2.5"/></svg></span>
+                    <span class="highlight-icon"><span class="hi-circle"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.001 15.085A1.5 1.5 0 0 1 9 16.5"/><circle cx="18.5" cy="8.5" r="3.5"/><circle cx="7.5" cy="16.5" r="5.5"/><circle cx="7.5" cy="4.5" r="2.5"/></svg></span></span>
                     <span>Bowls cleaned every visit</span>
                 </div>
                 <div class="highlight-item">
-                    <span class="highlight-icon"><i data-lucide="paw-print" style="width:20px;height:20px"></i></span>
+                    <span class="highlight-icon"><span class="hi-circle"><i data-lucide="paw-print" style="width:18px;height:18px"></i></span></span>
                     <span>Nail trim, ear cleaning, medication & injections (add-on)</span>
                 </div>
                 <div class="highlight-item">
-                    <span class="highlight-icon"><i data-lucide="notebook-pen" style="width:20px;height:20px"></i></span>
+                    <span class="highlight-icon"><span class="hi-circle"><i data-lucide="notebook-pen" style="width:18px;height:18px"></i></span></span>
                     <span>Attentive to each pet's personality</span>
                 </div>
             </div>
@@ -397,10 +398,12 @@
 </script>
 <script>
 function toggleAboutBio() {
+    const preview = document.getElementById('aboutBioPreview');
     const full = document.getElementById('aboutBioFull');
     const ellipsis = document.getElementById('aboutEllipsis');
     const btn = document.getElementById('aboutReadMore');
     const expanded = full.style.display === '';
+    preview.style.display = expanded ? '' : 'none';
     full.style.display = expanded ? 'none' : '';
     ellipsis.style.display = expanded ? '' : 'none';
     btn.textContent = expanded ? 'Read more' : 'Read less';
