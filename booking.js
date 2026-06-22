@@ -979,11 +979,7 @@ function sendRequest() {
                     (async () => {
                         const snap = await wff.getDoc(wff.doc(wff.db, 'users', uid));
                         const existing = snap.exists() ? (snap.data().pets || []) : [];
-                        const existingNames = existing.map(p => (p.name || '').toLowerCase());
-                        const toAdd = newPets.filter(p => !existingNames.includes(p.name.toLowerCase()));
-                        if (toAdd.length > 0) {
-                            await wff.updateDoc(wff.doc(wff.db, 'users', uid), { pets: [...existing, ...toAdd] });
-                        }
+                        await wff.updateDoc(wff.doc(wff.db, 'users', uid), { pets: [...existing, ...newPets] });
                     })().catch(err => console.error('Pet profile sync failed:', err));
                 }
             }
