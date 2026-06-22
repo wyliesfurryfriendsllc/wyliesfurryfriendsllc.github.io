@@ -125,7 +125,7 @@ function renderCalendar() {
         cell.textContent = d;
 
         if (!isPast) {
-            cell.onclick = () => {
+            cell.onmousedown = () => {
                 if (selectedDates.has(dateStr)) {
                     selectedDates.delete(dateStr);
                     cell.classList.remove('cal-selected');
