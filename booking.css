@@ -898,7 +898,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
     color: var(--brown);
     cursor: pointer;
 }
-.cal-day:hover:not(.cal-past):not(.cal-blank) {
+.cal-day:hover:not(.cal-past):not(.cal-blank):not(.cal-selected) {
     background: var(--pink-light);
     color: var(--pink);
 }
