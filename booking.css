@@ -381,6 +381,65 @@
     margin-bottom: 8px;
 }
 
+/* Combo per-slot duration toggle */
+.combo-dur-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 7px 12px;
+    background: var(--pink-light);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+.combo-dur-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--brown-mid);
+    white-space: nowrap;
+    margin-right: 2px;
+}
+.combo-dur-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.combo-dur-opt {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--brown-mid);
+    white-space: nowrap;
+}
+.c-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.c-toggle input { display: none; }
+.c-toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 50px;
+    transition: background 0.2s;
+}
+.c-toggle input:checked + .c-toggle-track { background: var(--pink); }
+.c-toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.c-toggle input:checked + .c-toggle-track .c-toggle-knob { transform: translateX(20px); }
+
 .slot-type-pills {
     display: flex;
     gap: 0;

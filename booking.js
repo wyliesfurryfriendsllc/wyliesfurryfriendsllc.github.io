@@ -55,6 +55,11 @@ let dateSlotData = {};
 function getService()  { return document.querySelector('input[name="service"]:checked').value; }
 function getDuration() { return document.querySelector('input[name="duration"]:checked').value; }
 
+function onDurationChange() {
+    renderSelectedDatesList();
+    updateSummary();
+}
+
 // ─── DATE MODE ───────────────────────────────────────────
 function switchDateMode(mode) {
     document.getElementById('pickMode').style.display  = mode === 'pick'  ? '' : 'none';
@@ -148,7 +153,7 @@ function updateCalendarTriggerText() {
 
 // ─── SELECTED DATES LIST ─────────────────────────────────
 function emptySlot() {
-    return { type: 'window', specHr: '', specMin: '00', fromHr: '', fromMin: '00', toHr: '', toMin: '00' };
+    return { type: 'window', specHr: '', specMin: '00', fromHr: '', fromMin: '00', toHr: '', toMin: '00', comboDur: '30' };
 }
 
 function saveCurrentDateState() {
@@ -170,6 +175,7 @@ function saveCurrentDateState() {
                 fromMin: document.getElementById(`slotFromMin_${tid}_${si}`)?.value ?? '00',
                 toHr:    document.getElementById(`slotToHr_${tid}_${si}`)?.value ?? '',
                 toMin:   document.getElementById(`slotToMin_${tid}_${si}`)?.value ?? '00',
+                comboDur: document.getElementById(`comboDur_${tid}_${si}`)?.checked ? '60' : '30',
             });
         });
         if (slots.length === 0) slots.push(emptySlot());
@@ -224,9 +230,22 @@ function renderSelectedDatesList() {
 
 function renderSlotHtml(tid, dateStr, si, sl, totalSlots) {
     const isSpecific = sl.type === 'specific';
+    const isCombo = getDuration() === 'combo';
+    const comboDur = sl.comboDur || '30';
     return `
         <div class="date-slot" data-si="${si}">
             ${si === 0 ? `<div class="slot-type-tip">💡 <strong>Recommended</strong> — Flexible time ranges help with scheduling.</div>` : ''}
+            ${isCombo ? `<div class="combo-dur-row">
+                <span class="combo-dur-label">Duration</span>
+                <div class="combo-dur-toggle">
+                    <span class="combo-dur-opt">30 min</span>
+                    <label class="c-toggle">
+                        <input type="checkbox" id="comboDur_${tid}_${si}" ${comboDur === '60' ? 'checked' : ''} onchange="updateSummary()">
+                        <span class="c-toggle-track"><span class="c-toggle-knob"></span></span>
+                    </label>
+                    <span class="combo-dur-opt">60 min</span>
+                </div>
+            </div>` : ''}
             <div class="slot-header">
                 <div class="slot-type-pills">
                     <label class="pill-option">
@@ -548,7 +567,8 @@ function updateSummary() {
     const service  = getService();
     const duration = getDuration();
     const names    = { dropin: 'Drop-In Visit', walking: 'Dog Walking' };
-    document.getElementById('summaryServiceName').textContent = `${names[service]} · ${duration} min`;
+    const durationLabel = duration === 'combo' ? '30+60 min combo' : `${duration} min`;
+    document.getElementById('summaryServiceName').textContent = `${names[service]} · ${durationLabel}`;
 
     // Dates
     const dateMode = document.querySelector('input[name="dateMode"]:checked')?.value || 'pick';
@@ -641,6 +661,7 @@ function updateSummary() {
 // ─── COLLECT DATES TEXT ───────────────────────────────────
 function collectDatesText() {
     const dateMode = document.querySelector('input[name="dateMode"]:checked')?.value || 'pick';
+    const isCombo = getDuration() === 'combo';
     let text = '';
     if (dateMode === 'pick') {
         let day1TimesStr = null;
@@ -655,12 +676,13 @@ function collectDatesText() {
             const times = [];
             slotEls.forEach((_, si) => {
                 const type = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
+                const comboSuffix = isCombo ? ` (${document.getElementById(`comboDur_${tid}_${si}`)?.checked ? '60' : '30'} min)` : '';
                 if (type === 'specific') {
-                    times.push(formatTime(getHMTime(`slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`)));
+                    times.push(formatTime(getHMTime(`slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`)) + comboSuffix);
                 } else {
                     const from = getHMTime(`slotFromHr_${tid}_${si}`, `slotFromMin_${tid}_${si}`);
                     const to   = getHMTime(`slotToHr_${tid}_${si}`, `slotToMin_${tid}_${si}`);
-                    times.push(`${formatTime(from)} – ${formatTime(to)}`);
+                    times.push(`${formatTime(from)} – ${formatTime(to)}` + comboSuffix);
                 }
             });
             const timesStr = times.join(', ') || '—';
@@ -766,8 +788,32 @@ function reviewOrder(e) {
     const hasExtra  = numPets > 1;
     const extraRate = isCat ? pricing.extraCat : pricing.extraDog;
     const extra     = hasExtra ? extraRate * (numPets - 1) : 0;
-    const perVisit  = base + (show60 ? pricing.addon60 : 0) + extra;
-    const total     = perVisit * numDates;
+
+    // For combo: count 30-min and 60-min slots separately
+    let num30 = 0, num60 = 0;
+    if (duration === 'combo' && dateMode === 'pick') {
+        let day1Combos = null;
+        [...selectedDates].sort().forEach((dateStr, idx) => {
+            const tid = `dt_${dateStr.replace(/-/g,'_')}`;
+            const slotsWrap = document.getElementById(`dateSlots_${tid}`);
+            let combos;
+            if (idx > 0 && slotsWrap && slotsWrap.style.display === 'none') {
+                combos = day1Combos || ['30'];
+            } else {
+                const slotEls = slotsWrap ? slotsWrap.querySelectorAll('.date-slot') : [];
+                combos = [...slotEls].map((_, si) =>
+                    document.getElementById(`comboDur_${tid}_${si}`)?.checked ? '60' : '30'
+                );
+                if (idx === 0) day1Combos = combos;
+            }
+            combos.forEach(d => d === '60' ? num60++ : num30++);
+        });
+    }
+
+    const perVisit = base + (show60 ? pricing.addon60 : 0) + extra;
+    const total = duration === 'combo'
+        ? (base + extra) * (num30 + num60) + pricing.addon60 * num60
+        : perVisit * numDates;
 
     // Build confirm details HTML
     let petsHtml = '';
@@ -788,10 +834,11 @@ function reviewOrder(e) {
     const clientEmail = document.getElementById('clientEmail').value;
     const clientNotes = document.getElementById('clientNotes').value;
 
+    const durationLabel = duration === 'combo' ? '30+60 min combo' : `${duration} min`;
     document.getElementById('confirmDetails').innerHTML = `
         <div class="confirm-section">
             <div class="confirm-section-title">Service</div>
-            <div class="confirm-info-row"><span>${names[service]}</span><span>${duration} min</span></div>
+            <div class="confirm-info-row"><span>${names[service]}</span><span>${durationLabel}</span></div>
         </div>
         <div class="confirm-section">
             <div class="confirm-section-title">Dates &amp; Times</div>
@@ -812,9 +859,15 @@ function reviewOrder(e) {
 
     // Price breakdown
     let priceRowsHtml = `<div class="confirm-price-row"><span>Base rate (${isHoliday ? 'holiday' : 'regular'})</span><span>$${base}</span></div>`;
-    if (show60) priceRowsHtml += `<div class="confirm-price-row"><span>60-min add-on</span><span>+$${pricing.addon60}</span></div>`;
-    if (hasExtra) priceRowsHtml += `<div class="confirm-price-row"><span>Additional pet × ${numPets - 1}</span><span>+$${extra}</span></div>`;
-    priceRowsHtml += `<div class="confirm-price-row"><span>${numDates > 1 ? 'Visits' : 'Visit'}</span><span>× ${numDates}</span></div>`;
+    if (duration === 'combo') {
+        if (hasExtra) priceRowsHtml += `<div class="confirm-price-row"><span>Additional pet × ${numPets - 1}</span><span>+$${extra}</span></div>`;
+        priceRowsHtml += `<div class="confirm-price-row"><span>30 min slots</span><span>× ${num30}</span></div>`;
+        priceRowsHtml += `<div class="confirm-price-row"><span>60 min slots (+$${pricing.addon60})</span><span>× ${num60}</span></div>`;
+    } else {
+        if (show60) priceRowsHtml += `<div class="confirm-price-row"><span>60-min add-on</span><span>+$${pricing.addon60}</span></div>`;
+        if (hasExtra) priceRowsHtml += `<div class="confirm-price-row"><span>Additional pet × ${numPets - 1}</span><span>+$${extra}</span></div>`;
+        priceRowsHtml += `<div class="confirm-price-row"><span>${numDates > 1 ? 'Visits' : 'Visit'}</span><span>× ${numDates}</span></div>`;
+    }
     document.getElementById('confirmPriceRows').innerHTML = priceRowsHtml;
 
     document.getElementById('confirmTotal').innerHTML = `
@@ -823,6 +876,7 @@ function reviewOrder(e) {
     `;
 
     // Build dateTimes object for structured calendar display
+    const isCombo = duration === 'combo';
     const dateTimesObj = {};
     if (dateMode === 'pick') {
         const sortedPick2 = [...selectedDates].sort();
@@ -837,13 +891,14 @@ function reviewOrder(e) {
                 const times = [];
                 slotEls.forEach((_, si) => {
                     const type = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
+                    const comboTag = isCombo ? `|${document.getElementById(`comboDur_${tid}_${si}`)?.checked ? '60' : '30'}` : '';
                     if (type === 'specific') {
                         const t = getHMTime(`slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`);
-                        if (t) times.push(t);
+                        if (t) times.push(t + comboTag);
                     } else {
                         const from = getHMTime(`slotFromHr_${tid}_${si}`, `slotFromMin_${tid}_${si}`);
                         const to   = getHMTime(`slotToHr_${tid}_${si}`, `slotToMin_${tid}_${si}`);
-                        if (from && to) times.push(`${from}~${to}`);
+                        if (from && to) times.push(`${from}~${to}` + comboTag);
                     }
                 });
                 const sorted2 = times.sort();
@@ -855,17 +910,20 @@ function reviewOrder(e) {
 
     // Save for sendRequest
     _bookingData = {
-        service: names[service], duration, isHoliday, total,
+        service: names[service],
+        duration: duration === 'combo' ? '30+60 min combo' : duration,
+        isHoliday, total,
         clientName, clientPhone, clientEmail, clientNotes,
         dateTimes: dateMode === 'pick' ? dateTimesObj : null,
         priceBreakdown: {
-            numVisits:    numDates,
+            numVisits:    duration === 'combo' ? (num30 + num60) : numDates,
             serviceLabel: names[service],
             basePerVisit: base + (show60 ? pricing.addon60 : 0),
             extraRate:    hasExtra ? extraRate : 0,
             numExtra:     numPets - 1,
             isCat,
-            numPets
+            numPets,
+            ...(duration === 'combo' ? { num30, num60, addon60: pricing.addon60 } : {})
         }
     };
 

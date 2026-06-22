@@ -78,8 +78,9 @@
                 <div class="duration-toggle">
                     <span class="duration-label">Duration</span>
                     <div class="toggle-pills">
-                        <label class="pill-option"><input type="radio" name="duration" value="30" checked onchange="updateSummary()"><span>30 min</span></label>
-                        <label class="pill-option"><input type="radio" name="duration" value="60" onchange="updateSummary()"><span>60 min (+add-on)</span></label>
+                        <label class="pill-option"><input type="radio" name="duration" value="30" checked onchange="onDurationChange()"><span>30 min</span></label>
+                        <label class="pill-option"><input type="radio" name="duration" value="60" onchange="onDurationChange()"><span>60 min (+add-on)</span></label>
+                        <label class="pill-option"><input type="radio" name="duration" value="combo" onchange="onDurationChange()"><span>30+60 min</span></label>
                     </div>
                 </div>
             </div>

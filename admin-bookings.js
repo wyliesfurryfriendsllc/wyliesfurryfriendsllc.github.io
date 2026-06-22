@@ -301,20 +301,24 @@ function fmt12(t) {
 
 function fmtSlot(t) {
     if (!t) return 'TBD';
-    if (t.includes('~')) {
-        const [s, e] = t.split('~');
-        if (!e) return `Arrive ${fmt12(s)}`;
+    // strip combo duration tag (e.g. "14:00|60" or "09:00~11:00|30")
+    const durMatch = t.match(/\|(\d+)$/);
+    const durLabel = durMatch ? ` (${durMatch[1]} min)` : '';
+    const clean = t.replace(/\|\d+$/, '');
+    if (clean.includes('~')) {
+        const [s, e] = clean.split('~');
+        if (!e) return `Arrive ${fmt12(s)}${durLabel}`;
         const sH = Number(s.split(':')[0]);
         const eH = Number(e.split(':')[0]);
         const sMin = String(Number(s.split(':')[1])).padStart(2, '0');
         const sAmPm = sH >= 12 ? 'PM' : 'AM';
         const eFmt = fmt12(e);
         const sFmt = `${sH % 12 || 12}:${sMin}`;
-        return sAmPm === (eH >= 12 ? 'PM' : 'AM')
+        return (sAmPm === (eH >= 12 ? 'PM' : 'AM')
             ? `Arrive ${sFmt} – ${eFmt}`
-            : `Arrive ${sFmt} ${sAmPm} – ${eFmt}`;
+            : `Arrive ${sFmt} ${sAmPm} – ${eFmt}`) + durLabel;
     }
-    return fmt12(t);
+    return fmt12(clean) + durLabel;
 }
 
 function renderScheduleHtml(b) {
