@@ -958,6 +958,35 @@ function sendRequest() {
                 status: 'pending',
                 createdAt: wff.serverTimestamp()
             }).catch(err => console.error('Firestore save failed:', err));
+
+            // Auto-save newly entered pets to user profile
+            const uid = wff.auth?.currentUser?.uid;
+            if (uid) {
+                const newPets = [];
+                document.querySelectorAll('.pet-entry').forEach(entry => {
+                    const id = entry.id.replace('petEntry', '');
+                    const name = document.getElementById(`petName${id}`)?.value?.trim();
+                    if (!name) return;
+                    newPets.push({
+                        name,
+                        type:      document.getElementById(`petType${id}`)?.value  || 'dog',
+                        breed:     document.getElementById(`petBreed${id}`)?.value?.trim() || '',
+                        careNotes: document.getElementById(`petNotes${id}`)?.value?.trim() || '',
+                        photoUrl:  ''
+                    });
+                });
+                if (newPets.length > 0) {
+                    (async () => {
+                        const snap = await wff.getDoc(wff.doc(wff.db, 'users', uid));
+                        const existing = snap.exists() ? (snap.data().pets || []) : [];
+                        const existingNames = existing.map(p => (p.name || '').toLowerCase());
+                        const toAdd = newPets.filter(p => !existingNames.includes(p.name.toLowerCase()));
+                        if (toAdd.length > 0) {
+                            await wff.updateDoc(wff.doc(wff.db, 'users', uid), { pets: [...existing, ...toAdd] });
+                        }
+                    })().catch(err => console.error('Pet profile sync failed:', err));
+                }
+            }
         }
         document.getElementById('bookingConfirm').style.display = 'none';
         document.getElementById('bookingLayout').style.display  = '';
