@@ -1,6 +1,6 @@
 import {
     db, collection, query, orderBy, onSnapshot,
-    doc, updateDoc, addDoc, getDoc, deleteDoc, serverTimestamp
+    doc, updateDoc, addDoc, getDoc, deleteDoc, serverTimestamp, setDoc
 } from './firebase.js';
 
 let bookingsUnsub = null;
@@ -586,6 +586,32 @@ function renderDetail(b, panel) {
                 ${b.notes ? `<div class="detail-row"><span>Notes</span><span>${escHtml(b.notes)}</span></div>` : ''}
             </div>
         </div>
+
+        ${(() => {
+            const allC = window.AdminClients?.getAllClients?.() || [];
+            const alreadyLinked = allC.find(c => c.id === b.clientId || (b.clientEmail && c.email === b.clientEmail));
+            const addBtn = !alreadyLinked
+                ? `<button class="admin-btn-secondary" style="margin-top:6px" onclick="AdminBookings.addToClients('${b.id}')">+ Add to Clients</button>`
+                : '';
+            const clientsWithUid = allC.filter(c => c.uid || c.id?.length >= 20);
+            const linkHtml = !b.clientId
+                ? `<div class="link-account-row">
+                    <select id="linkClientSelect_${b.id}" class="admin-select">
+                        <option value="">— Select account to link —</option>
+                        ${clientsWithUid.map(c => `<option value="${c.id}">${escHtml(c.name || '')} (${escHtml(c.email || '')})</option>`).join('')}
+                    </select>
+                    <button class="admin-btn-secondary" onclick="AdminBookings.linkToAccount('${b.id}')">Link</button>
+                   </div>`
+                : `<span class="detail-linked-badge">✓ Linked to account</span>`;
+            return (addBtn || !b.clientId || b.clientId) ? `
+        <div class="detail-section" style="padding:10px 0 4px">
+            ${addBtn}
+            <div style="margin-top:8px">
+                <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Link to Account</div>
+                ${linkHtml}
+            </div>
+        </div>` : '';
+        })()}
 
         <div class="detail-section">
             <div class="detail-section-label cancel-section-header" onclick="var bd=this.nextElementSibling;bd.classList.toggle('cancel-collapsed');this.querySelector('.cancel-chevron').classList.toggle('cancel-chevron-open')">
@@ -1231,6 +1257,34 @@ window.epSave = async function(bookingId, type) {
     }
 };
 
+// ─── CLIENT LINKING ───────────────────────────────────────
+async function addToClients(bookingId) {
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b) return;
+    const data = {
+        name: b.clientName || '',
+        email: b.clientEmail || '',
+        phone: b.clientPhone || '',
+        source: 'booking',
+        updatedAt: serverTimestamp()
+    };
+    if (b.clientId) {
+        data.uid = b.clientId;
+        await setDoc(doc(db, 'clients', b.clientId), data, { merge: true });
+    } else {
+        await addDoc(collection(db, 'clients'), data);
+    }
+    openDetail(bookingId);
+}
+
+async function linkToAccount(bookingId) {
+    const sel = document.getElementById(`linkClientSelect_${bookingId}`);
+    const clientDocId = sel?.value;
+    if (!clientDocId) return;
+    await updateDoc(doc(db, 'bookings', bookingId), { clientId: clientDocId });
+    openDetail(bookingId);
+}
+
 // ─── EXPOSE ───────────────────────────────────────────────
 window.AdminBookings = {
     init, setFilter, toggleHideRover, toggleCompletedSort, openDetail, closeDetail,
@@ -1238,7 +1292,8 @@ window.AdminBookings = {
     markDepositReceived, markPaidInFull, markInService, markRoverConfirmed,
     addAdjustment, removeAdjustment, toggleAdjVisits,
     deleteBooking, permanentlyDeleteBooking, sendAdminMessage, exportImage,
-    openEditDatesModal, openEditPaymentModal
+    openEditDatesModal, openEditPaymentModal,
+    addToClients, linkToAccount
 };
 
 window.openEditDatesModal = openEditDatesModal;
