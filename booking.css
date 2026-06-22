@@ -1021,6 +1021,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
     flex: 1;
     min-width: 56px;
     background: transparent;
+    cursor: grab;
 }
 .tp-col::-webkit-scrollbar { display: none; }
 .tp-item {

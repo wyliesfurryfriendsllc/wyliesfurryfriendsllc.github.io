@@ -332,6 +332,22 @@ function getHMTime(hrId, minId) {
 // ─── SCROLL WHEEL TIME PICKER ────────────────────────────
 const TP_H = 44;
 const _tpTimers = {};
+let _tpDrag = null;
+
+document.addEventListener('mousemove', e => {
+    if (!_tpDrag) return;
+    _tpDrag.col.scrollTop = _tpDrag.startScrollTop - (e.clientY - _tpDrag.startY);
+});
+document.addEventListener('mouseup', () => {
+    if (!_tpDrag) return;
+    const { col, uid } = _tpDrag;
+    _tpDrag = null;
+    col.style.cursor = '';
+    // Snap to nearest item then sync
+    const snapped = Math.round(col.scrollTop / TP_H) * TP_H;
+    col.scrollTo({ top: snapped, behavior: 'smooth' });
+    setTimeout(() => syncPickerToInputs(uid), 200);
+});
 
 function buildPickerHtml(uid, hrId, minId, initHr, initMin) {
     const hr24 = (initHr !== '' && initHr != null) ? parseInt(initHr) : -1;
@@ -386,6 +402,17 @@ function openPicker(uid) {
     _tpScrollTo(`tpAmpm_${uid}`, hr24 >= 12 ? 'PM' : 'AM');
     _tpScrollTo(`tpHr_${uid}`, String(hr24 % 12 || 12));
     _tpScrollTo(`tpMin_${uid}`, minVal);
+
+    // Init drag-to-scroll on columns (once per picker)
+    wrap.querySelectorAll('.tp-col').forEach(col => {
+        if (col._tpDragInit) return;
+        col._tpDragInit = true;
+        col.addEventListener('mousedown', e => {
+            _tpDrag = { col, uid, startY: e.clientY, startScrollTop: col.scrollTop };
+            col.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+    });
 
     setTimeout(() => {
         const handler = (e) => {
