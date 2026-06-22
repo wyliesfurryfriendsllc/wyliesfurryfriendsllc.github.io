@@ -8,6 +8,7 @@ let allClients = [];
 let clientSearchQuery = '';
 let editingClientId = null;
 let petEntries = [];
+let _adminEditingAddr = '';
 
 // ─── INIT ────────────────────────────────────────────────
 function init() {
@@ -137,6 +138,7 @@ function openModal(clientId = null) {
             document.getElementById('cModalEmail').value   = c.email   || '';
             document.getElementById('cModalAddress').value = c.address || '';
             document.getElementById('cModalNotes').value   = c.notes   || '';
+            _adminEditingAddr = c.address || '';
             petEntries = (c.pets || []).map(p => ({ ...p }));
         }
     }
@@ -352,57 +354,65 @@ function bookClient(clientId) {
     setTimeout(() => window.AdminCalendar?.selectClient(clientId), 50);
 }
 
-// ─── ADDRESS AUTOCOMPLETE (Nominatim) ────────────────────
+// ─── ADDRESS AUTOCOMPLETE (Nominatim + local prefix match) ──
 let addrTimer = null;
 function formatAddress(r) {
     const a = r.address || {};
-    const num    = a.house_number || '';
-    const road   = a.road || '';
+    const street = [a.house_number, a.road].filter(Boolean).join(' ');
     const city   = a.city || a.town || a.village || a.suburb || '';
     const state  = a.state || '';
     const zip    = a.postcode || '';
-    const street = [num, road].filter(Boolean).join(' ');
     return [street, city, [state, zip].filter(Boolean).join(' ')].filter(Boolean).join(', ');
 }
-
+function _adminLocalMatch(q, saved) {
+    if (!saved) return false;
+    const tokens = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const words  = saved.toLowerCase().split(/[\s,]+/).filter(Boolean);
+    return tokens.every(tok => words.some(w => w.startsWith(tok)));
+}
+function _renderAdminAddrDropdown(dropdown, items) {
+    if (!items.length) { dropdown.style.display = 'none'; return; }
+    dropdown.innerHTML = '';
+    items.forEach(addr => {
+        const div = document.createElement('div');
+        div.className = 'addr-option';
+        div.textContent = addr;
+        div.addEventListener('mousedown', e => { e.preventDefault(); pickAddress(addr); });
+        dropdown.appendChild(div);
+    });
+    dropdown.style.display = '';
+}
 function searchAddress(q) {
     clearTimeout(addrTimer);
     const dropdown = document.getElementById('addrDropdown');
-    if (!q || q.length < 3) { dropdown.style.display = 'none'; return; }
+    if (!q) { dropdown.style.display = 'none'; return; }
+
+    const localMatches = _adminLocalMatch(q, _adminEditingAddr) ? [_adminEditingAddr] : [];
+
+    if (q.length < 3) {
+        _renderAdminAddrDropdown(dropdown, localMatches);
+        return;
+    }
+
     addrTimer = setTimeout(async () => {
         try {
-            // Bias toward Naperville IL area (viewbox: roughly DuPage/Will county region)
             const viewbox = '-88.4,41.6,-87.9,41.7';
             const res = await fetch(
                 `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=us&limit=7&viewbox=${viewbox}&bounded=0&q=${encodeURIComponent(q)}`,
                 { headers: { 'Accept-Language': 'en' } }
             );
             const data = await res.json();
-            if (!data.length) { dropdown.style.display = 'none'; return; }
-            // Sort: Illinois results first
             data.sort((a, b) => {
                 const aIL = (a.address?.state || '').toLowerCase().includes('illinois') ? 0 : 1;
                 const bIL = (b.address?.state || '').toLowerCase().includes('illinois') ? 0 : 1;
                 return aIL - bIL;
             });
-            dropdown.innerHTML = '';
-            data.forEach(r => {
-                const formatted = formatAddress(r);
-                if (!formatted) return;
-                const div = document.createElement('div');
-                div.className = 'addr-option';
-                div.textContent = formatted;
-                div.addEventListener('mousedown', e => {
-                    e.preventDefault();
-                    pickAddress(formatted);
-                });
-                dropdown.appendChild(div);
-            });
-            dropdown.style.display = '';
-        } catch { dropdown.style.display = 'none'; }
+            const remote = data.map(formatAddress).filter(Boolean);
+            const all = [...localMatches, ...remote.filter(r => r !== _adminEditingAddr)];
+            _renderAdminAddrDropdown(dropdown, all);
+        } catch { _renderAdminAddrDropdown(dropdown, localMatches); }
     }, 350);
 }
-
 function pickAddress(addr) {
     document.getElementById('cModalAddress').value = addr;
     document.getElementById('addrDropdown').style.display = 'none';

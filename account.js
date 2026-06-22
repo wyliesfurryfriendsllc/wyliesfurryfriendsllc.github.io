@@ -12,6 +12,7 @@ let bookingsUnsub  = null;
 let messagesUnsub  = null;
 let activeBookingId = null;
 let userPets       = [];
+let _savedAddress  = '';
 let allBookings    = [];
 let acctFilter     = 'all';
 let acctCalYear    = new Date().getFullYear();
@@ -64,6 +65,7 @@ function showAccountUI(user, profile) {
     document.getElementById('profileName').value          = profile.name || user.displayName || '';
     document.getElementById('profilePhone').value         = profile.phone || '';
     document.getElementById('profileAddress').value       = profile.address || '';
+    _savedAddress = profile.address || '';
     document.getElementById('profileEmailDisplay').textContent = user.email;
     renderPets();
 }
@@ -999,10 +1001,36 @@ function closePetModal() {
 
 // ─── ADDRESS AUTOCOMPLETE ────────────────────────────────
 let _profileAddrTimer = null;
+function _localAddrMatch(q, saved) {
+    if (!saved) return false;
+    const tokens = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const words  = saved.toLowerCase().split(/[\s,]+/).filter(Boolean);
+    return tokens.every(tok => words.some(w => w.startsWith(tok)));
+}
+function _renderAddrDropdown(dropdown, items) {
+    if (!items.length) { dropdown.style.display = 'none'; return; }
+    dropdown.innerHTML = '';
+    items.forEach(addr => {
+        const div = document.createElement('div');
+        div.className = 'addr-option';
+        div.textContent = addr;
+        div.addEventListener('mousedown', e => { e.preventDefault(); pickProfileAddress(addr); });
+        dropdown.appendChild(div);
+    });
+    dropdown.style.display = '';
+}
 function searchProfileAddress(q) {
     clearTimeout(_profileAddrTimer);
     const dropdown = document.getElementById('profileAddrDropdown');
-    if (!q || q.length < 3) { dropdown.style.display = 'none'; return; }
+    if (!q) { dropdown.style.display = 'none'; return; }
+
+    const localMatches = _localAddrMatch(q, _savedAddress) ? [_savedAddress] : [];
+
+    if (q.length < 3) {
+        _renderAddrDropdown(dropdown, localMatches);
+        return;
+    }
+
     _profileAddrTimer = setTimeout(async () => {
         try {
             const viewbox = '-88.4,41.6,-87.9,41.7';
@@ -1011,24 +1039,15 @@ function searchProfileAddress(q) {
                 { headers: { 'Accept-Language': 'en' } }
             );
             const data = await res.json();
-            if (!data.length) { dropdown.style.display = 'none'; return; }
             data.sort((a, b) => {
                 const aIL = (a.address?.state || '').toLowerCase().includes('illinois') ? 0 : 1;
                 const bIL = (b.address?.state || '').toLowerCase().includes('illinois') ? 0 : 1;
                 return aIL - bIL;
             });
-            dropdown.innerHTML = '';
-            data.forEach(r => {
-                const fmt = _fmtProfileAddr(r);
-                if (!fmt) return;
-                const div = document.createElement('div');
-                div.className = 'addr-option';
-                div.textContent = fmt;
-                div.addEventListener('mousedown', e => { e.preventDefault(); pickProfileAddress(fmt); });
-                dropdown.appendChild(div);
-            });
-            dropdown.style.display = '';
-        } catch { dropdown.style.display = 'none'; }
+            const remote = data.map(_fmtProfileAddr).filter(Boolean);
+            const all = [...localMatches, ...remote.filter(r => r !== _savedAddress)];
+            _renderAddrDropdown(dropdown, all);
+        } catch { _renderAddrDropdown(dropdown, localMatches); }
     }, 350);
 }
 function _fmtProfileAddr(r) {
@@ -1061,6 +1080,7 @@ async function saveProfile() {
     btn.textContent = 'Saving...';
     try {
         await updateDoc(doc(db, 'users', currentUser.uid), { name, phone, address });
+        _savedAddress = address;
         if (name) await updateProfile(currentUser, { displayName: name });
         await syncToClients(currentUser, { name, phone, address, email: currentUser.email, pets: userPets });
         document.getElementById('accountName').textContent   = name || currentUser.email.split('@')[0];
