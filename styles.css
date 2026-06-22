@@ -237,8 +237,8 @@ nav {
     box-shadow: none;
 }
 .badge-icon-wrap {
-    width: 45px;
-    height: 45px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: #F2C4CE;
     display: flex;
@@ -249,8 +249,8 @@ nav {
     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 .badge-icon-wrap svg {
-    width: 21px;
-    height: 21px;
+    width: 17px;
+    height: 17px;
 }
 
 .hero-photo {
