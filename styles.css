@@ -252,6 +252,11 @@ nav {
     width: 17px;
     height: 17px;
 }
+.badge-icon-text {
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+}
 
 .hero-photo {
     position: relative;
