@@ -225,20 +225,20 @@ nav {
 }
 
 .badge {
-    background: white;
+    background: none;
     color: var(--pink);
     font-size: 13px;
     font-weight: 600;
-    padding: 6px 14px 6px 6px;
-    border-radius: 50px;
+    padding: 0;
+    border-radius: 0;
     display: flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    box-shadow: none;
 }
 .badge-icon-wrap {
-    width: 30px;
-    height: 30px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     background: var(--pink-light);
     display: flex;
@@ -246,6 +246,11 @@ nav {
     justify-content: center;
     flex-shrink: 0;
     color: var(--pink);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.badge-icon-wrap svg {
+    width: 21px;
+    height: 21px;
 }
 
 .hero-photo {
