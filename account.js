@@ -564,7 +564,7 @@ function renderBookingDetail(b, panel) {
             </div>
             <div class="detail-section-label tip-section-label">Leave a Tip</div>
             <div id="tipSection_${b.id}">
-                ${b.tip ? `<p class="tip-thanks" style="margin-bottom:12px">Tip: $${b.tip} — Thank you! 🐾<br><span class="tip-zelle-hint">We truly appreciate your generosity. All tips are sent via Zelle to our account —<br><span class="tip-zelle-email" onclick="copyZelleEmail(this)" title="Tap to copy">wyliesfurryfriendsllc@gmail.com</span></span></p>` : `
+                ${b.tip ? `<p class="tip-thanks" style="margin-bottom:12px">Tip: $${b.tip} — Thank you! 🐾<br><span class="tip-zelle-hint">We truly appreciate your generosity.<br>All tips are sent via Zelle to our account —<br><span class="tip-zelle-email" onclick="copyZelleEmail(this)" title="Tap to copy">wyliesfurryfriendsllc@gmail.com</span></span></p>` : `
                 <p class="tip-note">100% goes to your pet's caregiver.</p>
                 <div class="tip-pills" id="tipPills_${b.id}">${tipPillsHtml}</div>
                 <div id="tipCustomWrap_${b.id}" style="display:none;margin-top:10px">
