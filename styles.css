@@ -225,15 +225,27 @@ nav {
 }
 
 .badge {
-    background: var(--pink-light);
-    color: var(--brown);
+    background: white;
+    color: var(--pink);
     font-size: 13px;
     font-weight: 600;
-    padding: 7px 14px;
+    padding: 6px 14px 6px 6px;
     border-radius: 50px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.badge-icon-wrap {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--pink-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--pink);
 }
 
 .hero-photo {
