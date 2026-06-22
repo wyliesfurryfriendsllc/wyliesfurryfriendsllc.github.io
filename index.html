@@ -178,8 +178,29 @@
         <div class="about-text reveal-right">
             <div class="section-label">About Me</div>
             <h2 class="section-title">Hi, I'm Xiaotong —<br>and I love your pets.</h2>
-            <p>I have a deep fondness for animals and share my home with two cats. I also had a dog growing up, and have cared for hamsters from newborns. Every pet I've looked after has been happy to snuggle up to me — and that's something I'm truly proud of.</p>
-            <p>When I care for your pet, I don't just do the basics. I proactively clean food and water bowls, wipe paws after every walk, send photos and videos throughout each visit, and pay close attention to each pet's unique personality and habits.</p>
+            <div class="about-bio-wrap">
+                <div class="about-bio-content" id="aboutBioContent">
+                    <p><strong>Part 1: My Background:</strong></p>
+                    <p>I have a wealth of experience with pets, being both patient and affectionate towards them.</p>
+                    <p>I have a deep fondness for animals, and I currently share my home with two cats. The first one, adopted in 2018 before my university graduation, was a year and a half old, weighing just 3 lbs and in a pitiable state. Over time, she has thrived and now weighs a healthy 11 pounds. The second cat joined our family last year. Through my training efforts, both cats have learned basic commands like 'sit' and 'shake hands,' and they enjoy each other's company harmoniously.</p>
+                    <p>Back in 2016, I also welcomed a dog into my life. However, after coming to the US, I entrusted my dog's care to my parents, who adore the dog and are reluctant to part with him. During my time at home, I took charge of daily tasks like bathing, nail clipping, and tidying up their fur. My experience extends to hamsters as well—I've cared for six of them, even tending to newborns, and all have grown up thriving.</p>
+                    <p><strong>Part 2: My Attitude:</strong></p>
+                    <ul class="about-attitude-list">
+                        <li>I treat every pet with utmost care and dedication.</li>
+                        <li>If you've experienced my service, you'll undoubtedly agree :)</li>
+                    </ul>
+                    <ol class="about-attitude-list">
+                        <li>I proactively clean and maintain their food bowls every day. Even for the water fountain, I always check the interior for cleanliness. If I find any dirt or residue, I thoroughly clean the inner walls to ensure it's spotless before letting them use it. (Whenever I see pets eating or drinking from unclean bowls, it genuinely tugs at my heartstrings.)</li>
+                        <li>I have a penchant for giving pets thorough and affectionate petting, allowing me to promptly detect any anomalies, like increased eye discharge or minor injuries on their bodies. ( See details in my reviews )</li>
+                        <li>After every walk, I make it a habit to wipe the dust and mud off the dog's paws using tissue or wet wipes.</li>
+                        <li>I take pride in understanding the unique personalities and habits of each pet I care for. I'm honored to say that almost every pet I've looked after has been happy to snuggle up to me.</li>
+                        <li>I adore capturing numerous beautiful photos of the pets, preserving their endearing moments.</li>
+                        <li>I document the fun and interesting activities we do together to send to pet owners, in both pictures and words. This way, even when pet owners are away, it feels as if they were right there with us.</li>
+                        <li>For those pets with whom I've forged an extraordinary bond, I commemorate our connection with a hand-painted portrait. ( See details in my photos )</li>
+                    </ol>
+                </div>
+                <button class="about-read-more" id="aboutReadMore" onclick="toggleAboutBio()">Read more ↓</button>
+            </div>
             <div class="about-highlights">
                 <div class="highlight-item">
                     <span class="highlight-icon"><i data-lucide="house" style="width:18px;height:18px"></i></span>
@@ -360,6 +381,14 @@
         entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
     }, { threshold: 0.08 });
     document.querySelectorAll('.reveal, .reveal-right').forEach(el => observer.observe(el));
+</script>
+<script>
+function toggleAboutBio() {
+    const content = document.getElementById('aboutBioContent');
+    const btn = document.getElementById('aboutReadMore');
+    const expanded = content.classList.toggle('about-bio-expanded');
+    btn.textContent = expanded ? 'Read less ↑' : 'Read more ↓';
+}
 </script>
 <script src="gallery.js"></script>
 <script type="module" src="index-reviews.js"></script>

@@ -891,3 +891,22 @@ footer {
 
     .about-highlights { grid-template-columns: 1fr; }
 }
+
+/* ── About Bio Collapse ── */
+.about-bio-wrap { margin-bottom: 8px; }
+.about-bio-content {
+    max-height: 4.8em;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+    line-height: 1.6;
+}
+.about-bio-content.about-bio-expanded { max-height: 200em; }
+.about-bio-content p { margin: 0 0 10px; }
+.about-attitude-list { margin: 0 0 10px 20px; padding: 0; }
+.about-attitude-list li { margin-bottom: 6px; }
+.about-read-more {
+    background: none; border: none; padding: 4px 0;
+    color: var(--pink); font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+}
+.about-read-more:hover { opacity: 0.75; }
