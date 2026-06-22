@@ -221,24 +221,24 @@ nav {
 .hero-badges {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
 }
 
 .badge {
     background: none;
     color: var(--pink);
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 700;
     padding: 0;
     border-radius: 0;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
     box-shadow: none;
 }
 .badge-icon-wrap {
-    width: 36px;
-    height: 36px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     background: #F2C4CE;
     display: flex;
@@ -246,11 +246,10 @@ nav {
     justify-content: center;
     flex-shrink: 0;
     color: var(--pink);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 .badge-icon-wrap svg {
-    width: 17px;
-    height: 17px;
+    width: 20px;
+    height: 20px;
 }
 .badge-icon-text {
     font-size: 13px;
@@ -542,16 +541,22 @@ nav {
 
 .highlight-item {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--cream-2);
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 13px;
-    font-weight: 500;
+    align-items: flex-start;
+    gap: 14px;
+    background: #F0EAE3;
+    border-radius: 16px;
+    padding: 18px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--brown);
 }
 
-.highlight-icon { font-size: 18px; }
+.highlight-icon {
+    font-size: 20px;
+    color: var(--brown);
+    flex-shrink: 0;
+    margin-top: 1px;
+}
 
 /* ================================
    GALLERY
@@ -916,19 +921,14 @@ footer {
 
 /* ── About Bio Collapse ── */
 .about-bio-wrap { margin-bottom: 8px; }
-.about-bio-content {
-    max-height: 4.8em;
-    overflow: hidden;
-    transition: max-height 0.4s ease;
-    line-height: 1.6;
-}
-.about-bio-content.about-bio-expanded { max-height: 200em; }
-.about-bio-content p { margin: 0 0 10px; }
+.about-bio-preview p, .about-bio-full p { margin: 0 0 10px; line-height: 1.7; }
+.about-bio-ellipsis { margin: 2px 0 0; color: var(--brown-mid); font-size: 15px; }
 .about-attitude-list { margin: 0 0 10px 20px; padding: 0; }
-.about-attitude-list li { margin-bottom: 6px; }
+.about-attitude-list li { margin-bottom: 6px; line-height: 1.6; }
 .about-read-more {
-    background: none; border: none; padding: 4px 0;
+    background: none; border: none; padding: 2px 0;
     color: var(--pink); font-size: 14px; font-weight: 600;
     cursor: pointer; font-family: inherit;
+    text-decoration: underline;
 }
 .about-read-more:hover { opacity: 0.75; }
