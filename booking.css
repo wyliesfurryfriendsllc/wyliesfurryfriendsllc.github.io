@@ -1071,7 +1071,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
 /* ================================
    MOBILE
 ================================ */
-@media (max-width: 768px) {
+@media (max-width: 1000px) {
     .booking-layout {
         grid-template-columns: 1fr;
         padding: 24px 20px 60px;
