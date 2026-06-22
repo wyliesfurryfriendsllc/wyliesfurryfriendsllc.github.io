@@ -330,6 +330,10 @@ async function saveModal() {
     try {
         if (editingClientId) {
             await updateDoc(doc(db, 'clients', editingClientId), data);
+            const clientObj = allClients.find(x => x.id === editingClientId);
+            if (clientObj?.uid) {
+                await updateDoc(doc(db, 'users', clientObj.uid), { pets: data.pets });
+            }
         } else {
             data.createdAt = serverTimestamp();
             await addDoc(collection(db, 'clients'), data);

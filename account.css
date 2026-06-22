@@ -1658,3 +1658,15 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     line-height: 1.6;
 }
 
+
+
+/* ── Address Autocomplete ── */
+.addr-wrap { position: relative; }
+.addr-dropdown {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 200;
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.1); max-height: 220px; overflow-y: auto;
+}
+.addr-option { padding: 10px 14px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--border); }
+.addr-option:last-child { border-bottom: none; }
+.addr-option:hover { background: var(--cream-2, #fdf6f0); }

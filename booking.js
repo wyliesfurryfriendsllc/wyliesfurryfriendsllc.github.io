@@ -1074,8 +1074,13 @@ function sendRequest() {
     let pidx = 0;
     getSelectedSavedPets().forEach(p => {
         pidx++;
-        petsText += `Pet ${pidx}: ${p.name || '—'} (${capitalize(p.type || 'dog')}${p.breed ? ', ' + p.breed : ''})\n`;
-        if (p.careNotes) petsText += `  Notes: ${p.careNotes}\n`;
+        const ageStr = p.ageYears ? `${p.ageYears}yr${p.ageMonths ? ' ' + p.ageMonths + 'mo' : ''}` : (p.ageMonths ? p.ageMonths + 'mo' : '');
+        petsText += `Pet ${pidx}: ${p.name || '—'} (${capitalize(p.type || 'dog')})\n`;
+        if (p.breed)          petsText += `  Breed: ${p.breed}\n`;
+        if (p.birthDate)      petsText += `  Birthday: ${p.birthDate}\n`;
+        else if (ageStr)      petsText += `  Age: ${ageStr}\n`;
+        if (p.spayedNeutered) petsText += `  Spayed/Neutered: ${p.spayedNeutered}\n`;
+        if (p.careNotes)      petsText += `  Notes: ${p.careNotes}\n`;
     });
     document.querySelectorAll('.pet-entry').forEach(entry => {
         pidx++;
@@ -1085,7 +1090,9 @@ function sendRequest() {
         const age   = document.getElementById(`petAge${id}`)?.value   || '';
         const breed = document.getElementById(`petBreed${id}`)?.value || '';
         const notes = document.getElementById(`petNotes${id}`)?.value || '';
-        petsText += `Pet ${pidx}: ${name} (${capitalize(type)}${age ? ', ' + age : ''}${breed ? ', ' + breed : ''})\n`;
+        petsText += `Pet ${pidx}: ${name} (${capitalize(type)})\n`;
+        if (breed) petsText += `  Breed: ${breed}\n`;
+        if (age)   petsText += `  Age: ${age}\n`;
         if (notes) petsText += `  Notes: ${notes}\n`;
     });
 

@@ -63,6 +63,7 @@ function showAccountUI(user, profile) {
     document.getElementById('accountAvatar').textContent = name.charAt(0).toUpperCase();
     document.getElementById('profileName').value          = profile.name || user.displayName || '';
     document.getElementById('profilePhone').value         = profile.phone || '';
+    document.getElementById('profileAddress').value       = profile.address || '';
     document.getElementById('profileEmailDisplay').textContent = user.email;
     renderPets();
 }
@@ -996,18 +997,72 @@ function closePetModal() {
     document.getElementById('petModal').style.display = 'none';
 }
 
+// ─── ADDRESS AUTOCOMPLETE ────────────────────────────────
+let _profileAddrTimer = null;
+function searchProfileAddress(q) {
+    clearTimeout(_profileAddrTimer);
+    const dropdown = document.getElementById('profileAddrDropdown');
+    if (!q || q.length < 3) { dropdown.style.display = 'none'; return; }
+    _profileAddrTimer = setTimeout(async () => {
+        try {
+            const viewbox = '-88.4,41.6,-87.9,41.7';
+            const res = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=us&limit=7&viewbox=${viewbox}&bounded=0&q=${encodeURIComponent(q)}`,
+                { headers: { 'Accept-Language': 'en' } }
+            );
+            const data = await res.json();
+            if (!data.length) { dropdown.style.display = 'none'; return; }
+            data.sort((a, b) => {
+                const aIL = (a.address?.state || '').toLowerCase().includes('illinois') ? 0 : 1;
+                const bIL = (b.address?.state || '').toLowerCase().includes('illinois') ? 0 : 1;
+                return aIL - bIL;
+            });
+            dropdown.innerHTML = '';
+            data.forEach(r => {
+                const fmt = _fmtProfileAddr(r);
+                if (!fmt) return;
+                const div = document.createElement('div');
+                div.className = 'addr-option';
+                div.textContent = fmt;
+                div.addEventListener('mousedown', e => { e.preventDefault(); pickProfileAddress(fmt); });
+                dropdown.appendChild(div);
+            });
+            dropdown.style.display = '';
+        } catch { dropdown.style.display = 'none'; }
+    }, 350);
+}
+function _fmtProfileAddr(r) {
+    const a = r.address || {};
+    const street = [a.house_number, a.road].filter(Boolean).join(' ');
+    const city   = a.city || a.town || a.village || a.suburb || '';
+    const state  = a.state || '';
+    const zip    = a.postcode || '';
+    return [street, city, [state, zip].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+}
+function pickProfileAddress(addr) {
+    document.getElementById('profileAddress').value = addr;
+    document.getElementById('profileAddrDropdown').style.display = 'none';
+}
+document.addEventListener('click', e => {
+    if (!e.target.closest('.addr-wrap')) {
+        const d = document.getElementById('profileAddrDropdown');
+        if (d) d.style.display = 'none';
+    }
+});
+
 // ─── PROFILE ─────────────────────────────────────────────
 async function saveProfile() {
     if (!currentUser) return;
-    const name  = document.getElementById('profileName').value.trim();
-    const phone = document.getElementById('profilePhone').value.trim();
+    const name    = document.getElementById('profileName').value.trim();
+    const phone   = document.getElementById('profilePhone').value.trim();
+    const address = document.getElementById('profileAddress').value.trim();
     const btn   = document.getElementById('saveProfileBtn');
     btn.disabled    = true;
     btn.textContent = 'Saving...';
     try {
-        await updateDoc(doc(db, 'users', currentUser.uid), { name, phone });
+        await updateDoc(doc(db, 'users', currentUser.uid), { name, phone, address });
         if (name) await updateProfile(currentUser, { displayName: name });
-        await syncToClients(currentUser, { name, phone, email: currentUser.email, pets: userPets });
+        await syncToClients(currentUser, { name, phone, address, email: currentUser.email, pets: userPets });
         document.getElementById('accountName').textContent   = name || currentUser.email.split('@')[0];
         document.getElementById('accountAvatar').textContent = (name || currentUser.email).charAt(0).toUpperCase();
         const statusEl = document.getElementById('profileSaveStatus');
@@ -1030,6 +1085,7 @@ async function syncToClients(user, profile) {
         name: profile.name || user.displayName || '',
         email: user.email,
         phone: profile.phone || '',
+        address: profile.address || '',
         pets, uid: user.uid, source: 'account',
         updatedAt: serverTimestamp()
     }, { merge: true });

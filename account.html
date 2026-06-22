@@ -208,6 +208,14 @@
                     <label>Phone number</label>
                     <input type="tel" id="profilePhone" placeholder="(xxx) xxx-xxxx">
                 </div>
+                <div class="form-group">
+                    <label>Home address</label>
+                    <div class="addr-wrap">
+                        <input type="text" id="profileAddress" placeholder="Street, City, State ZIP"
+                               oninput="searchProfileAddress(this.value)" autocomplete="off">
+                        <div id="profileAddrDropdown" class="addr-dropdown" style="display:none"></div>
+                    </div>
+                </div>
                 <div class="profile-footer">
                     <button class="btn-save-profile" id="saveProfileBtn" onclick="saveProfile()">Save Changes</button>
                     <span id="profileSaveStatus" class="save-ok-inline" style="display:none">Saved!</span>
