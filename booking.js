@@ -202,14 +202,14 @@ function renderSelectedDatesList() {
         div.className = isFirst ? 'date-entry date-entry--first' : 'date-entry';
         div.dataset.date = dateStr;
 
-        const slotsHtml = slots.map((sl, si) => renderSlotHtml(tid, dateStr, si, sl, slots.length)).join('');
+        const slotsHtml = slots.map((sl, si) => renderSlotHtml(tid, dateStr, si, sl, slots.length, isFirst)).join('');
 
         div.innerHTML = `
             <div class="date-entry-header">
                 <span class="date-entry-label">${formatDate(dateStr)}</span>
             </div>
             ${!isFirst ? `
-            <div class="toggle-pills mb-8">
+            <div class="toggle-pills mb-12">
                 <label class="pill-option">
                     <input type="radio" name="dtMode_${tid}" value="same" ${isSame?'checked':''} onchange="onDateModeChange('${tid}','${dateStr}')">
                     <span>Same as Day 1</span>
@@ -228,13 +228,13 @@ function renderSelectedDatesList() {
     });
 }
 
-function renderSlotHtml(tid, dateStr, si, sl, totalSlots) {
+function renderSlotHtml(tid, dateStr, si, sl, totalSlots, isFirstDate = true) {
     const isSpecific = sl.type === 'specific';
     const isCombo = getDuration() === 'combo';
     const comboDur = sl.comboDur || '30';
     return `
         <div class="date-slot" data-si="${si}">
-            ${si === 0 ? `<div class="slot-type-tip">💡 <strong>Recommended</strong> — Flexible time ranges help with scheduling.</div>` : ''}
+            ${si === 0 && isFirstDate ? `<div class="slot-type-tip">💡 <strong>Recommended</strong> — Flexible time ranges help with scheduling.</div>` : ''}
             ${isCombo ? `<div class="combo-dur-row">
                 <span class="combo-dur-label">Duration</span>
                 <div class="combo-dur-toggle">

@@ -1064,6 +1064,8 @@ details.deposit-policy[open] summary { color: var(--pink); }
 }
 .time-select:focus { border-color: var(--pink); }
 
+.mb-8  { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
 .mb-20 { margin-bottom: 20px; }
 
 /* ================================
