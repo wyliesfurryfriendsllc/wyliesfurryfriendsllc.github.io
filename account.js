@@ -1481,6 +1481,7 @@ window.setReviewStar        = setReviewStar;
 window.submitReview         = submitReview;
 window.selectTip            = selectTip;
 window.confirmTip           = confirmTip;
+window.searchProfileAddress = searchProfileAddress;
 window.submitAll            = submitAll;
 window.markTipSent = function(bookingId, btn) {
     btn.textContent = 'Tip sent ✓';
