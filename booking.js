@@ -269,22 +269,18 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots) {
                 </div>
             </div>
             <div id="slotWindowWrap_${tid}_${si}" style="${isSpecific?'display:none':''}">
-                <div class="form-row">
-                    <div class="form-group half">
-                        <label>From</label>
-                        <div class="time-hm-wrap">
-                            <select id="slotFromHr_${tid}_${si}" onchange="updateSummary()">${hrOptions(sl.fromHr)}</select>
-                            <span class="time-hm-colon">:</span>
-                            <select id="slotFromMin_${tid}_${si}" onchange="updateSummary()">${minOptions(sl.fromMin)}</select>
-                        </div>
+                <div class="time-range-inline">
+                    <span class="time-range-label">From</span>
+                    <div class="time-hm-wrap">
+                        <select id="slotFromHr_${tid}_${si}" onchange="updateSummary()">${hrOptions(sl.fromHr)}</select>
+                        <span class="time-hm-colon">:</span>
+                        <select id="slotFromMin_${tid}_${si}" onchange="updateSummary()">${minOptions(sl.fromMin)}</select>
                     </div>
-                    <div class="form-group half">
-                        <label>To</label>
-                        <div class="time-hm-wrap">
-                            <select id="slotToHr_${tid}_${si}" onchange="updateSummary()">${hrOptions(sl.toHr)}</select>
-                            <span class="time-hm-colon">:</span>
-                            <select id="slotToMin_${tid}_${si}" onchange="updateSummary()">${minOptions(sl.toMin)}</select>
-                        </div>
+                    <span class="time-range-label">To</span>
+                    <div class="time-hm-wrap">
+                        <select id="slotToHr_${tid}_${si}" onchange="updateSummary()">${hrOptions(sl.toHr)}</select>
+                        <span class="time-hm-colon">:</span>
+                        <select id="slotToMin_${tid}_${si}" onchange="updateSummary()">${minOptions(sl.toMin)}</select>
                     </div>
                 </div>
             </div>

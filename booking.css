@@ -358,10 +358,29 @@
 /* ================================
    DATE SLOTS / ADD TIME
 ================================ */
+.date-slot {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+}
+
 .date-slot + .date-slot {
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px solid var(--border);
+    margin-top: 10px;
+}
+
+.time-range-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.time-range-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--brown);
+    white-space: nowrap;
 }
 
 .slot-type-tip {
