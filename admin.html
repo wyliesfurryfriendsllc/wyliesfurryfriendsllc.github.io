@@ -65,6 +65,7 @@
                             <p class="admin-section-sub">Manage all booking requests.</p>
                         </div>
                     </div>
+                    <input type="text" class="client-search-input" placeholder="Search by owner or pet name…" oninput="AdminBookings.setBookingSearch(this.value)" style="margin-bottom:12px">
                     <div class="filter-chips" id="filterChips">
                         <button class="filter-chip active" data-filter="all"             onclick="AdminBookings.setFilter('all')">All</button>
                         <button class="filter-chip"        data-filter="pending"          onclick="AdminBookings.setFilter('pending')">Pending</button>

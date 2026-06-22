@@ -10,6 +10,7 @@ let activeFilter   = 'all';
 let activeBookingId = null;
 let hideRover      = false;
 let completedSortDesc = true;
+let bookingSearch  = '';
 
 const STATUS_LABELS = {
     pending:          'Pending',
@@ -75,6 +76,11 @@ function setFilter(filter) {
     renderAdminBookings();
 }
 
+function setBookingSearch(val) {
+    bookingSearch = val.trim().toLowerCase();
+    renderAdminBookings();
+}
+
 function toggleHideRover() {
     hideRover = !hideRover;
     const btn = document.getElementById('hideRoverBtn');
@@ -98,6 +104,13 @@ function renderAdminBookings() {
         ? allBookings.filter(b => ACTIVE_STATUSES.includes(b.status))
         : allBookings.filter(b => b.status === activeFilter);
     if (hideRover) filtered = filtered.filter(b => !b.isRover);
+    if (bookingSearch) {
+        filtered = filtered.filter(b => {
+            const nameMatch = (b.clientName || '').toLowerCase().includes(bookingSearch);
+            const petMatch  = (b.pets || []).some(p => (p.name || '').toLowerCase().includes(bookingSearch));
+            return nameMatch || petMatch;
+        });
+    }
 
     if (filtered.length === 0) {
         container.innerHTML = `<p class="empty-msg">No ${activeFilter === 'all' ? '' : activeFilter + ' '}bookings yet.</p>`;
@@ -499,6 +512,7 @@ function renderDetail(b, panel) {
                 <button class="detail-delete-btn" onclick="AdminBookings.deleteBooking('${b.id}','${escHtml(b.clientName||'this booking')}')" title="Delete booking">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
                 </button>` : `
+                <button class="admin-btn-secondary" style="font-size:12px;padding:4px 10px" onclick="AdminBookings.restoreBooking('${b.id}')">↩ Restore</button>
                 <button class="detail-delete-btn" onclick="AdminBookings.permanentlyDeleteBooking('${b.id}','${escHtml(b.clientName||'this booking')}')" title="Permanently delete" style="color:#c0392b">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
                 </button>`}
@@ -1268,6 +1282,12 @@ window.epSave = async function(bookingId, type) {
     }
 };
 
+// ─── RESTORE ──────────────────────────────────────────────
+async function restoreBooking(bookingId) {
+    await updateDoc(doc(db, 'bookings', bookingId), { status: 'pending' });
+    openDetail(bookingId);
+}
+
 // ─── ADMIN TIP ────────────────────────────────────────────
 async function saveAdminTip(bookingId) {
     const input = document.getElementById(`adminTipInput_${bookingId}`);
@@ -1315,7 +1335,8 @@ window.AdminBookings = {
     addAdjustment, removeAdjustment, toggleAdjVisits,
     deleteBooking, permanentlyDeleteBooking, sendAdminMessage, exportImage,
     openEditDatesModal, openEditPaymentModal,
-    addToClients, linkToAccount, saveAdminTip
+    addToClients, linkToAccount, saveAdminTip,
+    restoreBooking, setBookingSearch
 };
 
 window.openEditDatesModal = openEditDatesModal;
