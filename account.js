@@ -576,7 +576,7 @@ function renderBookingDetail(b, panel) {
                     <button class="tip-sent-btn" id="tipSentBtn_${b.id}" onclick="markTipSent('${b.id}',this)">I've sent the tip</button>
                 </div>`}
             </div>
-            <button class="review-submit-btn feedback-submit-btn" id="submitAllBtn_${b.id}" onclick="submitAll('${b.id}')">Submit</button>
+            ${!(b.hasReview && b.tip != null) ? `<button class="review-submit-btn feedback-submit-btn" id="submitAllBtn_${b.id}" onclick="submitAll('${b.id}')">Submit</button>` : ''}
         </div>`;
         })() : ''}
         <div class="detail-section">
