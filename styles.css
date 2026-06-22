@@ -240,7 +240,7 @@ nav {
     width: 45px;
     height: 45px;
     border-radius: 50%;
-    background: var(--pink-light);
+    background: #F2C4CE;
     display: flex;
     align-items: center;
     justify-content: center;
