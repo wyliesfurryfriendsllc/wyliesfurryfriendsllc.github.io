@@ -262,26 +262,14 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots) {
                 </button>` : ''}
             </div>
             <div id="slotSpecWrap_${tid}_${si}" style="${isSpecific?'':'display:none'}">
-                <div class="time-hm-wrap">
-                    <select id="slotSpecHr_${tid}_${si}" onchange="updateSummary()">${hrOptions(sl.specHr)}</select>
-                    <span class="time-hm-colon">:</span>
-                    <select id="slotSpecMin_${tid}_${si}" onchange="updateSummary()">${minOptions(sl.specMin)}</select>
-                </div>
+                ${buildPickerHtml(`spec_${tid}_${si}`, `slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`, sl.specHr, sl.specMin)}
             </div>
             <div id="slotWindowWrap_${tid}_${si}" style="${isSpecific?'display:none':''}">
                 <div class="time-range-inline">
                     <span class="time-range-label">From</span>
-                    <div class="time-hm-wrap">
-                        <select id="slotFromHr_${tid}_${si}" onchange="updateSummary()">${hrOptions(sl.fromHr)}</select>
-                        <span class="time-hm-colon">:</span>
-                        <select id="slotFromMin_${tid}_${si}" onchange="updateSummary()">${minOptions(sl.fromMin)}</select>
-                    </div>
+                    ${buildPickerHtml(`from_${tid}_${si}`, `slotFromHr_${tid}_${si}`, `slotFromMin_${tid}_${si}`, sl.fromHr, sl.fromMin)}
                     <span class="time-range-label">To</span>
-                    <div class="time-hm-wrap">
-                        <select id="slotToHr_${tid}_${si}" onchange="updateSummary()">${hrOptions(sl.toHr)}</select>
-                        <span class="time-hm-colon">:</span>
-                        <select id="slotToMin_${tid}_${si}" onchange="updateSummary()">${minOptions(sl.toMin)}</select>
-                    </div>
+                    ${buildPickerHtml(`to_${tid}_${si}`, `slotToHr_${tid}_${si}`, `slotToMin_${tid}_${si}`, sl.toHr, sl.toMin)}
                 </div>
             </div>
         </div>`;
@@ -320,25 +308,122 @@ function removeSlot(dateStr, si) {
 }
 
 // ─── TIME HELPERS ─────────────────────────────────────────
-function hrOptions(sel) {
-    let h = '';
-    for (let i = 0; i <= 23; i++) {
-        h += `<option value="${i}"${String(sel)===String(i)?'selected':''}>${i}</option>`;
-    }
-    return h;
-}
-
-function minOptions(sel) {
-    return ['00','15','30','45'].map(m =>
-        `<option value="${m}"${sel===m?'selected':''}>${m}</option>`
-    ).join('');
-}
-
 function getHMTime(hrId, minId) {
     const hr  = document.getElementById(hrId)?.value;
     const min = document.getElementById(minId)?.value;
     if (hr === '' || hr == null || min == null) return '';
     return `${String(hr).padStart(2,'0')}:${min}`;
+}
+
+// ─── SCROLL WHEEL TIME PICKER ────────────────────────────
+const TP_H = 44;
+const _tpTimers = {};
+
+function buildPickerHtml(uid, hrId, minId, initHr, initMin) {
+    const hr24 = (initHr !== '' && initHr != null) ? parseInt(initHr) : -1;
+    const minVal = initMin || '00';
+    const label = hr24 >= 0 ? _tpFmt(hr24, minVal) : '—';
+    const hrItems = [1,2,3,4,5,6,7,8,9,10,11,12]
+        .map(h => `<div class="tp-item" data-val="${h}">${h}</div>`).join('');
+    const minItems = ['00','15','30','45']
+        .map(m => `<div class="tp-item" data-val="${m}">${m}</div>`).join('');
+    return `<div class="tp-wrap" id="tpWrap_${uid}">
+        <button type="button" class="tp-trigger" onclick="openPicker('${uid}')">
+            <span id="tpLabel_${uid}">${label}</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <input type="hidden" id="${hrId}" value="${hr24 >= 0 ? hr24 : ''}">
+        <input type="hidden" id="${minId}" value="${minVal}">
+        <div class="tp-popup" id="tpPop_${uid}" style="display:none">
+            <div class="tp-picker-body">
+                <div class="tp-sel-bar"></div>
+                <div class="tp-cols">
+                    <div class="tp-col" id="tpAmpm_${uid}" onscroll="onPickerScroll('${uid}')">
+                        <div class="tp-item" data-val="AM">AM</div>
+                        <div class="tp-item" data-val="PM">PM</div>
+                    </div>
+                    <div class="tp-col" id="tpHr_${uid}" onscroll="onPickerScroll('${uid}')">${hrItems}</div>
+                    <div class="tp-col" id="tpMin_${uid}" onscroll="onPickerScroll('${uid}')">${minItems}</div>
+                </div>
+                <div class="tp-fade-t"></div>
+                <div class="tp-fade-b"></div>
+            </div>
+        </div>
+    </div>`;
+}
+
+function _tpFmt(hr24, min) {
+    return `${hr24 % 12 || 12}:${min} ${hr24 >= 12 ? 'PM' : 'AM'}`;
+}
+
+function openPicker(uid) {
+    document.querySelectorAll('.tp-popup').forEach(p => {
+        if (p.id !== `tpPop_${uid}`) p.style.display = 'none';
+    });
+    const popup = document.getElementById(`tpPop_${uid}`);
+    if (!popup) return;
+    popup.style.display = 'block';
+
+    const wrap = document.getElementById(`tpWrap_${uid}`);
+    const [hrInput, minInput] = wrap.querySelectorAll('input[type="hidden"]');
+    const hr24 = (hrInput && hrInput.value !== '') ? parseInt(hrInput.value) : 9;
+    const minVal = (minInput && minInput.value) || '00';
+
+    _tpScrollTo(`tpAmpm_${uid}`, hr24 >= 12 ? 'PM' : 'AM');
+    _tpScrollTo(`tpHr_${uid}`, String(hr24 % 12 || 12));
+    _tpScrollTo(`tpMin_${uid}`, minVal);
+
+    setTimeout(() => {
+        const handler = (e) => {
+            if (!wrap.contains(e.target)) {
+                closePicker(uid);
+                document.removeEventListener('click', handler);
+            }
+        };
+        document.addEventListener('click', handler);
+    }, 0);
+}
+
+function _tpScrollTo(colId, val) {
+    const col = document.getElementById(colId);
+    if (!col) return;
+    const items = col.querySelectorAll('.tp-item');
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].dataset.val === val) { col.scrollTop = i * TP_H; return; }
+    }
+}
+
+function closePicker(uid) {
+    const p = document.getElementById(`tpPop_${uid}`);
+    if (p) p.style.display = 'none';
+}
+
+function onPickerScroll(uid) {
+    clearTimeout(_tpTimers[uid]);
+    _tpTimers[uid] = setTimeout(() => syncPickerToInputs(uid), 150);
+}
+
+function syncPickerToInputs(uid) {
+    const wrap = document.getElementById(`tpWrap_${uid}`);
+    if (!wrap) return;
+    const getVal = id => {
+        const col = document.getElementById(id);
+        if (!col) return null;
+        return col.querySelectorAll('.tp-item')[Math.round(col.scrollTop / TP_H)]?.dataset.val;
+    };
+    const ampm = getVal(`tpAmpm_${uid}`) || 'AM';
+    const hr12 = parseInt(getVal(`tpHr_${uid}`) || '12');
+    const min  = getVal(`tpMin_${uid}`) || '00';
+    let hr24 = hr12 % 12;
+    if (ampm === 'PM') hr24 += 12;
+
+    const [hrInput, minInput] = wrap.querySelectorAll('input[type="hidden"]');
+    if (hrInput) hrInput.value = hr24;
+    if (minInput) minInput.value = min;
+
+    const lbl = document.getElementById(`tpLabel_${uid}`);
+    if (lbl) lbl.textContent = _tpFmt(hr24, min);
+    updateSummary();
 }
 
 // ─── RANGE CALENDAR ──────────────────────────────────────

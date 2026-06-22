@@ -956,35 +956,94 @@ details.deposit-policy[open] summary { color: var(--pink); }
 .bday-year-sel:focus, .bday-month-sel:focus { border-color: var(--pink); }
 
 /* ================================
-   TIME HM PICKER
+   SCROLL WHEEL TIME PICKER
 ================================ */
-.time-hm-wrap {
-    display: flex;
+.tp-wrap {
+    position: relative;
+    display: inline-block;
+}
+.tp-trigger {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-}
-.time-hm-wrap select {
-    flex: none;
-    width: auto;
-    padding: 11px 8px;
+    padding: 10px 14px;
+    background: var(--cream);
     border: 1.5px solid var(--border);
     border-radius: 10px;
     font-size: 14px;
     font-family: 'Inter', sans-serif;
     color: var(--brown);
-    background: var(--cream);
-    outline: none;
+    cursor: pointer;
+    white-space: nowrap;
     transition: border-color 0.2s;
-    appearance: auto;
-    min-width: 0;
 }
-.time-hm-wrap select:focus { border-color: var(--pink); }
-.time-hm-colon {
+.tp-trigger:hover { border-color: var(--pink); }
+
+.tp-popup {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 200;
+    background: var(--cream-2);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    padding: 8px;
+}
+.tp-picker-body {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.tp-sel-bar {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0; right: 0;
+    height: 44px;
+    background: var(--pink-light);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    z-index: 0;
+    pointer-events: none;
+}
+.tp-cols {
+    display: flex;
+    position: relative;
+    z-index: 1;
+}
+.tp-col {
+    height: 220px;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    padding: 88px 0;
+    scrollbar-width: none;
+    flex: 1;
+    min-width: 56px;
+    background: transparent;
+}
+.tp-col::-webkit-scrollbar { display: none; }
+.tp-item {
+    height: 44px;
+    scroll-snap-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--brown);
-    flex-shrink: 0;
+    font-family: 'Inter', sans-serif;
+    user-select: none;
 }
+.tp-fade-t, .tp-fade-b {
+    position: absolute;
+    left: 0; right: 0;
+    height: 88px;
+    z-index: 2;
+    pointer-events: none;
+}
+.tp-fade-t { top: 0;    background: linear-gradient(to bottom, var(--cream-2) 20%, transparent); }
+.tp-fade-b { bottom: 0; background: linear-gradient(to top,   var(--cream-2) 20%, transparent); }
 
 /* ================================
    TIME SELECT
