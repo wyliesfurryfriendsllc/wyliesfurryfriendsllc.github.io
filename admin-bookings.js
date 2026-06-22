@@ -619,22 +619,21 @@ function renderDetail(b, panel) {
                 ? `<button class="admin-btn-secondary" style="margin-top:6px" onclick="AdminBookings.addToClients('${b.id}')">+ Add to Clients</button>`
                 : '';
             const clientsWithUid = allC.filter(c => c.uid || c.id?.length >= 20);
-            const linkHtml = !b.clientId
-                ? `<div class="link-account-row">
+            const linkSection = !b.clientId ? `
+            <div style="margin-top:8px">
+                <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Link to Account</div>
+                <div class="link-account-row">
                     <select id="linkClientSelect_${b.id}" class="admin-select">
                         <option value="">— Select account to link —</option>
                         ${clientsWithUid.map(c => `<option value="${c.id}">${escHtml(c.name || '')} (${escHtml(c.email || '')})</option>`).join('')}
                     </select>
                     <button class="admin-btn-secondary" onclick="AdminBookings.linkToAccount('${b.id}')">Link</button>
-                   </div>`
-                : `<span class="detail-linked-badge">✓ Linked to account</span>`;
-            return (addBtn || !b.clientId || b.clientId) ? `
+                </div>
+            </div>` : '';
+            return (addBtn || linkSection) ? `
         <div class="detail-section" style="padding:10px 0 4px">
             ${addBtn}
-            <div style="margin-top:8px">
-                <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Link to Account</div>
-                ${linkHtml}
-            </div>
+            ${linkSection}
         </div>` : '';
         })()}
 
