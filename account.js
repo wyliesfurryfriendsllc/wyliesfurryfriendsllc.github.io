@@ -393,6 +393,12 @@ function openBookingDetail(bookingId) {
     panel.style.display = '';
     panel.innerHTML     = '<div class="detail-loading">Loading...</div>';
 
+    // On narrow screens, move panel to appear right after the clicked card
+    if (window.innerWidth <= 900) {
+        const clickedCard = document.querySelector(`.booking-card[data-bid="${bookingId}"]`);
+        if (clickedCard) clickedCard.after(panel);
+    }
+
     getDoc(doc(db, 'bookings', bookingId)).then(snap => {
         if (!snap.exists()) { panel.innerHTML = '<p>Booking not found.</p>'; return; }
         const b = { id: snap.id, ...snap.data() };
@@ -405,7 +411,13 @@ function openBookingDetail(bookingId) {
 function closeBookingDetail() {
     activeBookingId = null;
     if (messagesUnsub) { messagesUnsub(); messagesUnsub = null; }
-    document.getElementById('bookingDetail').style.display = 'none';
+    const panel = document.getElementById('bookingDetail');
+    panel.style.display = 'none';
+    // Restore panel to its original position in .bookings-panel
+    const bookingsPanel = document.querySelector('.bookings-panel');
+    if (bookingsPanel && panel.parentElement !== bookingsPanel) {
+        bookingsPanel.appendChild(panel);
+    }
     document.querySelectorAll('.booking-card').forEach(c => c.classList.remove('active'));
 }
 
