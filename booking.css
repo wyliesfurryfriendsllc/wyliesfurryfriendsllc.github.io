@@ -1,6 +1,10 @@
 /* ================================
    BOOKING PAGE
 ================================ */
+.booking-page *, .booking-page *::before, .booking-page *::after {
+    box-sizing: border-box;
+}
+
 .booking-page {
     background: var(--cream);
     min-height: 100vh;
@@ -1218,6 +1222,8 @@ details.deposit-policy[open] summary { color: var(--pink); }
         grid-template-columns: 1fr;
         padding: 24px 16px 60px;
         gap: 24px;
+        max-width: 100%;
+        overflow-x: hidden;
     }
 
     .booking-summary-col {
@@ -1227,6 +1233,12 @@ details.deposit-policy[open] summary { color: var(--pink); }
     .service-selector { grid-template-columns: 1fr 1fr; }
     .form-row { grid-template-columns: 1fr; }
     .pet-type-row { grid-template-columns: 1fr; }
+
+    .form-section, .date-entry, .service-selector,
+    .summary-card, .cal-grid, .calendar-wrap {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
 }
 
 @media (max-width: 480px) {
