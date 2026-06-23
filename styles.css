@@ -952,3 +952,10 @@ footer {
     display: block;
 }
 .about-read-more:hover { opacity: 0.75; }
+
+/* ── Mobile: prevent input auto-zoom (iOS Safari zooms when font-size < 16px) ── */
+@media (max-width: 768px) {
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+}

@@ -1670,3 +1670,10 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
 .addr-option { padding: 10px 14px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--border); }
 .addr-option:last-child { border-bottom: none; }
 .addr-option:hover { background: var(--cream-2, #fdf6f0); }
+
+/* ── Mobile: prevent iOS auto-zoom on input focus ── */
+@media (max-width: 768px) {
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+}
