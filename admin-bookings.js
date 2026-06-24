@@ -565,7 +565,7 @@ function renderDetail(b, panel) {
             <div class="detail-section-label">Service</div>
             <div class="detail-service-summary">
                 <strong>${escHtml(b.service || '')}</strong><br>
-                ${numVisits} visit${numVisits !== 1 ? 's' : ''} · ${b.duration || 30} min each${petNames ? ' · ' + escHtml(petNames) : ''}
+                ${numVisits} visit${numVisits !== 1 ? 's' : ''} · ${String(b.duration || 30).includes('&') ? b.duration : (b.duration || 30) + ' min'} each${petNames ? ' · ' + escHtml(petNames) : ''}
             </div>
         </div>
 
