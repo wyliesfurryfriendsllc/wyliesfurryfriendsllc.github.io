@@ -281,9 +281,10 @@
                 </div>
                 <div class="form-group">
                     <label>Duration</label>
-                    <select id="nbDuration" class="admin-select" onchange="AdminCalendar.calcNbTotal()">
+                    <select id="nbDuration" class="admin-select" onchange="AdminCalendar.onDurationChange()">
                         <option value="30">30 min</option>
                         <option value="60">60 min</option>
+                        <option value="combo">30 &amp; 60 min</option>
                     </select>
                 </div>
             </div>

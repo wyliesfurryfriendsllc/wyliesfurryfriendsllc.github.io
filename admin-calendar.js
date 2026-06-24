@@ -329,22 +329,28 @@ function openNewBookingModal() {
 }
 
 // ─── TIME HELPERS ────────────────────────────────────────
-function emptySlot() { return { mode: 'time', start: '', end: '' }; }
+function emptySlot() { return { mode: 'time', start: '', end: '', dur: 30 }; }
 
 function parseSlotObj(t) {
     if (!t) return emptySlot();
     if (typeof t === 'object') return t;
-    if (t.includes('~')) {
-        const [start, end] = t.split('~');
-        return { mode: 'range', start, end };
+    const durMatch = t.match(/\|(\d+)$/);
+    const dur = durMatch ? parseInt(durMatch[1]) : 30;
+    const clean = t.replace(/\|\d+$/, '');
+    if (clean.includes('~')) {
+        const [start, end] = clean.split('~');
+        return { mode: 'range', start, end, dur };
     }
-    return { mode: 'time', start: t, end: '' };
+    return { mode: 'time', start: clean, end: '', dur };
 }
 
-function serializeSlot(s) {
+function serializeSlot(s, isCombo) {
     if (!s || !s.start) return '';
-    if (s.mode === 'range' && s.end) return `${s.start}~${s.end}`;
-    return s.start;
+    let base;
+    if (s.mode === 'range' && s.end) base = `${s.start}~${s.end}`;
+    else base = s.start;
+    if (isCombo) base += `|${s.dur || 30}`;
+    return base;
 }
 
 function parseHrMin(hhmm) {
@@ -398,6 +404,7 @@ function renderNbVisitTimes() {
             return;
         }
 
+        const isCombo = document.getElementById('nbDuration')?.value === 'combo';
         const visitCount = slots.filter(s => s.start).length || 1;
         const slotsHtml = slots.map((s, idx) => {
             const slot = parseSlotObj(s);
@@ -408,6 +415,13 @@ function renderNbVisitTimes() {
                 `<option value="${v}" ${cur===v?'selected':''}>${v}</option>`).join('');
 
             const removeBtn = slots.length > 1 ? `<button type="button" class="nb-remove-time" onclick="AdminCalendar.removeTimeFromDate('${iso}',${idx})">×</button>` : '';
+            const comboDurPills = isCombo ? `
+                <div class="nb-mode-pills" style="margin-left:8px">
+                    <button type="button" class="nb-mode-pill ${(slot.dur||30)===30?'active':''}"
+                        onclick="AdminCalendar.updateSlotDur('${iso}',${idx},30)">30 min</button>
+                    <button type="button" class="nb-mode-pill ${(slot.dur||30)===60?'active':''}"
+                        onclick="AdminCalendar.updateSlotDur('${iso}',${idx},60)">60 min</button>
+                </div>` : '';
             return `
             <div class="nb-time-row">
                 <div class="nb-time-line">
@@ -425,6 +439,7 @@ function renderNbVisitTimes() {
                     <select class="nb-min-select" onchange="AdminCalendar.updateSlotStartMin('${iso}',${idx},this.value)">
                         ${minOpts(sh.m)}
                     </select>
+                    ${comboDurPills}
                     ${removeBtn}` : ''}
                 </div>
                 ${isRange ? `
@@ -444,6 +459,7 @@ function renderNbVisitTimes() {
                     <select class="nb-min-select" onchange="AdminCalendar.updateSlotEndMin('${iso}',${idx},this.value)">
                         ${minOpts(eh.m)}
                     </select>
+                    ${comboDurPills}
                     ${removeBtn}
                 </div>` : ''}
             </div>`;
@@ -479,6 +495,23 @@ function removeTimeFromDate(iso, idx) {
     renderNbVisitTimes();
     calcNbTotal();
 }
+
+function updateSlotDur(iso, idx, dur) {
+    if (!nbDateTimes.has(iso)) return;
+    const slots = nbDateTimes.get(iso);
+    const s = parseSlotObj(slots[idx]);
+    s.dur = parseInt(dur);
+    slots[idx] = s;
+    if (nbSameTimeAll) _syncSameTime();
+    renderNbVisitTimes();
+    calcNbTotal();
+}
+
+function onDurationChange() {
+    renderNbVisitTimes();
+    calcNbTotal();
+}
+
 
 function toggleSameTime(on) {
     nbSameTimeAll = on;
@@ -622,20 +655,28 @@ function onServiceChange() {
 }
 
 function calcNbTotal() {
-    const service  = document.getElementById('nbService')?.value || 'Drop-In Visit';
-    const duration = parseInt(document.getElementById('nbDuration')?.value || '30');
-    const isCustom = service === 'Custom';
-
-    let numVisits = 0;
-    for (const slots of nbDateTimes.values()) {
-        numVisits += Math.max(1, slots.filter(s => s && s.start).length);
-    }
-    if (numVisits === 0) numVisits = 1;
-
+    const service     = document.getElementById('nbService')?.value || 'Drop-In Visit';
+    const durationVal = document.getElementById('nbDuration')?.value || '30';
+    const isCombo     = durationVal === 'combo';
+    const isCustom    = service === 'Custom';
     const p = service === 'Dog Walking' ? PRICING.walking : PRICING.dropin;
-    const is60 = duration === 60;
+    const is60 = !isCombo && parseInt(durationVal) === 60;
     const sortedDates = [...nbDateTimes.keys()].sort();
     const isHoliday = isHolidayBooking(sortedDates);
+
+    let numVisits = 0, num30 = 0, num60 = 0;
+    for (const slots of nbDateTimes.values()) {
+        const active = slots.filter(s => s && s.start);
+        if (isCombo) {
+            const parsed = active.map(s => parseSlotObj(s));
+            num30 += parsed.filter(s => (s.dur || 30) === 30).length;
+            num60 += parsed.filter(s => (s.dur || 30) === 60).length;
+            numVisits += Math.max(1, active.length);
+        } else {
+            numVisits += Math.max(1, active.length);
+        }
+    }
+    if (numVisits === 0) numVisits = 1;
 
     let pets = [];
     if (nbSelectedClientId) {
@@ -643,14 +684,13 @@ function calcNbTotal() {
         const c = clients.find(x => x.id === nbSelectedClientId);
         if (c && c.pets) pets = [...nbSelectedPets].map(i => c.pets[i]).filter(Boolean);
     }
-    // When editing a booking with no linked client, preserve original pets (including photos)
     if (editingBookingId && pets.length === 0) {
         const orig = calBookings.find(x => x.id === editingBookingId);
         if (orig?.pets?.length) pets = orig.pets;
     }
     if (!pets.length) pets = [{ type: 'dog' }];
 
-    let perVisit = 0;
+    let total = 0;
     pets.forEach((pet, idx) => {
         if (idx === 0) {
             let base;
@@ -659,14 +699,19 @@ function calcNbTotal() {
             } else {
                 base = isHoliday ? p.holiday : ((service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base);
             }
-            perVisit += base + (is60 ? PRICING.dropin.addon60 : 0);
+            if (isCombo) {
+                total += base * num30 + (base + p.addon60) * num60;
+            } else {
+                total += (base + (is60 ? p.addon60 : 0)) * numVisits;
+            }
         } else {
-            perVisit += pet.type === 'cat' ? (p.extraCat || p.extraDog) : p.extraDog;
+            const extraRate = pet.type === 'cat' ? (p.extraCat || p.extraDog) : p.extraDog;
+            total += extraRate * (isCombo ? (num30 + num60) : numVisits);
         }
     });
 
     const el = document.getElementById('nbTotal');
-    if (el) el.value = perVisit * numVisits;
+    if (el) el.value = total;
 }
 
 function closeNewBookingModal() {
@@ -811,6 +856,7 @@ async function saveNewBooking() {
     if (nbDateTimes.size === 0) { errEl.textContent = 'Please select at least one date.'; return; }
     errEl.textContent = '';
 
+    const isCombo = duration === 'combo';
     const sortedDates = [...nbDateTimes.keys()].sort();
 
     // Build datesText and dateTimes object
@@ -818,18 +864,19 @@ async function saveNewBooking() {
     let datesText = '';
     sortedDates.forEach(iso => {
         const serialized = nbDateTimes.get(iso)
-            .map(s => serializeSlot(parseSlotObj(s)))
+            .map(s => serializeSlot(parseSlotObj(s), isCombo))
             .filter(Boolean)
             .sort();
         dateTimes[iso] = serialized;
         const d = new Date(iso + 'T12:00:00');
         const label = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
         const timesLabel = serialized.length ? serialized.map(t => {
-            if (t.includes('~')) {
-                const [s, e] = t.split('~');
+            const clean = t.replace(/\|\d+$/, '');
+            if (clean.includes('~')) {
+                const [s, e] = clean.split('~');
                 return `${fmt12(s)} – ${fmt12(e)}`;
             }
-            return fmt12(t);
+            return fmt12(clean);
         }).join(', ') : 'TBD';
         datesText += `  ${label}: ${timesLabel}\n`;
     });
@@ -854,10 +901,11 @@ async function saveNewBooking() {
     btn.disabled = true; btn.textContent = 'Saving…';
 
     try {
+        const durationSaved = isCombo ? '30 & 60 min' : parseInt(duration);
         if (editingBookingId) {
             await updateDoc(doc(db, 'bookings', editingBookingId), {
                 clientName: name, clientPhone: phone, clientEmail: email,
-                service: effectiveService, duration: parseInt(duration),
+                service: effectiveService, duration: durationSaved,
                 datesText, dates: sortedDates, dateTimes,
                 pets, notes, total, isRover,
                 ...(isCustom ? { customBasePrice } : {}),
@@ -870,7 +918,7 @@ async function saveNewBooking() {
         } else {
             await addDoc(collection(db, 'bookings'), {
                 clientName: name, clientPhone: phone, clientEmail: email,
-                service: effectiveService, duration: parseInt(duration),
+                service: effectiveService, duration: durationSaved,
                 datesText, dates: sortedDates, dateTimes,
                 pets, notes, total, isRover,
                 ...(isCustom ? { customBasePrice } : {}),
@@ -904,7 +952,8 @@ function openEditBookingModal(bookingId) {
 
     // Pre-fill basic fields
     document.getElementById('nbService').value  = b.service  || 'Drop-In Visit';
-    document.getElementById('nbDuration').value = String(b.duration || 30);
+    const dStr = String(b.duration || '30');
+    document.getElementById('nbDuration').value = (dStr.includes('&') || dStr.toLowerCase().includes('combo')) ? 'combo' : dStr;
     document.getElementById('nbTotal').value    = b.total != null ? b.total : '';
     document.getElementById('nbNotes').value    = b.notes || '';
     const roverChk = document.getElementById('nbIsRover');
@@ -920,19 +969,29 @@ function openEditBookingModal(bookingId) {
     // Pre-fill client
     if (b.clientId) {
         selectClient(b.clientId);
-        // Re-check pet checkboxes matching saved pets
+        // selectClient() early-returns when editingBookingId is set, so manually render pets
         const clients = window.AdminClients?.getAllClients() || [];
         const c = clients.find(x => x.id === b.clientId);
-        if (c && c.pets && b.pets) {
-            const savedNames = (b.pets).map(p => p.name);
+        if (c && c.pets) {
+            const savedNames = (b.pets || []).map(p => p.name);
             nbSelectedPets = new Set();
             c.pets.forEach((cp, i) => {
                 if (savedNames.includes(cp.name)) nbSelectedPets.add(i);
             });
-            // Check corresponding checkboxes in DOM
-            document.querySelectorAll('#nbPetCheckboxes input[type=checkbox]').forEach((cb, i) => {
-                cb.checked = nbSelectedPets.has(i);
-            });
+            document.getElementById('nbPetSection').style.display = '';
+            document.getElementById('nbPetCheckboxes').innerHTML = c.pets.map((p, i) => {
+                const emoji = p.type === 'cat' ? '🐱' : '🐶';
+                const avatarHtml = p.photoUrl
+                    ? `<img class="nb-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name||'')}">`
+                    : `<div class="nb-pet-avatar nb-pet-emoji">${emoji}</div>`;
+                return `
+                <label class="nb-pet-option">
+                    <input type="checkbox" value="${i}" ${nbSelectedPets.has(i) ? 'checked' : ''} onchange="AdminCalendar.togglePet(${i})">
+                    ${avatarHtml}
+                    <span>${escHtml(p.name || '—')} <em style="color:var(--brown-mid);font-style:normal">${escHtml(p.type||'')}</em></span>
+                </label>`;
+            }).join('');
+            document.getElementById('nbAddManualPetBtn').style.display = 'none';
         }
     } else {
         document.getElementById('nbName').value  = b.clientName  || '';
@@ -1039,5 +1098,6 @@ window.AdminCalendar = {
     toggleSameTime, setSlotMode,
     updateSlotStartHour, updateSlotStartMin,
     updateSlotEndHour, updateSlotEndMin,
+    updateSlotDur, onDurationChange,
     openEditBookingModal
 };
