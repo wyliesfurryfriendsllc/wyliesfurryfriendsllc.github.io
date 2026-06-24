@@ -382,39 +382,71 @@ function getNumVisitsFromBooking(b) {
     return n || 1;
 }
 
+function _getComboSlotCounts(b) {
+    let num30 = 0, num60 = 0;
+    if (b.dateTimes) {
+        for (const slots of Object.values(b.dateTimes)) {
+            for (const slot of (slots || []).filter(Boolean)) {
+                if (/\|60$/.test(slot)) num60++; else num30++;
+            }
+        }
+    } else {
+        num30 = b.priceBreakdown?.num30 || 0;
+        num60 = b.priceBreakdown?.num60 || 0;
+    }
+    return { num30, num60 };
+}
+
 function renderChargesHtml(b) {
     const pets = b.pets || [];
     const service = b.service || 'Drop-In Visit';
-    const duration = parseInt(b.duration) || 30;
+    const durationStr = String(b.duration || '30');
+    const isCombo = durationStr.includes('&') || durationStr.toLowerCase().includes('combo');
     const p = service === 'Dog Walking' ? PRICING.walking : PRICING.dropin;
-    const is60 = duration === 60;
+    const is60 = !isCombo && parseInt(durationStr) === 60;
     const bookingDates = b.dates || Object.keys(b.dateTimes || {});
     const isHoliday = isHolidayBooking(bookingDates);
     const numVisits = getNumVisitsFromBooking(b);
     const adjs = b.adjustments || [];
+    const { num30, num60 } = isCombo ? _getComboSlotCounts(b) : { num30: 0, num60: 0 };
 
     let petRows = '';
     let calcBase = 0;
     pets.forEach((pet, idx) => {
-        let rate, label;
+        let petTotal, subHtml;
         if (idx === 0) {
             const baseRate = b.customBasePrice != null
                 ? b.customBasePrice
                 : (isHoliday ? p.holiday : ((service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base));
-            rate = baseRate + (is60 ? PRICING.dropin.addon60 : 0);
-            label = service + (b.customBasePrice != null ? ' · Custom Rate' : (isHoliday ? ' · Holiday Rate' : ''));
+            const rateLabel = service + (b.customBasePrice != null ? ' · Custom Rate' : (isHoliday ? ' · Holiday Rate' : ''));
+            if (isCombo) {
+                const rate30 = baseRate;
+                const rate60 = baseRate + p.addon60;
+                petTotal = rate30 * num30 + rate60 * num60;
+                subHtml = num30 > 0
+                    ? `<div class="detail-charge-sub">${escHtml(rateLabel)} (30 min) · $${rate30} × ${num30} visit${num30 !== 1 ? 's' : ''}</div>`
+                    : '';
+                subHtml += num60 > 0
+                    ? `<div class="detail-charge-sub">${escHtml(rateLabel)} (60 min) · $${rate60} × ${num60} visit${num60 !== 1 ? 's' : ''}</div>`
+                    : '';
+            } else {
+                const rate = baseRate + (is60 ? p.addon60 : 0);
+                petTotal = rate * numVisits;
+                subHtml = `<div class="detail-charge-sub">${escHtml(rateLabel)} · $${rate} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}</div>`;
+            }
         } else {
-            rate = pet.type === 'cat' ? (PRICING.dropin.extraCat || PRICING.dropin.extraDog) : PRICING.dropin.extraDog;
-            label = 'Additional ' + (pet.type || 'pet');
+            const rate = pet.type === 'cat' ? (PRICING.dropin.extraCat || PRICING.dropin.extraDog) : PRICING.dropin.extraDog;
+            petTotal = rate * numVisits;
+            subHtml = `<div class="detail-charge-sub">Additional ${escHtml(pet.type || 'pet')} · $${rate} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}</div>`;
         }
-        calcBase += rate * numVisits;
+        calcBase += petTotal;
         petRows += `
             <div class="detail-charge-row">
                 <div>
                     <div class="detail-charge-label">${escHtml(pet.name || '—')}</div>
-                    <div class="detail-charge-sub">${escHtml(label)} · $${rate} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}</div>
+                    ${subHtml}
                 </div>
-                <div class="detail-charge-amount">$${rate * numVisits}</div>
+                <div class="detail-charge-amount">$${petTotal}</div>
             </div>`;
     });
 
@@ -799,24 +831,29 @@ function calcBaseTotal(b) {
     const pets = b.pets || [];
     if (pets.length === 0) return b.total || 0;
     const service = b.service || 'Drop-In Visit';
-    const duration = parseInt(b.duration) || 30;
+    const durationStr = String(b.duration || '30');
+    const isCombo = durationStr.includes('&') || durationStr.toLowerCase().includes('combo');
     const p = service === 'Dog Walking' ? PRICING.walking : PRICING.dropin;
-    const is60 = duration === 60;
+    const is60 = !isCombo && parseInt(durationStr) === 60;
     const bookingDates = b.dates || Object.keys(b.dateTimes || {});
     const isHoliday = isHolidayBooking(bookingDates);
     const numVisits = getNumVisitsFromBooking(b);
+    const { num30, num60 } = isCombo ? _getComboSlotCounts(b) : { num30: 0, num60: 0 };
     let total = 0;
     pets.forEach((pet, idx) => {
-        let rate;
         if (idx === 0) {
             const baseRate = b.customBasePrice != null
                 ? b.customBasePrice
                 : (isHoliday ? p.holiday : ((service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base));
-            rate = baseRate + (is60 ? PRICING.dropin.addon60 : 0);
+            if (isCombo) {
+                total += baseRate * num30 + (baseRate + p.addon60) * num60;
+            } else {
+                total += (baseRate + (is60 ? p.addon60 : 0)) * numVisits;
+            }
         } else {
-            rate = pet.type === 'cat' ? (PRICING.dropin.extraCat || PRICING.dropin.extraDog) : PRICING.dropin.extraDog;
+            const rate = pet.type === 'cat' ? (PRICING.dropin.extraCat || PRICING.dropin.extraDog) : PRICING.dropin.extraDog;
+            total += rate * numVisits;
         }
-        total += rate * numVisits;
     });
     return total;
 }
