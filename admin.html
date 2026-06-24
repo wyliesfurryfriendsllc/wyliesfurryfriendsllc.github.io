@@ -69,7 +69,8 @@
                     <div id="clientFilterBanner" style="display:none;align-items:center;gap:10px;background:#fdf6f8;border:1.5px solid var(--border);border-radius:10px;padding:9px 14px;margin-bottom:12px;font-size:14px;color:var(--brown)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         Showing all bookings for <strong class="cfb-name"></strong>
-                        <button onclick="AdminBookings.clearClientFilter()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--brown-mid);font-size:18px;line-height:1;padding:0">×</button>
+                        <button onclick="AdminBookings.clearClientFilter();showAdminTab('clients')" style="margin-left:auto;background:none;border:1.5px solid var(--border);border-radius:8px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer;color:var(--brown);white-space:nowrap">← Clients</button>
+                        <button onclick="AdminBookings.clearClientFilter()" style="background:none;border:none;cursor:pointer;color:var(--brown-mid);font-size:18px;line-height:1;padding:0">×</button>
                     </div>
                     <div class="filter-chips" id="filterChips">
                         <button class="filter-chip active" data-filter="all"             onclick="AdminBookings.setFilter('all')">All</button>
