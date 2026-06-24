@@ -101,6 +101,7 @@ function renderClients() {
                     </div>
                     <div class="client-card-actions">
                         <button class="admin-btn-primary" onclick="AdminClients.bookClient('${c.id}')">+ Book</button>
+                        <button class="admin-btn-secondary" onclick="AdminClients.viewClientBookings('${c.id}','${escHtml(c.name||'')}')">Bookings</button>
                         <button class="admin-btn-secondary" onclick="AdminClients.openModal('${c.id}')">Edit</button>
                         <button class="admin-btn-delete" onclick="AdminClients.deleteClient('${c.id}','${escHtml(c.name||'')}')">Delete</button>
                     </div>
@@ -459,6 +460,11 @@ async function uploadPetPhoto(input, i) {
 
 function getAllClients() { return allClients; }
 
+function viewClientBookings(clientId, clientName) {
+    window.showAdminTab('bookings');
+    window.AdminBookings?.filterByClient(clientId, clientName);
+}
+
 async function deleteClient(clientId, clientName) {
     if (!confirm(`Delete client "${clientName}"? This cannot be undone.`)) return;
     try {
@@ -477,5 +483,5 @@ window.AdminClients = {
     init, openModal, closeModal, saveModal, onSearch,
     addPet, removePet, updatePet, refreshPetPreview, getAllClients,
     searchAddress, pickAddress, uploadPetPhoto, calcAge, bookClient, setBdayMode,
-    renderModalPets, deleteClient
+    renderModalPets, deleteClient, viewClientBookings
 };

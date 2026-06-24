@@ -11,6 +11,7 @@ let activeBookingId = null;
 let hideRover      = false;
 let completedSortDesc = true;
 let bookingSearch  = '';
+let clientFilter   = null; // { id, name } when viewing a specific client's bookings
 
 const STATUS_LABELS = {
     pending:          'Pending',
@@ -81,6 +82,19 @@ function setBookingSearch(val) {
     renderAdminBookings();
 }
 
+function filterByClient(clientId, clientName) {
+    clientFilter = { id: clientId, name: clientName };
+    bookingSearch = '';
+    const searchEl = document.querySelector('#adminTabBookings .client-search-input');
+    if (searchEl) searchEl.value = '';
+    renderAdminBookings();
+}
+
+function clearClientFilter() {
+    clientFilter = null;
+    renderAdminBookings();
+}
+
 function toggleHideRover() {
     hideRover = !hideRover;
     const btn = document.getElementById('hideRoverBtn');
@@ -99,10 +113,32 @@ function toggleCompletedSort() {
 function renderAdminBookings() {
     const container = document.getElementById('adminBookingsList');
     if (!container) return;
+
+    // Client filter banner
+    const bannerEl = document.getElementById('clientFilterBanner');
+    if (bannerEl) {
+        if (clientFilter) {
+            bannerEl.style.display = '';
+            const nameEl = bannerEl.querySelector('.cfb-name');
+            if (nameEl) nameEl.textContent = clientFilter.name;
+        } else {
+            bannerEl.style.display = 'none';
+        }
+    }
+
     const ACTIVE_STATUSES = ['pending','deposit_received','paid','in_service','confirmed'];
-    let filtered = activeFilter === 'all'
-        ? allBookings.filter(b => ACTIVE_STATUSES.includes(b.status))
-        : allBookings.filter(b => b.status === activeFilter);
+    let filtered;
+    if (clientFilter) {
+        // Show ALL statuses for this client
+        filtered = allBookings.filter(b =>
+            (b.clientId === clientFilter.id) ||
+            (b.clientName || '').toLowerCase() === clientFilter.name.toLowerCase()
+        );
+    } else {
+        filtered = activeFilter === 'all'
+            ? allBookings.filter(b => ACTIVE_STATUSES.includes(b.status))
+            : allBookings.filter(b => b.status === activeFilter);
+    }
     if (hideRover) filtered = filtered.filter(b => !b.isRover);
     if (bookingSearch) {
         filtered = filtered.filter(b => {
@@ -1376,7 +1412,7 @@ window.AdminBookings = {
     deleteBooking, permanentlyDeleteBooking, sendAdminMessage, exportImage,
     openEditDatesModal, openEditPaymentModal,
     addToClients, linkToAccount, saveAdminTip,
-    restoreBooking, setBookingSearch
+    restoreBooking, setBookingSearch, filterByClient, clearClientFilter
 };
 
 window.openEditDatesModal = openEditDatesModal;
