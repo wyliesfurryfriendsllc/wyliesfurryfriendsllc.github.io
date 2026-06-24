@@ -1382,10 +1382,32 @@ async function saveAdminTip(bookingId) {
 async function addToClients(bookingId) {
     const b = allBookings.find(x => x.id === bookingId);
     if (!b) return;
+
+    // Start with pets from the booking
+    let pets = (b.pets || []).map(p => ({
+        name: p.name || '', type: p.type || 'dog',
+        photoUrl: p.photoUrl || '', breed: p.breed || '',
+        gender: p.gender || '', weight: p.weight || '',
+        birthDate: p.birthDate || '', spayedNeutered: p.spayedNeutered || '',
+        careNotes: p.careNotes || ''
+    }));
+
+    // If booking has a linked uid, fetch the user's profile for the most up-to-date pet info
+    if (b.clientId) {
+        try {
+            const userSnap = await getDoc(doc(db, 'users', b.clientId));
+            if (userSnap.exists()) {
+                const userPets = userSnap.data().pets || [];
+                if (userPets.length > 0) pets = userPets;
+            }
+        } catch(e) { /* ignore — fall back to booking pets */ }
+    }
+
     const data = {
         name: b.clientName || '',
         email: b.clientEmail || '',
         phone: b.clientPhone || '',
+        pets,
         source: 'booking',
         updatedAt: serverTimestamp()
     };

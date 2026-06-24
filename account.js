@@ -132,7 +132,7 @@ async function doRegister() {
         await setDoc(doc(db, 'users', cred.user.uid), {
             name, email, phone: '', pets: [], createdAt: serverTimestamp()
         });
-        await syncToClients(cred.user, { name, email, phone: '', pets: [] });
+        syncToClients(cred.user, { name, email, phone: '', pets: [] }).catch(() => {});
     } catch (err) {
         document.getElementById('authError').textContent = getFriendlyError(err.code);
         btn.disabled    = false;
@@ -155,7 +155,7 @@ async function doGoogleLogin() {
                 phone: '', pets: [],
                 createdAt: serverTimestamp()
             });
-            await syncToClients(cred.user, { name: cred.user.displayName || '', email: cred.user.email, phone: '', pets: [] });
+            syncToClients(cred.user, { name: cred.user.displayName || '', email: cred.user.email, phone: '', pets: [] }).catch(() => {});
         }
     } catch (err) {
         console.error('Google login error:', err.code, err.message);
