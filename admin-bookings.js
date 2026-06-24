@@ -578,6 +578,9 @@ function renderDetail(b, panel) {
                 <button class="detail-edit-btn" onclick="AdminCalendar.openEditBookingModal('${b.id}')" title="Edit booking">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
+                <button class="detail-edit-btn" onclick="AdminBookings.openCloneModal('${b.id}')" title="Clone booking to new dates">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                </button>
                 <button class="detail-export-btn" onclick="AdminBookings.exportImage('${b.id}')" title="Save as image">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 </button>
@@ -1403,6 +1406,169 @@ async function linkToAccount(bookingId) {
     openDetail(bookingId);
 }
 
+// ─── CLONE BOOKING ────────────────────────────────────────
+function openCloneModal(bookingId) {
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b) return;
+
+    const existing = document.getElementById('cloneBookingOverlay');
+    if (existing) existing.remove();
+
+    // Collect sorted original dates
+    const origDates = b.dateTimes
+        ? Object.keys(b.dateTimes).sort()
+        : (b.dates || []).slice().sort();
+    if (!origDates.length) { alert('No dates found on this booking.'); return; }
+
+    const firstIso = origDates[0];
+    // Default new start date: next week same weekday
+    const firstDate = new Date(firstIso + 'T12:00:00');
+    const nextStart = new Date(firstDate);
+    nextStart.setDate(nextStart.getDate() + 7);
+    const defaultStart = nextStart.toISOString().slice(0, 10);
+
+    const overlay = document.createElement('div');
+    overlay.id = 'cloneBookingOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center';
+    overlay.innerHTML = `
+        <div style="background:#fffaf7;border-radius:16px;padding:32px;width:90%;max-width:460px;max-height:80vh;overflow-y:auto">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+                <h3 style="margin:0;font-size:18px;color:#3d2b1f">Clone Booking</h3>
+                <button onclick="document.getElementById('cloneBookingOverlay').remove()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#888;line-height:1">×</button>
+            </div>
+            <p style="font-size:13px;color:#7a4a38;margin:0 0 16px">Same service, same times — pick a new start date. All ${origDates.length} day${origDates.length>1?'s':''} will shift by the same number of days.</p>
+
+            <div style="margin-bottom:20px">
+                <label style="display:block;font-size:13px;font-weight:600;color:#3d2b1f;margin-bottom:6px">New start date <span style="font-weight:400;color:#7a4a38">(replaces ${fmtDateLabel(firstIso)})</span></label>
+                <input type="date" id="cloneStartDate" value="${defaultStart}"
+                    oninput="AdminBookings.previewCloneDates('${bookingId}')"
+                    style="width:100%;padding:9px 12px;border:1.5px solid #edd5c8;border-radius:10px;font-size:14px;box-sizing:border-box">
+            </div>
+
+            <div id="cloneDatePreview" style="margin-bottom:20px"></div>
+
+            <div id="cloneError" style="color:#e53e3e;font-size:13px;margin-bottom:8px;display:none"></div>
+            <div style="display:flex;gap:12px;justify-content:flex-end">
+                <button onclick="document.getElementById('cloneBookingOverlay').remove()" style="padding:10px 20px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer;font-size:14px">Cancel</button>
+                <button id="cloneSaveBtn" onclick="AdminBookings.saveCloneBooking('${bookingId}')" style="padding:10px 20px;background:#c4788a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">Create Copy</button>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+    previewCloneDates(bookingId);
+}
+
+function fmtDateLabel(iso) {
+    return new Date(iso + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+}
+
+function _shiftedDateTimes(b, offsetDays) {
+    const result = {};
+    const src = b.dateTimes || {};
+    const origDates = Object.keys(src).sort();
+    origDates.forEach(iso => {
+        const d = new Date(iso + 'T12:00:00');
+        d.setDate(d.getDate() + offsetDays);
+        const newIso = d.toISOString().slice(0, 10);
+        result[newIso] = src[iso] ? [...src[iso]] : [];
+    });
+    return result;
+}
+
+function _cloneOffset(bookingId) {
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b) return null;
+    const origDates = b.dateTimes ? Object.keys(b.dateTimes).sort() : (b.dates||[]).slice().sort();
+    if (!origDates.length) return null;
+    const newStartVal = document.getElementById('cloneStartDate')?.value;
+    if (!newStartVal) return null;
+    const origFirst = new Date(origDates[0] + 'T12:00:00');
+    const newFirst  = new Date(newStartVal + 'T12:00:00');
+    return Math.round((newFirst - origFirst) / 86400000);
+}
+
+function previewCloneDates(bookingId) {
+    const b = allBookings.find(x => x.id === bookingId);
+    const preview = document.getElementById('cloneDatePreview');
+    if (!b || !preview) return;
+    const offset = _cloneOffset(bookingId);
+    if (offset === null) { preview.innerHTML = ''; return; }
+
+    const newDT = _shiftedDateTimes(b, offset);
+    const sorted = Object.keys(newDT).sort();
+    const rows = sorted.map(iso => {
+        const slots = (newDT[iso] || []).filter(Boolean);
+        const timesStr = slots.length ? slots.map(t => fmtSlot(t)).join(' · ') : 'TBD';
+        return `<div style="padding:7px 0;border-bottom:1px solid #f0e8e0;font-size:13px">
+            <span style="font-weight:600;color:#3d2b1f">${fmtDateLabel(iso)}</span>
+            <span style="color:#7a4a38;margin-left:8px">${escHtml(timesStr)}</span>
+        </div>`;
+    }).join('');
+    preview.innerHTML = `<div style="border:1.5px solid #edd5c8;border-radius:10px;padding:12px 14px;background:#fffdf8">
+        <div style="font-size:12px;font-weight:700;color:#c4788a;letter-spacing:.05em;margin-bottom:8px">NEW DATES PREVIEW</div>
+        ${rows}
+    </div>`;
+}
+
+async function saveCloneBooking(bookingId) {
+    const b = allBookings.find(x => x.id === bookingId);
+    const errEl = document.getElementById('cloneError');
+    const btn   = document.getElementById('cloneSaveBtn');
+    if (!b) return;
+
+    const offset = _cloneOffset(bookingId);
+    if (offset === null || offset === 0) {
+        errEl.textContent = 'Please pick a different start date.';
+        errEl.style.display = '';
+        return;
+    }
+    errEl.style.display = 'none';
+    btn.disabled = true; btn.textContent = 'Creating…';
+
+    try {
+        const newDT = _shiftedDateTimes(b, offset);
+        const sortedDates = Object.keys(newDT).sort();
+        let datesText = '';
+        sortedDates.forEach(iso => {
+            const d = new Date(iso + 'T12:00:00');
+            const label = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+            const slots = (newDT[iso] || []).filter(Boolean);
+            const timesLabel = slots.length ? slots.map(t => {
+                const clean = t.replace(/\|\d+$/, '');
+                if (clean.includes('~')) { const [s, e] = clean.split('~'); return `${fmt12(s)} – ${fmt12(e)}`; }
+                return fmt12(clean);
+            }).join(', ') : 'TBD';
+            datesText += `  ${label}: ${timesLabel}\n`;
+        });
+
+        await addDoc(collection(db, 'bookings'), {
+            clientName:  b.clientName  || '',
+            clientPhone: b.clientPhone || '',
+            clientEmail: b.clientEmail || '',
+            clientId:    b.clientId    || null,
+            service:     b.service     || 'Drop-In Visit',
+            duration:    b.duration    || 30,
+            dateTimes:   newDT,
+            dates:       sortedDates,
+            datesText,
+            pets:        b.pets        || [],
+            notes:       b.notes       || '',
+            total:       b.total       || 0,
+            isRover:     false,
+            status:      'pending',
+            adminAccepted: true,
+            source:      'manual',
+            ...(b.customBasePrice != null ? { customBasePrice: b.customBasePrice } : {}),
+            ...(b.priceBreakdown  != null ? { priceBreakdown:  b.priceBreakdown  } : {}),
+            createdAt: serverTimestamp()
+        });
+        document.getElementById('cloneBookingOverlay').remove();
+    } catch(e) {
+        errEl.textContent = 'Error: ' + e.message;
+        errEl.style.display = '';
+        btn.disabled = false; btn.textContent = 'Create Copy';
+    }
+}
+
 // ─── EXPOSE ───────────────────────────────────────────────
 window.AdminBookings = {
     init, setFilter, toggleHideRover, toggleCompletedSort, openDetail, closeDetail,
@@ -1412,7 +1578,8 @@ window.AdminBookings = {
     deleteBooking, permanentlyDeleteBooking, sendAdminMessage, exportImage,
     openEditDatesModal, openEditPaymentModal,
     addToClients, linkToAccount, saveAdminTip,
-    restoreBooking, setBookingSearch, filterByClient, clearClientFilter
+    restoreBooking, setBookingSearch, filterByClient, clearClientFilter,
+    openCloneModal, previewCloneDates, saveCloneBooking
 };
 
 window.openEditDatesModal = openEditDatesModal;
