@@ -307,8 +307,7 @@ function renderTodaySection(outerContainer) {
                     <div class="abc-avatar-stack">${avatarHtml}</div>
                     <div class="tvc-info">
                         <span class="tvc-pet">${escHtml(petNames)}</span>
-                        <span class="tvc-client">${escHtml(b.clientName||'—')}</span>
-                        <span class="tvc-service">${escHtml(b.service||'')} · ${String(b.duration||30).includes('&')?b.duration:(b.duration||30)+' min'}</span>
+                        <span class="tvc-service">${String(b.duration||30).includes('&')?b.duration:(b.duration||30)+' min'}</span>
                         <span class="tvc-slot-time">${escHtml(slotTimeLabel)}</span>
                     </div>
                     <span class="status-badge ${STATUS_COLORS[b.status]||'status-pending'}">${STATUS_LABELS[b.status]||'Pending'}</span>
