@@ -947,7 +947,8 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
 
 /* Pet type cards */
 .pet-type-cards {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
 }
 .pet-type-card {
