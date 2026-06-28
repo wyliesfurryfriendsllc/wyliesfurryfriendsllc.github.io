@@ -510,7 +510,6 @@
 .slot-picker-hint {
     font-size: 11px;
     color: var(--brown-mid);
-    margin-top: 6px;
 }
 
 /* Quick select label */

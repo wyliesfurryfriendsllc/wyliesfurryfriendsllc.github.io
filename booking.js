@@ -276,8 +276,8 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots, isFirstDate = true) {
                         ${buildPickerHtml(`from_${tid}_${si}`, `slotFromHr_${tid}_${si}`, `slotFromMin_${tid}_${si}`, sl.fromHr, sl.fromMin)}
                         <span class="time-range-label">To</span>
                         ${buildPickerHtml(`to_${tid}_${si}`, `slotToHr_${tid}_${si}`, `slotToMin_${tid}_${si}`, sl.toHr, sl.toMin)}
+                        <span class="slot-picker-hint">Times are editable.</span>
                     </div>
-                    <div class="slot-picker-hint">Times are editable.</div>
                 </div>
             </div>
         </div>`;
