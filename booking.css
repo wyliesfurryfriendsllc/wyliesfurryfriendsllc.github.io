@@ -376,8 +376,10 @@
 .time-range-inline {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
+    margin-bottom: 16px;
 }
 
 
@@ -399,8 +401,13 @@
 .slot-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 16px;
+}
+.slot-header .slot-remove-btn {
+    position: absolute;
+    right: 0;
 }
 
 /* Combo per-slot duration toggle */
@@ -512,7 +519,7 @@
     color: var(--brown-mid);
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    margin: 10px 0 6px;
+    margin: 16px 0 8px;
 }
 
 /* Time period pills — matches .pill-option span style */
@@ -520,7 +527,7 @@
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
-    margin-bottom: 10px;
+    margin-bottom: 0;
 }
 .time-period-pill {
     display: inline-block;
