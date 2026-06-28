@@ -492,7 +492,9 @@
 .slot-type-seg-label {
     position: relative;
     z-index: 1;
-    padding: 6px 18px;
+    flex: 1;
+    text-align: center;
+    padding: 7px 22px;
     font-size: 13px;
     font-weight: 600;
     color: var(--brown-mid);
