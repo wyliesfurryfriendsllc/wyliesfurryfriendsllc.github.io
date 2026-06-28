@@ -481,7 +481,7 @@
     position: absolute;
     top: 3px; bottom: 3px;
     width: calc(50% - 3px);
-    background: white;
+    background: var(--pink);
     border-radius: 50px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.15);
     transition: transform 0.22s cubic-bezier(.4,0,.2,1);
@@ -501,7 +501,7 @@
     cursor: pointer;
     border-radius: 50px;
 }
-.slot-type-seg-label.active { color: var(--brown); }
+.slot-type-seg-label.active { color: white; }
 
 /* Quick select label */
 .time-period-quick-label {
