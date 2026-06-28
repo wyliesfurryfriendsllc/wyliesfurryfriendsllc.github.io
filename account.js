@@ -120,19 +120,23 @@ async function doLogin() {
 
 async function doRegister() {
     const name     = document.getElementById('registerName').value.trim();
+    const phone    = document.getElementById('registerPhone')?.value.trim() || '';
+    const address  = document.getElementById('registerAddress')?.value.trim() || '';
     const email    = document.getElementById('registerEmail').value.trim();
     const password = document.getElementById('registerPassword').value;
     const btn      = document.getElementById('registerBtn');
     if (!name || !email || !password) return;
+    if (!phone)   { document.getElementById('authError').textContent = 'Phone number is required.'; return; }
+    if (!address) { document.getElementById('authError').textContent = 'Home address is required.'; return; }
     btn.disabled    = true;
     btn.textContent = 'Creating account...';
     try {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: name });
         await setDoc(doc(db, 'users', cred.user.uid), {
-            name, email, phone: '', pets: [], createdAt: serverTimestamp()
+            name, email, phone, address, pets: [], createdAt: serverTimestamp()
         });
-        syncToClients(cred.user, { name, email, phone: '', pets: [] }).catch(() => {});
+        syncToClients(cred.user, { name, email, phone, address, pets: [] }).catch(() => {});
     } catch (err) {
         document.getElementById('authError').textContent = getFriendlyError(err.code);
         btn.disabled    = false;

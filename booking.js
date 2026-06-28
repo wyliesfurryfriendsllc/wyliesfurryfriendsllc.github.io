@@ -1047,10 +1047,16 @@ function reviewOrder(e) {
         petsHtml += `<div class="confirm-info-row"><span>${name}</span><span>${capitalize(type)}${age ? ', ' + age : ''}${breed ? ' · ' + breed : ''}</span></div>`;
     });
 
-    const clientName  = document.getElementById('clientName').value;
-    const clientPhone = document.getElementById('clientPhone').value;
-    const clientEmail = document.getElementById('clientEmail').value;
-    const clientNotes = document.getElementById('clientNotes').value;
+    const clientName    = document.getElementById('clientName').value.trim();
+    const clientPhone   = document.getElementById('clientPhone').value.trim();
+    const clientEmail   = document.getElementById('clientEmail').value.trim();
+    const clientAddress = document.getElementById('clientAddress').value.trim();
+    const clientNotes   = document.getElementById('clientNotes').value.trim();
+
+    if (!clientName)    { alert('Please enter your name.');          return; }
+    if (!clientPhone)   { alert('Please enter your phone number.');  return; }
+    if (!clientEmail)   { alert('Please enter your email address.'); return; }
+    if (!clientAddress) { alert('Please enter your home address.');  return; }
 
     const durationLabel = duration === 'combo' ? '30 & 60 min' : `${duration} min`;
     document.getElementById('confirmDetails').innerHTML = `
@@ -1071,6 +1077,7 @@ function reviewOrder(e) {
             <div class="confirm-info-row"><span>Name</span><span>${clientName}</span></div>
             <div class="confirm-info-row"><span>Phone</span><span>${clientPhone}</span></div>
             <div class="confirm-info-row"><span>Email</span><span>${clientEmail}</span></div>
+            <div class="confirm-info-row"><span>Address</span><span>${clientAddress}</span></div>
             ${clientNotes ? `<div class="confirm-info-row"><span>Notes</span><span>${clientNotes}</span></div>` : ''}
         </div>
     `;
@@ -1134,7 +1141,7 @@ function reviewOrder(e) {
         service: names[service],
         duration: duration === 'combo' ? '30 & 60 min' : duration,
         isHoliday, total,
-        clientName, clientPhone, clientEmail, clientNotes,
+        clientName, clientPhone, clientEmail, clientAddress, clientNotes,
         dateTimes: dateMode === 'pick' ? dateTimesObj : null,
         priceBreakdown: {
             numVisits:    duration === 'combo' ? (num30 + num60) : numDates,
@@ -1167,8 +1174,7 @@ function sendRequest() {
     btn.textContent = 'Sending...';
 
     const datesText = collectDatesText();
-    const { service, duration, total, clientName, clientPhone, clientEmail, clientNotes } = _bookingData;
-    const clientAddress = window._acctContactData?.address || '';
+    const { service, duration, total, clientName, clientPhone, clientEmail, clientAddress, clientNotes } = _bookingData;
 
     let petsText = '';
     let pidx = 0;
@@ -1238,7 +1244,7 @@ function sendRequest() {
                 });
             });
             wff.addDoc(wff.collection(wff.db, 'bookings'), {
-                clientName, clientEmail, clientPhone,
+                clientName, clientEmail, clientPhone, clientAddress,
                 clientId: wff.auth?.currentUser?.uid || null,
                 service, duration,
                 datesText: collectDatesText(),
@@ -1513,11 +1519,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderSavedPetCards(data.pets || []);
                 if (data.name || data.phone || data.email) {
                     window._acctContactData = { name: data.name||'', phone: data.phone||'', email: data.email||'', address: data.address||'' };
-                    if (data.name)  document.getElementById('clientName').value  = data.name;
-                    if (data.phone) document.getElementById('clientPhone').value = data.phone;
-                    if (data.email) document.getElementById('clientEmail').value = data.email;
-                    ['clientName','clientPhone','clientEmail'].forEach(id => {
-                        document.getElementById(id).readOnly = true;
+                    if (data.name)    document.getElementById('clientName').value    = data.name;
+                    if (data.phone)   document.getElementById('clientPhone').value   = data.phone;
+                    if (data.email)   document.getElementById('clientEmail').value   = data.email;
+                    if (data.address) document.getElementById('clientAddress').value = data.address;
+                    ['clientName','clientPhone','clientEmail','clientAddress'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.readOnly = true;
                     });
                     document.getElementById('contactFromAccount').style.display = '';
                 }
@@ -1529,8 +1537,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function useManualContactInfo() {
-    ['clientName','clientPhone','clientEmail'].forEach(id => {
+    ['clientName','clientPhone','clientEmail','clientAddress'].forEach(id => {
         const el = document.getElementById(id);
+        if (!el) return;
         el.readOnly = false;
         el.value = '';
     });
@@ -1542,11 +1551,13 @@ function useManualContactInfo() {
 
 function useAccountContactInfo() {
     const d = window._acctContactData || {};
-    document.getElementById('clientName').value  = d.name  || '';
-    document.getElementById('clientPhone').value = d.phone || '';
-    document.getElementById('clientEmail').value = d.email || '';
-    ['clientName','clientPhone','clientEmail'].forEach(id => {
-        document.getElementById(id).readOnly = true;
+    document.getElementById('clientName').value    = d.name    || '';
+    document.getElementById('clientPhone').value   = d.phone   || '';
+    document.getElementById('clientEmail').value   = d.email   || '';
+    document.getElementById('clientAddress').value = d.address || '';
+    ['clientName','clientPhone','clientEmail','clientAddress'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.readOnly = true;
     });
     const knob = document.getElementById('contactSegKnob');
     if (knob) knob.classList.remove('right');
