@@ -235,7 +235,7 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots, isFirstDate = true) {
     const comboDur = sl.comboDur || '30';
     return `
         <div class="date-slot" data-si="${si}">
-            ${si === 0 && isFirstDate ? `<div class="slot-type-tip">💡 <strong>Recommended</strong> — Flexible time ranges help with scheduling.</div>` : ''}
+            ${si === 0 && isFirstDate ? `<div class="slot-type-tip"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg><strong>Recommended</strong> — Flexible time ranges help with scheduling.</div>` : ''}
             ${isCombo ? `<div class="combo-dur-row">
                 <span class="combo-dur-label">Duration</span>
                 <div class="combo-dur-toggle">
