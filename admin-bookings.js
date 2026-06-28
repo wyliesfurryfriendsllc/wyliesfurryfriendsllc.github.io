@@ -116,6 +116,13 @@ function getTodayISO() {
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
+function getSlotStartTime(slotStr) {
+    if (!slotStr || slotStr === 'anytime') return '';
+    const clean = slotStr.replace(/\|\d+$/, '');
+    const start = clean.split('~')[0];
+    return start && start.match(/^\d{2}:\d{2}$/) ? start : '';
+}
+
 function loadTodayTimes() {
     try { return JSON.parse(localStorage.getItem('wylie_visit_times') || '{}'); } catch { return {}; }
 }
@@ -178,21 +185,20 @@ function renderTodaySection(outerContainer) {
         const slots = (b.dateTimes?.[today] || []).filter(Boolean);
         if (slots.length === 0) {
             const key = `${today}|${b.id}|0`;
-            items.push({ b, slotIdx: 0, slotStr: '', key, adminTime: times[key] || '' });
+            items.push({ b, slotIdx: 0, slotStr: '', key, adminTime: times[key] || '', slotStart: '' });
         } else {
             slots.forEach((slotStr, slotIdx) => {
                 const key = `${today}|${b.id}|${slotIdx}`;
-                items.push({ b, slotIdx, slotStr, key, adminTime: times[key] || '' });
+                items.push({ b, slotIdx, slotStr, key, adminTime: times[key] || '', slotStart: getSlotStartTime(slotStr) });
             });
         }
     });
 
-    // Sort by admin-assigned time (unset at bottom)
+    // Sort by effective time (admin override → slot start → unset last)
     items.sort((a, b) => {
-        if (!a.adminTime && !b.adminTime) return 0;
-        if (!a.adminTime) return 1;
-        if (!b.adminTime) return -1;
-        return a.adminTime.localeCompare(b.adminTime);
+        const ta = a.adminTime || a.slotStart || '99:99';
+        const tb = b.adminTime || b.slotStart || '99:99';
+        return ta.localeCompare(tb);
     });
 
     const sec = document.createElement('div');
@@ -213,7 +219,7 @@ function renderTodaySection(outerContainer) {
         return;
     }
 
-    items.forEach(({ b, slotStr, key, adminTime }) => {
+    items.forEach(({ b, slotStr, key, adminTime, slotStart }) => {
         const allPets = b.pets || [];
         const petNames = allPets.map(p => p.name).filter(Boolean).join(', ') || '—';
         const avatarHtml = allPets.length
@@ -223,6 +229,8 @@ function renderTodaySection(outerContainer) {
               ).join('')
             : `<div class="abc-pet-avatar abc-pet-emoji">🐶</div>`;
 
+        const effectiveTime = adminTime || slotStart;
+        const isOverridden = !!adminTime;
         const slotTimeLabel = slotStr ? fmtSlot(slotStr) : '—';
         const pencil = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 
@@ -230,7 +238,7 @@ function renderTodaySection(outerContainer) {
         row.className = 'tvc-row';
         row.innerHTML = `
             <div class="tvc-admin-time" onclick="AdminBookings.editVisitTime('${escHtml(key)}','${escHtml(adminTime)}')">
-                <span class="tvc-admin-time-label${adminTime ? '' : ' unset'}">${adminTime ? escHtml(fmt12h(adminTime)) : '—'}</span>
+                <span class="tvc-admin-time-label${isOverridden ? ' overridden' : ''}">${effectiveTime ? escHtml(fmt12h(effectiveTime)) : '—'}</span>
                 ${pencil}
             </div>
             <div class="today-visit-card${b.id === activeBookingId ? ' active' : ''}" data-booking-id="${b.id}">

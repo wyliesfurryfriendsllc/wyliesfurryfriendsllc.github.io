@@ -1615,15 +1615,14 @@ input, select, textarea {
 }
 .tvc-admin-time-label {
     font-size: 13px;
-    font-weight: 700;
-    color: var(--pink);
+    font-weight: 500;
+    color: var(--brown-mid);
     text-align: right;
     line-height: 1.2;
 }
-.tvc-admin-time-label.unset {
-    font-size: 12px;
-    color: var(--brown-mid);
-    font-weight: 400;
+.tvc-admin-time-label.overridden {
+    color: var(--pink);
+    font-weight: 700;
 }
 .tvc-admin-time svg { opacity: 0.45; transition: opacity 0.15s; }
 .tvc-admin-time:hover svg { opacity: 1; }
