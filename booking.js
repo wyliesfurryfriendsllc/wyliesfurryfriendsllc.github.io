@@ -270,7 +270,7 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots, isFirstDate = true) {
                         `<button type="button" class="time-period-pill${(sl.period||'')=== p?' active':''}" onclick="selectPeriod('${tid}',${si},'${p}')">${p}</button>`
                     ).join('')}
                 </div>
-                <div id="slotPickerWrap_${tid}_${si}" style="${sl.period==='Anytime'?'display:none':''}">
+                <div id="slotPickerWrap_${tid}_${si}" class="slot-picker-wrap" style="${sl.period==='Anytime'?'display:none':''}">
                     <div class="time-range-inline">
                         <span class="time-range-label">From</span>
                         ${buildPickerHtml(`from_${tid}_${si}`, `slotFromHr_${tid}_${si}`, `slotFromMin_${tid}_${si}`, sl.fromHr, sl.fromMin)}

@@ -473,7 +473,7 @@
     display: inline-flex;
     position: relative;
     background: var(--cream);
-    border: 1.5px solid var(--border);
+    border: 1.5px solid #C5A090;
     border-radius: 50px;
     padding: 3px;
     gap: 6px;
@@ -484,7 +484,7 @@
     top: 3px; bottom: 3px;
     left: 3px;
     width: 90px;
-    background: var(--pink);
+    background: #D4929F;
     border-radius: 50px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.15);
     transition: left 0.22s cubic-bezier(.4,0,.2,1);
@@ -506,6 +506,8 @@
     border-radius: 50px;
 }
 .slot-type-seg-label.active { color: white; }
+
+.slot-picker-wrap { margin-top: 16px; }
 
 /* Quick select label */
 .time-period-quick-label {
