@@ -348,15 +348,11 @@
             <i data-lucide="user-round-pen" class="pet-type-icon" style="margin-right:6px"></i>
             Pet Details
         </div>
-        <div class="form-group">
-            <label>What type of pet? <span class="req">*</span></label>
-            <div class="pet-type-cards" id="bkPetTypeGroup">
-                <button type="button" class="pet-type-card active" data-value="dog" onclick="bkTogglePill(this,'single')"><i data-lucide="dog" class="pet-type-icon"></i> Dog</button>
-                <button type="button" class="pet-type-card" data-value="cat" onclick="bkTogglePill(this,'single')"><i data-lucide="cat" class="pet-type-icon"></i> Cat</button>
-                <button type="button" class="pet-type-card" data-value="other" onclick="bkTogglePill(this,'single')"><i data-lucide="rabbit" class="pet-type-icon"></i> Other</button>
-            </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
+            <label style="grid-column:1/-1;font-size:13px;font-weight:600;color:var(--brown)">What type of pet? <span class="req">*</span></label>
+            <button type="button" class="pet-type-card active" data-value="dog" data-group="bkPetTypeGroup" onclick="bkTogglePill(this,'single')"><i data-lucide="dog" class="pet-type-icon"></i> Dog</button>
+            <button type="button" class="pet-type-card" data-value="cat" data-group="bkPetTypeGroup" onclick="bkTogglePill(this,'single')"><i data-lucide="cat" class="pet-type-icon"></i> Cat</button>
+            <button type="button" class="pet-type-card" data-value="other" data-group="bkPetTypeGroup" onclick="bkTogglePill(this,'single')"><i data-lucide="rabbit" class="pet-type-icon"></i> Other</button>
             <div class="form-group" style="grid-column:span 2;margin-bottom:0">
                 <label>Name <span class="req">*</span></label>
                 <input type="text" id="bkPetName" placeholder="">

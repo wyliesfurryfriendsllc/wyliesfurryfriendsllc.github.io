@@ -1388,7 +1388,7 @@ function openBookingPetModal() {
     const mo = document.getElementById('bkPetAgeMonth'); if (mo) mo.value = '';
     document.getElementById('bkPetPhotoPreview').style.display = 'none';
     document.getElementById('bkPetPhotoPlaceholder').style.display = '';
-    document.querySelectorAll('#bkPetTypeGroup .pet-type-card').forEach((b,i) => b.classList.toggle('active', i===0));
+    document.querySelectorAll('[data-group="bkPetTypeGroup"]').forEach((b,i) => b.classList.toggle('active', i===0));
     document.querySelectorAll('#bkPetSexGroup .pet-pill, #bkPetSpayedGroup .pet-pill').forEach(b => b.classList.remove('active'));
     const exactR = document.querySelector('input[name="bkPetAgeMode"][value="exact"]');
     if (exactR) { exactR.checked = true; bkSwitchAgeMode('exact'); }
@@ -1405,13 +1405,18 @@ function closeBookingPetModal() {
 
 function bkTogglePill(btn, mode) {
     if (mode === 'single') {
-        btn.closest('.pet-pills, .pet-type-cards').querySelectorAll('.pet-pill, .pet-type-card').forEach(p => p.classList.remove('active'));
+        const grp = btn.dataset.group;
+        if (grp) {
+            document.querySelectorAll(`[data-group="${grp}"]`).forEach(p => p.classList.remove('active'));
+        } else {
+            btn.closest('.pet-pills, .pet-type-cards').querySelectorAll('.pet-pill, .pet-type-card').forEach(p => p.classList.remove('active'));
+        }
     }
     btn.classList.toggle('active');
 }
 
 function bkGetPillValue(groupId) {
-    const el = document.querySelector(`#${groupId} .pet-pill.active, #${groupId} .pet-type-card.active`);
+    const el = document.querySelector(`[data-group="${groupId}"].active, #${groupId} .pet-pill.active, #${groupId} .pet-type-card.active`);
     return el ? el.dataset.value : '';
 }
 
