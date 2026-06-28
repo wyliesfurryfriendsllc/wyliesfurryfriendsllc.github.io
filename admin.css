@@ -1578,12 +1578,7 @@ input, select, textarea {
     margin-bottom: 24px;
 }
 .today-visits-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
     margin-bottom: 14px;
-    flex-wrap: wrap;
 }
 .today-visits-title {
     font-size: 15px;
@@ -1595,42 +1590,48 @@ input, select, textarea {
     color: var(--brown-mid);
     margin-top: 2px;
 }
-.today-sort-chips {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.today-sort-label {
-    font-size: 12px;
-    color: var(--brown-mid);
-    font-weight: 500;
-}
-.today-sort-chip {
-    padding: 5px 12px;
-    border: 1.5px solid var(--border);
-    border-radius: 50px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--brown-mid);
-    background: #fff;
-    cursor: pointer;
-    transition: all 0.15s;
-}
-.today-sort-chip.active {
-    border-color: var(--pink);
-    background: var(--pink-light);
-    color: var(--brown);
-    font-weight: 600;
-}
 .today-visits-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
-.today-visit-card {
+
+/* Timeline row: [admin time on left] [card on right] */
+.tvc-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+.tvc-admin-time {
+    width: 68px;
+    flex-shrink: 0;
+    padding-top: 13px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    align-items: flex-end;
+    gap: 3px;
+    cursor: pointer;
+    user-select: none;
+}
+.tvc-admin-time-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--pink);
+    text-align: right;
+    line-height: 1.2;
+}
+.tvc-admin-time-label.unset {
+    font-size: 12px;
+    color: var(--brown-mid);
+    font-weight: 400;
+}
+.tvc-admin-time svg { opacity: 0.45; transition: opacity 0.15s; }
+.tvc-admin-time:hover svg { opacity: 1; }
+.tvc-admin-time:hover .tvc-admin-time-label { color: var(--brown); }
+
+.today-visit-card {
+    flex: 1;
+    min-width: 0;
     background: #fff;
     border: 1.5px solid var(--border);
     border-radius: 10px;
@@ -1640,12 +1641,7 @@ input, select, textarea {
 }
 .today-visit-card:hover { border-color: var(--pink-light); box-shadow: 0 2px 8px rgba(61,32,24,0.07); }
 .today-visit-card.active { border-color: var(--pink); }
-.tvc-time {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--pink);
-    letter-spacing: 0.03em;
-}
+
 .tvc-body {
     display: flex;
     align-items: center;
@@ -1670,6 +1666,12 @@ input, select, textarea {
 .tvc-service {
     font-size: 11px;
     color: var(--brown-mid);
+}
+.tvc-slot-time {
+    font-size: 11px;
+    color: var(--pink);
+    font-weight: 600;
+    margin-top: 1px;
 }
 .today-empty {
     font-size: 13px;

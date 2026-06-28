@@ -12,7 +12,7 @@ let hideRover      = false;
 let completedSortDesc = true;
 let bookingSearch  = '';
 let clientFilter   = null; // { id, name } when viewing a specific client's bookings
-let todaySort      = 'time'; // 'time' | 'client' | 'pet'
+// admin-only visit schedule times (localStorage only, never sent to Firestore)
 
 const STATUS_LABELS = {
     pending:          'Pending',
@@ -116,25 +116,55 @@ function getTodayISO() {
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
-function getFirstTimeForToday(b, today) {
-    if (b.dateTimes && b.dateTimes[today]) {
-        const slots = b.dateTimes[today].filter(Boolean).sort();
-        if (slots.length) return slots[0].split('|')[0];
-    }
-    return '99:99';
+function loadTodayTimes() {
+    try { return JSON.parse(localStorage.getItem('wylie_visit_times') || '{}'); } catch { return {}; }
 }
-
-function setTodaySort(s) {
-    todaySort = s;
+function saveTodayTimes(obj) {
+    localStorage.setItem('wylie_visit_times', JSON.stringify(obj));
+}
+function setVisitTime(key, val) {
+    const obj = loadTodayTimes();
+    if (val) obj[key] = val; else delete obj[key];
+    saveTodayTimes(obj);
     renderAdminBookings();
+}
+function parseAdminTime(str) {
+    if (!str) return '';
+    const m1 = str.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+    if (m1) {
+        let h = parseInt(m1[1]);
+        const min = m1[2];
+        const ap = (m1[3] || '').toLowerCase();
+        if (ap === 'pm' && h < 12) h += 12;
+        if (ap === 'am' && h === 12) h = 0;
+        return `${String(h).padStart(2,'0')}:${min}`;
+    }
+    const m2 = str.match(/^(\d{3,4})$/);
+    if (m2) {
+        const s = m2[1].padStart(4,'0');
+        return `${s.slice(0,2)}:${s.slice(2)}`;
+    }
+    return '';
+}
+function fmt12h(hhmm) {
+    if (!hhmm) return '—';
+    const [h, m] = hhmm.split(':').map(Number);
+    return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
+}
+function editVisitTime(key, current) {
+    const val = prompt('Set your visit time (e.g. 7:30 or 730):', current ? fmt12h(current) : '');
+    if (val === null) return;
+    const parsed = parseAdminTime(val.trim());
+    setVisitTime(key, parsed);
 }
 
 function renderTodaySection(outerContainer) {
     const today = getTodayISO();
     const todayLabel = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
     const ACTIVE_STATUSES = ['pending','deposit_received','paid','in_service','confirmed'];
+    const times = loadTodayTimes();
 
-    let visits = allBookings.filter(b => {
+    const bookings = allBookings.filter(b => {
         if (!ACTIVE_STATUSES.includes(b.status)) return false;
         if (hideRover && b.isRover) return false;
         if (b.dateTimes) return Object.keys(b.dateTimes).includes(today);
@@ -142,11 +172,27 @@ function renderTodaySection(outerContainer) {
         return false;
     });
 
-    visits = [...visits].sort((a, b) => {
-        if (todaySort === 'time')   return getFirstTimeForToday(a, today).localeCompare(getFirstTimeForToday(b, today));
-        if (todaySort === 'client') return (a.clientName||'').localeCompare(b.clientName||'');
-        if (todaySort === 'pet')    return ((a.pets||[])[0]?.name||'').localeCompare((b.pets||[])[0]?.name||'');
-        return 0;
+    // Expand each booking's slots into individual visit items
+    const items = [];
+    bookings.forEach(b => {
+        const slots = (b.dateTimes?.[today] || []).filter(Boolean);
+        if (slots.length === 0) {
+            const key = `${today}|${b.id}|0`;
+            items.push({ b, slotIdx: 0, slotStr: '', key, adminTime: times[key] || '' });
+        } else {
+            slots.forEach((slotStr, slotIdx) => {
+                const key = `${today}|${b.id}|${slotIdx}`;
+                items.push({ b, slotIdx, slotStr, key, adminTime: times[key] || '' });
+            });
+        }
+    });
+
+    // Sort by admin-assigned time (unset at bottom)
+    items.sort((a, b) => {
+        if (!a.adminTime && !b.adminTime) return 0;
+        if (!a.adminTime) return 1;
+        if (!b.adminTime) return -1;
+        return a.adminTime.localeCompare(b.adminTime);
     });
 
     const sec = document.createElement('div');
@@ -157,26 +203,17 @@ function renderTodaySection(outerContainer) {
                 <div class="today-visits-title">Today's Visits</div>
                 <div class="today-visits-date">${escHtml(todayLabel)}</div>
             </div>
-            <div class="today-sort-chips">
-                <span class="today-sort-label">Sort:</span>
-                <button class="today-sort-chip ${todaySort==='time'?'active':''}" onclick="AdminBookings.setTodaySort('time')">Time</button>
-                <button class="today-sort-chip ${todaySort==='client'?'active':''}" onclick="AdminBookings.setTodaySort('client')">Client</button>
-                <button class="today-sort-chip ${todaySort==='pet'?'active':''}" onclick="AdminBookings.setTodaySort('pet')">Pet</button>
-            </div>
         </div>
         <div class="today-visits-list" id="todayVisitsList"></div>`;
     outerContainer.appendChild(sec);
 
     const list = sec.querySelector('#todayVisitsList');
-    if (visits.length === 0) {
+    if (items.length === 0) {
         list.innerHTML = '<p class="today-empty">No visits scheduled for today.</p>';
         return;
     }
 
-    visits.forEach(b => {
-        const today2 = today;
-        const slots = b.dateTimes?.[today2] || [];
-        const timesStr = slots.filter(Boolean).sort().map(t => fmtSlot(t)).join(', ') || '—';
+    items.forEach(({ b, slotStr, key, adminTime }) => {
         const allPets = b.pets || [];
         const petNames = allPets.map(p => p.name).filter(Boolean).join(', ') || '—';
         const avatarHtml = allPets.length
@@ -186,22 +223,32 @@ function renderTodaySection(outerContainer) {
               ).join('')
             : `<div class="abc-pet-avatar abc-pet-emoji">🐶</div>`;
 
-        const card = document.createElement('div');
-        card.className = 'today-visit-card' + (b.id === activeBookingId ? ' active' : '');
-        card.dataset.bookingId = b.id;
-        card.onclick = () => openDetail(b.id);
-        card.innerHTML = `
-            <div class="tvc-time">${escHtml(timesStr)}</div>
-            <div class="tvc-body">
-                <div class="abc-avatar-stack">${avatarHtml}</div>
-                <div class="tvc-info">
-                    <span class="tvc-pet">${escHtml(petNames)}</span>
-                    <span class="tvc-client">${escHtml(b.clientName||'—')}</span>
-                    <span class="tvc-service">${escHtml(b.service||'')} · ${String(b.duration||30).includes('&')?b.duration:(b.duration||30)+' min'}</span>
+        const slotTimeLabel = slotStr ? fmtSlot(slotStr) : '—';
+        const pencil = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+
+        const row = document.createElement('div');
+        row.className = 'tvc-row';
+        row.innerHTML = `
+            <div class="tvc-admin-time" onclick="AdminBookings.editVisitTime('${escHtml(key)}','${escHtml(adminTime)}')">
+                <span class="tvc-admin-time-label${adminTime ? '' : ' unset'}">${adminTime ? escHtml(fmt12h(adminTime)) : '—'}</span>
+                ${pencil}
+            </div>
+            <div class="today-visit-card${b.id === activeBookingId ? ' active' : ''}" data-booking-id="${b.id}">
+                <div class="tvc-body">
+                    <div class="abc-avatar-stack">${avatarHtml}</div>
+                    <div class="tvc-info">
+                        <span class="tvc-pet">${escHtml(petNames)}</span>
+                        <span class="tvc-client">${escHtml(b.clientName||'—')}</span>
+                        <span class="tvc-service">${escHtml(b.service||'')} · ${String(b.duration||30).includes('&')?b.duration:(b.duration||30)+' min'}</span>
+                        <span class="tvc-slot-time">${escHtml(slotTimeLabel)}</span>
+                    </div>
+                    <span class="status-badge ${STATUS_COLORS[b.status]||'status-pending'}">${STATUS_LABELS[b.status]||'Pending'}</span>
                 </div>
-                <span class="status-badge ${STATUS_COLORS[b.status]||'status-pending'}">${STATUS_LABELS[b.status]||'Pending'}</span>
             </div>`;
-        list.appendChild(card);
+
+        // Card click opens detail (exclude click on admin-time area)
+        row.querySelector('.today-visit-card').onclick = () => openDetail(b.id);
+        list.appendChild(row);
     });
 }
 
@@ -1708,7 +1755,7 @@ async function saveCloneBooking(bookingId) {
 
 // ─── EXPOSE ───────────────────────────────────────────────
 window.AdminBookings = {
-    init, setFilter, toggleHideRover, toggleCompletedSort, setTodaySort, openDetail, closeDetail,
+    init, setFilter, toggleHideRover, toggleCompletedSort, editVisitTime, openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
     markDepositReceived, markPaidInFull, markInService, markRoverConfirmed,
     addAdjustment, removeAdjustment, toggleAdjVisits,
