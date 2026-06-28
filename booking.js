@@ -1257,7 +1257,7 @@ function sendRequest() {
                 createdAt: wff.serverTimestamp()
             }).catch(err => console.error('Firestore save failed:', err));
 
-            // Auto-save newly entered pets to user profile
+            // Auto-save newly entered pets to user profile, and sync client info to clients collection
             const uid = wff.auth?.currentUser?.uid;
             if (uid) {
                 const newPets = [];
@@ -1277,9 +1277,14 @@ function sendRequest() {
                     (async () => {
                         const snap = await wff.getDoc(wff.doc(wff.db, 'users', uid));
                         const existing = snap.exists() ? (snap.data().pets || []) : [];
-                        await wff.updateDoc(wff.doc(wff.db, 'users', uid), { pets: [...existing, ...newPets] });
+                        await wff.setDoc(wff.doc(wff.db, 'users', uid), { pets: [...existing, ...newPets] }, { merge: true });
                     })().catch(err => console.error('Pet profile sync failed:', err));
                 }
+                // Ensure this client appears in admin's client list
+                wff.setDoc(wff.doc(wff.db, 'clients', uid), {
+                    name: clientName, email: clientEmail, phone: clientPhone, address: clientAddress,
+                    uid, source: 'booking', updatedAt: wff.serverTimestamp()
+                }, { merge: true }).catch(err => console.error('Client sync failed:', err));
             }
         }
         document.getElementById('bookingConfirm').style.display = 'none';
@@ -1480,13 +1485,18 @@ async function saveBookingPet() {
     // Save to Firestore if logged in
     if (wff && wff.auth && wff.auth.currentUser) {
         const uid = wff.auth.currentUser.uid;
-        const snap = await wff.getDoc(wff.doc(wff.db, 'users', uid));
-        const existing = snap.exists() ? (snap.data().pets || []) : [];
-        existing.push(pet);
-        await wff.updateDoc(wff.doc(wff.db, 'users', uid), { pets: existing });
-        renderSavedPetCards(existing);
+        try {
+            const snap = await wff.getDoc(wff.doc(wff.db, 'users', uid));
+            const existing = snap.exists() ? (snap.data().pets || []) : [];
+            existing.push(pet);
+            await wff.setDoc(wff.doc(wff.db, 'users', uid), { pets: existing }, { merge: true });
+            renderSavedPetCards(existing);
+        } catch (err) {
+            console.error('saveBookingPet error:', err);
+            alert('Failed to save pet. Please try again.');
+            return;
+        }
     } else {
-        // Not logged in — just add as manual entry
         savedUserPets.push(pet);
         renderSavedPetCards(savedUserPets);
     }
