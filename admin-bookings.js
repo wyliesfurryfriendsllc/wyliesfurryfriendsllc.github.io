@@ -644,9 +644,9 @@ function _calcAgeFromDate(iso) {
     return mo ? `${y}yr ${mo}mo` : `${y}yr`;
 }
 
-function renderPetsHtml(pets) {
+function renderPetsHtml(pets, bookingId) {
     if (!pets || pets.length === 0) return '<p style="color:var(--brown-mid);padding:8px 0">No pets listed.</p>';
-    const items = pets.map(p => {
+    const items = pets.map((p, i) => {
         const emoji = p.type === 'cat' ? '🐱' : '🐶';
         const avatar = p.photoUrl
             ? `<img class="detail-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name || '')}">`
@@ -654,17 +654,19 @@ function renderPetsHtml(pets) {
         const ageStr = _calcAgeFromDate(p.birthDate || p.birthday)
             || (p.age || [p.ageYears ? p.ageYears + 'yr' : '', p.ageMonths ? p.ageMonths + 'mo' : ''].filter(Boolean).join(' '));
         const metaParts = [
-            p.gender,
+            p.gender || p.sex,
             p.weight ? p.weight + ' lbs' : '',
             ageStr
         ].filter(Boolean);
+        const chk = bookingId ? `<input type="checkbox" class="pet-save-chk" id="petChk_${bookingId}_${i}" checked style="margin-right:8px;cursor:pointer;width:15px;height:15px;flex-shrink:0">` : '';
         return `
-            <div class="detail-pet-row">
+            <label class="detail-pet-row" style="${bookingId ? 'cursor:pointer;display:flex;align-items:center' : ''}">
+                ${chk}
                 ${avatar}
                 <div class="detail-pet-name">${escHtml(p.name || '—')}</div>
                 ${p.breed ? `<div class="detail-pet-breed">${escHtml(p.breed)}</div>` : ''}
                 ${metaParts.length ? `<div class="detail-pet-meta">${escHtml(metaParts.join(' · '))}</div>` : ''}
-            </div>`;
+            </label>`;
     }).join('');
     return `<div class="detail-pets-wrap">${items}</div>`;
 }
@@ -876,7 +878,9 @@ function renderDetail(b, panel) {
 
         <div class="detail-section">
             <div class="detail-section-label">Pets (${pets.length})</div>
-            ${renderPetsHtml(pets)}
+            ${renderPetsHtml(pets, pets.length > 0 ? b.id : null)}
+            ${pets.length > 0 && b.clientId ? `
+            <button class="admin-btn-secondary" style="margin-top:8px;font-size:12px" onclick="AdminBookings.savePetsToClient('${b.id}')">＋ 保存所选宠物到客户档案</button>` : ''}
         </div>
 
         <div class="detail-section">
@@ -1640,6 +1644,64 @@ async function saveAdminTip(bookingId) {
 }
 
 // ─── CLIENT LINKING ───────────────────────────────────────
+async function savePetsToClient(bookingId) {
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b || !b.clientId) return;
+
+    const bookingPets = b.pets || [];
+    const selected = bookingPets.filter((_, i) => {
+        const chk = document.getElementById(`petChk_${bookingId}_${i}`);
+        return chk ? chk.checked : true;
+    });
+    if (selected.length === 0) { alert('请先勾选要保存的宠物。'); return; }
+
+    try {
+        const clientSnap = await getDoc(doc(db, 'clients', b.clientId));
+        const existing = clientSnap.exists() ? (clientSnap.data().pets || []) : [];
+        const existingNames = new Set(existing.map(p => (p.name || '').toLowerCase()));
+
+        const toAdd = selected
+            .filter(p => p.name && !existingNames.has(p.name.toLowerCase()))
+            .map(p => ({
+                name:           p.name           || '',
+                type:           p.type           || 'dog',
+                photoUrl:       p.photoUrl       || '',
+                breed:          p.breed          || '',
+                weight:         p.weight         || '',
+                sex:            p.gender         || p.sex || '',
+                spayedNeutered: p.spayedNeutered || '',
+                microchipped:   p.microchipped   || '',
+                notes:          p.careNotes      || p.notes || '',
+                birthDate:      p.birthDate      || p.birthday || '',
+                ageYears:       p.ageYears       || '',
+                ageMonths:      p.ageMonths      || '',
+            }));
+
+        if (toAdd.length === 0) {
+            alert('所选宠物已存在于该客户档案中，无需重复添加。');
+            return;
+        }
+
+        const merged = [...existing, ...toAdd];
+        await updateDoc(doc(db, 'clients', b.clientId), { pets: merged, updatedAt: serverTimestamp() });
+
+        // Also sync to users collection if linked
+        const userSnap = await getDoc(doc(db, 'users', b.clientId));
+        if (userSnap.exists()) {
+            const userPets = userSnap.data().pets || [];
+            const userNames = new Set(userPets.map(p => (p.name || '').toLowerCase()));
+            const userToAdd = toAdd.filter(p => !userNames.has(p.name.toLowerCase()));
+            if (userToAdd.length > 0) {
+                await updateDoc(doc(db, 'users', b.clientId), { pets: [...userPets, ...userToAdd] });
+            }
+        }
+
+        alert(`✓ 已将 ${toAdd.length} 只宠物添加到 ${b.clientName || '客户'} 的档案。`);
+    } catch (e) {
+        alert('保存失败：' + e.message);
+    }
+}
+
 async function addToClients(bookingId) {
     const b = allBookings.find(x => x.id === bookingId);
     if (!b) return;
@@ -1854,7 +1916,7 @@ async function saveCloneBooking(bookingId) {
 
 // ─── EXPOSE ───────────────────────────────────────────────
 window.AdminBookings = {
-    init, setFilter, toggleHideRover, toggleCompletedSort, toggleAllSort, editVisitTime,
+    init, setFilter, toggleHideRover, toggleCompletedSort, toggleAllSort, savePetsToClient, editVisitTime,
     onTvcDragStart, onTvcDragOver, onTvcDragEnter, onTvcDrop, onTvcDragEnd,
     openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
