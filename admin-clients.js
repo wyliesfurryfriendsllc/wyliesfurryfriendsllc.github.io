@@ -1,6 +1,6 @@
 import {
-    db, collection, query, orderBy, onSnapshot,
-    doc, updateDoc, addDoc, deleteDoc, serverTimestamp, getDoc
+    db, collection, query, orderBy, where, onSnapshot,
+    doc, updateDoc, addDoc, deleteDoc, serverTimestamp, getDoc, getDocs
 } from './firebase.js';
 
 let clientsUnsub = null;
@@ -476,17 +476,38 @@ function viewClientBookings(clientId, clientName) {
 
 async function restorePets(clientId, uid, clientName) {
     try {
+        // 1. Try users collection first (account.html pet form data)
         const userSnap = await getDoc(doc(db, 'users', uid));
-        if (!userSnap.exists()) {
-            alert(`找不到 ${clientName} 的账号数据。`);
+        const userPets = userSnap.exists() ? (userSnap.data().pets || []) : [];
+
+        let sourcePets = userPets;
+        let sourceLabel = 'account';
+
+        // 2. Fall back to bookings if no pets in users
+        if (sourcePets.length === 0) {
+            const client = allClients.find(c => c.id === clientId);
+            const q = client?.email
+                ? query(collection(db, 'bookings'), where('clientEmail', '==', client.email))
+                : query(collection(db, 'bookings'), where('clientId', '==', uid));
+            const snap = await getDocs(q);
+            const seen = new Set();
+            snap.docs.forEach(d => {
+                (d.data().pets || []).forEach(p => {
+                    if (p.name && !seen.has(p.name.toLowerCase())) {
+                        seen.add(p.name.toLowerCase());
+                        sourcePets.push(p);
+                    }
+                });
+            });
+            sourceLabel = 'bookings';
+        }
+
+        if (sourcePets.length === 0) {
+            alert(`找不到 ${clientName} 的宠物信息（账号和预约记录里都没有）。`);
             return;
         }
-        const pets = (userSnap.data().pets || []);
-        if (pets.length === 0) {
-            alert(`${clientName} 的账号里没有宠物信息。`);
-            return;
-        }
-        const mappedPets = pets.map(p => ({
+
+        const mappedPets = sourcePets.map(p => ({
             name:           p.name           || '',
             type:           p.type           || 'dog',
             photoUrl:       p.photoUrl       || '',
@@ -500,8 +521,9 @@ async function restorePets(clientId, uid, clientName) {
             ageYears:       p.ageYear        || p.ageYears   || '',
             ageMonths:      p.ageMonth       || p.ageMonths  || '',
         }));
+
         await updateDoc(doc(db, 'clients', clientId), { pets: mappedPets, updatedAt: serverTimestamp() });
-        alert(`✓ 已为 ${clientName} 恢复 ${mappedPets.length} 只宠物的信息。`);
+        alert(`✓ 已为 ${clientName} 从${sourceLabel === 'bookings' ? '预约记录' : '账号'}恢复 ${mappedPets.length} 只宠物的信息。`);
     } catch (e) {
         alert('恢复失败：' + e.message);
     }
