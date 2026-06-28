@@ -953,6 +953,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
 }
 .pet-type-card {
     flex: 1;
+    min-width: 0;
     -webkit-appearance: none;
     appearance: none;
     background: var(--cream);
@@ -966,6 +967,9 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     cursor: pointer;
     transition: border-color 0.15s, background 0.15s, color 0.15s;
     text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .pet-type-card:hover { border-color: var(--pink-light); color: var(--brown); }
 .pet-type-card.active {
