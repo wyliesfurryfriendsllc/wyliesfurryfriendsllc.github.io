@@ -1345,6 +1345,14 @@ details.deposit-policy[open] summary { color: var(--pink); }
     .date-entry {
         padding: 14px;
     }
+    .time-period-pills {
+        gap: 4px;
+        flex-wrap: nowrap;
+    }
+    .time-period-pill {
+        font-size: 11px;
+        padding: 7px 10px;
+    }
 }
 
 /* ─── SAVED PET CARDS (booking page) ──────────────── */
