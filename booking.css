@@ -65,7 +65,7 @@
     font-weight: 700;
     font-size: 16px;
     color: var(--brown);
-    margin-bottom: 20px;
+    margin-bottom: 8px;
 }
 .contact-from-acct-banner {
     font-size: 13px;
@@ -1315,6 +1315,8 @@ details.deposit-policy[open] summary { color: var(--pink); }
 }
 
 @media (max-width: 768px) {
+    .form-row { grid-template-columns: 1fr; }
+
     .confirm-grid {
         grid-template-columns: 1fr;
     }
