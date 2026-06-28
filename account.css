@@ -896,6 +896,17 @@
 @media (max-width: 480px) {
     .auth-card { padding: 28px 20px; }
     .pets-grid { grid-template-columns: 1fr 1fr; }
+    .modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+    .modal-card {
+        padding: 24px 20px;
+        border-radius: 20px 20px 0 0;
+        max-height: 92vh;
+        width: 100%;
+        max-width: 100%;
+    }
 }
 
 /* ─── PET MODAL EXPANDED ─────────────────────────── */
