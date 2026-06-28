@@ -186,8 +186,8 @@
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-bottom: 12px;
+    gap: 8px;
+    margin-bottom: 16px;
 }
 
 .form-group label, .form-label-standalone {
@@ -203,8 +203,9 @@
 .pet-details-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 12px;
+    column-gap: 10px;
+    row-gap: 8px;
+    margin-bottom: 16px;
 }
 .pet-details-grid > * {
     min-width: 0;
