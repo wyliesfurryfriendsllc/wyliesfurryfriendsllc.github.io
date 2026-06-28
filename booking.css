@@ -198,6 +198,16 @@
     margin-bottom: 6px;
 }
 
+.pet-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.pet-details-grid > * {
+    min-width: 0;
+}
+
 .optional {
     font-weight: 400;
     color: var(--brown-mid);
