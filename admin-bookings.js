@@ -1420,11 +1420,12 @@ async function exportImage(bookingId) {
     hideEls.forEach(el => { el.style.display = 'none'; });
 
     try {
+        const targetWidth = target.scrollWidth;
         const canvas = await html2canvas(target, {
             backgroundColor: '#fffaf7',
             scale: 2,
-            width: 680,
-            windowWidth: 680,
+            width: targetWidth,
+            windowWidth: targetWidth,
             useCORS: true,
             logging: false
         });
