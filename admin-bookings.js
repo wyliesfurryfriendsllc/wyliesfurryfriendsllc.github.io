@@ -328,7 +328,7 @@ function renderAdminBookings() {
     if (!container) return;
 
     container.innerHTML = '';
-    if (activeFilter === 'today') renderTodaySection(container);
+    if (activeFilter === 'today' && !clientFilter) renderTodaySection(container);
 
     // Client filter banner
     const bannerEl = document.getElementById('clientFilterBanner');
