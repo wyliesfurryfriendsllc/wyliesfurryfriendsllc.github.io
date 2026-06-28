@@ -35,6 +35,21 @@ onAuthStateChanged(auth, async user => {
             });
         }
         userPets = profile.pets || [];
+
+        // Merge any admin-added pets from clients collection
+        try {
+            const clientSnap = await getDoc(doc(db, 'clients', user.uid));
+            if (clientSnap.exists()) {
+                const clientPets = clientSnap.data().pets || [];
+                const known = new Set(userPets.map(p => (p.name || '').toLowerCase()));
+                const extra = clientPets.filter(p => p.name && !known.has(p.name.toLowerCase()));
+                if (extra.length > 0) {
+                    userPets = [...userPets, ...extra];
+                    await updateDoc(userRef, { pets: userPets });
+                }
+            }
+        } catch (_) {}
+
         showAccountUI(user, profile);
         loadMyBookings(user);
         syncToClients(user, profile).catch(() => {});
