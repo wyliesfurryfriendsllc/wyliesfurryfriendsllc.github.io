@@ -1838,7 +1838,7 @@ input, select, textarea {
     color: #7a5c4e;
     border: 1px solid #e0d6d0;
 }
-.cc-pet-notes { font-size: 11px; color: #9b7b6e; font-style: italic; white-space: normal; word-break: break-word; }
+.cc-pet-notes { font-size: 11px; color: #9b7b6e; font-style: italic; white-space: normal; word-break: break-word; max-width: 200px; }
 .cc-client-notes { font-style: italic; color: #9b7b6e; font-size: 12px; }
 
 .cpet-card { width: 100%; }
