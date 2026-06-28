@@ -1350,8 +1350,8 @@ details.deposit-policy[open] summary { color: var(--pink); }
         flex-wrap: nowrap;
     }
     .time-period-pill {
-        font-size: 11px;
-        padding: 6px 8px;
+        font-size: 12px;
+        padding: 7px 11px;
     }
 }
 
@@ -1361,8 +1361,8 @@ details.deposit-policy[open] summary { color: var(--pink); }
         flex-wrap: nowrap;
     }
     .time-period-pill {
-        font-size: 11px;
-        padding: 6px 8px;
+        font-size: 12px;
+        padding: 7px 11px;
     }
 }
 
