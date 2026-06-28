@@ -507,6 +507,11 @@
 .slot-type-seg-label.active { color: white; }
 
 .slot-picker-wrap { margin-top: 16px; }
+.slot-picker-hint {
+    font-size: 11px;
+    color: var(--brown-mid);
+    margin-top: 6px;
+}
 
 /* Quick select label */
 .time-period-quick-label {
