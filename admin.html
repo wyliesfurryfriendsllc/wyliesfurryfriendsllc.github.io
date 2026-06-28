@@ -77,7 +77,8 @@
                         <button onclick="AdminBookings.clearClientFilter()" style="background:none;border:none;cursor:pointer;color:var(--brown-mid);font-size:18px;line-height:1;padding:0">×</button>
                     </div>
                     <div class="filter-chips" id="filterChips">
-                        <button class="filter-chip active" data-filter="all"             onclick="AdminBookings.setFilter('all')">All</button>
+                        <button class="filter-chip active" data-filter="today"            onclick="AdminBookings.setFilter('today')">Today's</button>
+                        <button class="filter-chip"        data-filter="all"             onclick="AdminBookings.setFilter('all')">All</button>
                         <button class="filter-chip"        data-filter="pending"          onclick="AdminBookings.setFilter('pending')">Pending</button>
                         <button class="filter-chip"        data-filter="deposit_received" onclick="AdminBookings.setFilter('deposit_received')">Reserved</button>
                         <button class="filter-chip"        data-filter="paid"             onclick="AdminBookings.setFilter('paid')">Confirmed</button>

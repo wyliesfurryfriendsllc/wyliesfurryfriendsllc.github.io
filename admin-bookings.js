@@ -6,7 +6,7 @@ import {
 let bookingsUnsub = null;
 let messagesUnsub = null;
 let allBookings    = [];
-let activeFilter   = 'all';
+let activeFilter   = 'today';
 let activeBookingId = null;
 let hideRover      = false;
 let completedSortDesc = true;
@@ -322,7 +322,7 @@ function renderAdminBookings() {
     if (!container) return;
 
     container.innerHTML = '';
-    renderTodaySection(container);
+    if (activeFilter === 'today') renderTodaySection(container);
 
     // Client filter banner
     const bannerEl = document.getElementById('clientFilterBanner');
@@ -345,7 +345,7 @@ function renderAdminBookings() {
             (b.clientName || '').toLowerCase() === clientFilter.name.toLowerCase()
         );
     } else {
-        filtered = activeFilter === 'all'
+        filtered = (activeFilter === 'all' || activeFilter === 'today')
             ? allBookings.filter(b => ACTIVE_STATUSES.includes(b.status))
             : allBookings.filter(b => b.status === activeFilter);
     }
