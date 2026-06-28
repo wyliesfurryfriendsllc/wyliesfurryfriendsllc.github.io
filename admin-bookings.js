@@ -12,6 +12,7 @@ let hideRover      = false;
 let completedSortDesc = true;
 let bookingSearch  = '';
 let clientFilter   = null; // { id, name } when viewing a specific client's bookings
+let todaySort      = 'time'; // 'time' | 'client' | 'pet'
 
 const STATUS_LABELS = {
     pending:          'Pending',
@@ -109,10 +110,108 @@ function toggleCompletedSort() {
     renderAdminBookings();
 }
 
+// ─── TODAY'S VISITS ───────────────────────────────────────
+function getTodayISO() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function getFirstTimeForToday(b, today) {
+    if (b.dateTimes && b.dateTimes[today]) {
+        const slots = b.dateTimes[today].filter(Boolean).sort();
+        if (slots.length) return slots[0].split('|')[0];
+    }
+    return '99:99';
+}
+
+function setTodaySort(s) {
+    todaySort = s;
+    renderAdminBookings();
+}
+
+function renderTodaySection(outerContainer) {
+    const today = getTodayISO();
+    const todayLabel = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+    const ACTIVE_STATUSES = ['pending','deposit_received','paid','in_service','confirmed'];
+
+    let visits = allBookings.filter(b => {
+        if (!ACTIVE_STATUSES.includes(b.status)) return false;
+        if (hideRover && b.isRover) return false;
+        if (b.dateTimes) return Object.keys(b.dateTimes).includes(today);
+        if (b.dates) return b.dates.includes(today);
+        return false;
+    });
+
+    visits = [...visits].sort((a, b) => {
+        if (todaySort === 'time')   return getFirstTimeForToday(a, today).localeCompare(getFirstTimeForToday(b, today));
+        if (todaySort === 'client') return (a.clientName||'').localeCompare(b.clientName||'');
+        if (todaySort === 'pet')    return ((a.pets||[])[0]?.name||'').localeCompare((b.pets||[])[0]?.name||'');
+        return 0;
+    });
+
+    const sec = document.createElement('div');
+    sec.className = 'today-visits-section';
+    sec.innerHTML = `
+        <div class="today-visits-header">
+            <div>
+                <div class="today-visits-title">Today's Visits</div>
+                <div class="today-visits-date">${escHtml(todayLabel)}</div>
+            </div>
+            <div class="today-sort-chips">
+                <span class="today-sort-label">Sort:</span>
+                <button class="today-sort-chip ${todaySort==='time'?'active':''}" onclick="AdminBookings.setTodaySort('time')">Time</button>
+                <button class="today-sort-chip ${todaySort==='client'?'active':''}" onclick="AdminBookings.setTodaySort('client')">Client</button>
+                <button class="today-sort-chip ${todaySort==='pet'?'active':''}" onclick="AdminBookings.setTodaySort('pet')">Pet</button>
+            </div>
+        </div>
+        <div class="today-visits-list" id="todayVisitsList"></div>`;
+    outerContainer.appendChild(sec);
+
+    const list = sec.querySelector('#todayVisitsList');
+    if (visits.length === 0) {
+        list.innerHTML = '<p class="today-empty">No visits scheduled for today.</p>';
+        return;
+    }
+
+    visits.forEach(b => {
+        const today2 = today;
+        const slots = b.dateTimes?.[today2] || [];
+        const timesStr = slots.filter(Boolean).sort().map(t => fmtSlot(t)).join(', ') || '—';
+        const allPets = b.pets || [];
+        const petNames = allPets.map(p => p.name).filter(Boolean).join(', ') || '—';
+        const avatarHtml = allPets.length
+            ? allPets.map(p => p.photoUrl
+                ? `<img class="abc-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name||'')}">`
+                : `<div class="abc-pet-avatar abc-pet-emoji">${p.type==='cat'?'🐱':'🐶'}</div>`
+              ).join('')
+            : `<div class="abc-pet-avatar abc-pet-emoji">🐶</div>`;
+
+        const card = document.createElement('div');
+        card.className = 'today-visit-card' + (b.id === activeBookingId ? ' active' : '');
+        card.dataset.bookingId = b.id;
+        card.onclick = () => openDetail(b.id);
+        card.innerHTML = `
+            <div class="tvc-time">${escHtml(timesStr)}</div>
+            <div class="tvc-body">
+                <div class="abc-avatar-stack">${avatarHtml}</div>
+                <div class="tvc-info">
+                    <span class="tvc-pet">${escHtml(petNames)}</span>
+                    <span class="tvc-client">${escHtml(b.clientName||'—')}</span>
+                    <span class="tvc-service">${escHtml(b.service||'')} · ${String(b.duration||30).includes('&')?b.duration:(b.duration||30)+' min'}</span>
+                </div>
+                <span class="status-badge ${STATUS_COLORS[b.status]||'status-pending'}">${STATUS_LABELS[b.status]||'Pending'}</span>
+            </div>`;
+        list.appendChild(card);
+    });
+}
+
 // ─── LIST ─────────────────────────────────────────────────
 function renderAdminBookings() {
     const container = document.getElementById('adminBookingsList');
     if (!container) return;
+
+    container.innerHTML = '';
+    renderTodaySection(container);
 
     // Client filter banner
     const bannerEl = document.getElementById('clientFilterBanner');
@@ -149,7 +248,10 @@ function renderAdminBookings() {
     }
 
     if (filtered.length === 0) {
-        container.innerHTML = `<p class="empty-msg">No ${activeFilter === 'all' ? '' : activeFilter + ' '}bookings yet.</p>`;
+        const empty = document.createElement('p');
+        empty.className = 'empty-msg';
+        empty.textContent = `No ${activeFilter === 'all' ? '' : activeFilter + ' '}bookings yet.`;
+        container.appendChild(empty);
         return;
     }
     // Group by first service date
@@ -195,7 +297,6 @@ function renderAdminBookings() {
         groups[iso].push(b);
     });
 
-    container.innerHTML = '';
     groupOrder.forEach(iso => {
         // Date label
         let dateLabel = iso;
@@ -1607,7 +1708,7 @@ async function saveCloneBooking(bookingId) {
 
 // ─── EXPOSE ───────────────────────────────────────────────
 window.AdminBookings = {
-    init, setFilter, toggleHideRover, toggleCompletedSort, openDetail, closeDetail,
+    init, setFilter, toggleHideRover, toggleCompletedSort, setTodaySort, openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
     markDepositReceived, markPaidInFull, markInService, markRoverConfirmed,
     addAdjustment, removeAdjustment, toggleAdjVisits,
