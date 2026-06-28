@@ -1,24 +1,39 @@
-const ADMIN_PASSWORD = 'wylie2024';
+const ADMIN_EMAIL = 'wyliesfurryfriendsllc@gmail.com';
 
 // ─── AUTH ─────────────────────────────────────────────────
-function login() {
-    const pw = document.getElementById('adminPassword').value;
-    if (pw === ADMIN_PASSWORD) {
-        sessionStorage.setItem('wff_admin', '1');
-        // Sign in anonymously so Firestore auth rules are satisfied
-        const wff = window.WFF;
-        if (wff?.signInAnonymously && wff?.auth) {
-            wff.signInAnonymously(wff.auth).catch(e => console.warn('Anon sign-in:', e));
+async function login() {
+    const email = document.getElementById('adminEmail').value.trim();
+    const pw    = document.getElementById('adminPassword').value;
+    const errEl = document.getElementById('loginError');
+    const btn   = document.getElementById('adminLoginBtn');
+    if (!email || !pw) return;
+    btn.disabled = true; btn.textContent = 'Signing in...';
+    errEl.style.display = 'none';
+    try {
+        const wff  = window.WFF;
+        const cred = await wff.signInWithEmailAndPassword(wff.auth, email, pw);
+        if (cred.user.email !== ADMIN_EMAIL) {
+            await wff.signOut(wff.auth);
+            errEl.textContent = 'Access denied.';
+            errEl.style.display = 'block';
+            return;
         }
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('adminPanel').style.display  = 'block';
-        renderAdminGallery();
-        window.AdminBookings?.init();
-        window.AdminClients?.init();
-        window.AdminCalendar?.init();
-    } else {
-        document.getElementById('loginError').style.display = 'block';
+        showAdminPanel();
+    } catch(e) {
+        errEl.textContent = 'Incorrect email or password.';
+        errEl.style.display = 'block';
+    } finally {
+        btn.disabled = false; btn.textContent = 'Sign In';
     }
+}
+
+function showAdminPanel() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminPanel').style.display  = 'block';
+    renderAdminGallery();
+    window.AdminBookings?.init();
+    window.AdminClients?.init();
+    window.AdminCalendar?.init();
 }
 
 function showAdminTab(tab) {
@@ -44,11 +59,23 @@ function showAdminTab(tab) {
 }
 
 function logout() {
-    sessionStorage.removeItem('wff_admin');
+    const wff = window.WFF;
+    if (wff?.signOut && wff?.auth) wff.signOut(wff.auth).catch(() => {});
     document.getElementById('adminPanel').style.display  = 'none';
     document.getElementById('loginScreen').style.display = '';
+    document.getElementById('adminEmail').value    = '';
     document.getElementById('adminPassword').value = '';
 }
+
+// Auto-restore session if already signed in
+window.addEventListener('load', () => {
+    const wff = window.WFF;
+    if (wff?.onAuthStateChanged && wff?.auth) {
+        wff.onAuthStateChanged(wff.auth, user => {
+            if (user && user.email === ADMIN_EMAIL) showAdminPanel();
+        });
+    }
+});
 
 // ─── DRAG & DROP ─────────────────────────────────────────
 let _dragSrc = null;

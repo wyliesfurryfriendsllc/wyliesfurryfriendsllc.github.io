@@ -34,6 +34,7 @@ export {
 // Also expose via window for non-module scripts (booking.js, admin.js)
 window.WFF = {
     db, auth, signInAnonymously, onAuthStateChanged,
+    signInWithEmailAndPassword, signOut,
     collection, addDoc, getDocs, doc, updateDoc,
     query, orderBy, onSnapshot, where, serverTimestamp,
     getDoc, setDoc

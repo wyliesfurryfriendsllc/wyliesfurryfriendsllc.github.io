@@ -22,11 +22,15 @@
         </div>
         <h2>Admin Panel</h2>
         <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="adminEmail" placeholder="Enter email" onkeydown="if(event.key==='Enter')login()">
+        </div>
+        <div class="form-group">
             <label>Password</label>
             <input type="password" id="adminPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()">
         </div>
-        <p id="loginError" class="login-error" style="display:none">Incorrect password</p>
-        <button class="admin-btn-primary" onclick="login()">Sign In</button>
+        <p id="loginError" class="login-error" style="display:none">Incorrect email or password</p>
+        <button class="admin-btn-primary" id="adminLoginBtn" onclick="login()">Sign In</button>
     </div>
 </div>
 
