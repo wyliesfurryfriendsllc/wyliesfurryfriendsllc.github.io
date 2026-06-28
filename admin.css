@@ -2030,5 +2030,15 @@ input, select, textarea {
 @media (max-width: 768px) {
     .time-period-pills { gap: 4px; flex-wrap: nowrap; }
     .time-period-pill { font-size: 12px; padding: 7px 11px; }
+    .tvc-body .abc-avatar-stack {
+        flex-direction: column;
+        gap: 4px;
+    }
+    .tvc-body .abc-avatar-stack .abc-pet-avatar + .abc-pet-avatar,
+    .tvc-body .abc-avatar-stack .abc-pet-avatar + .abc-pet-emoji,
+    .tvc-body .abc-avatar-stack .abc-pet-emoji + .abc-pet-avatar,
+    .tvc-body .abc-avatar-stack .abc-pet-emoji + .abc-pet-emoji {
+        margin-left: 0;
+    }
 }
 .detail-linked-badge { font-size:12px; color:#2e7d32; }
