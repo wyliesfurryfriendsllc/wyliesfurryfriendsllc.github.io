@@ -52,7 +52,7 @@ onAuthStateChanged(auth, async user => {
 
         showAccountUI(user, profile);
         loadMyBookings(user);
-        syncToClients(user, profile).catch(() => {});
+        syncToClients(user, { ...profile, pets: userPets }).catch(() => {});
     } else {
         showAuthUI();
     }
