@@ -272,7 +272,7 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots, isFirstDate = true) {
                         `<button type="button" class="time-period-pill${(sl.period||'')=== p?' active':''}" onclick="selectPeriod('${tid}',${si},'${p}')">${p}</button>`
                     ).join('')}
                 </div>
-                <div id="slotPickerWrap_${tid}_${si}">
+                <div id="slotPickerWrap_${tid}_${si}" style="${sl.period==='Anytime'?'display:none':''}">
                     <div class="time-range-inline">
                         <span class="time-range-label">From</span>
                         ${buildPickerHtml(`from_${tid}_${si}`, `slotFromHr_${tid}_${si}`, `slotFromMin_${tid}_${si}`, sl.fromHr, sl.fromMin)}
@@ -338,6 +338,8 @@ function selectPeriod(tid, si, period) {
     if (periodInput) periodInput.value = period;
     const pickerWrap = document.getElementById(`slotPickerWrap_${tid}_${si}`);
     const flexLabel  = document.getElementById(`slotFlexLabel_${tid}_${si}`);
+    const pickerWrap = document.getElementById(`slotPickerWrap_${tid}_${si}`);
+    if (pickerWrap) pickerWrap.style.display = period === 'Anytime' ? 'none' : '';
     const t = TP_PERIODS[period];
     if (t) {
         setPickerVal(`from_${tid}_${si}`, t.fromHr, t.fromMin);
