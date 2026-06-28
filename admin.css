@@ -1672,6 +1672,19 @@ input, select, textarea {
     font-weight: 600;
     margin-top: 1px;
 }
+.tvc-drag-handle {
+    color: var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    cursor: grab;
+}
+.tvc-row[draggable] { cursor: default; }
+.tvc-row.tvc-dragging { opacity: 0.35; }
+.tvc-row.tvc-drop-target .today-visit-card {
+    border-color: var(--pink);
+    box-shadow: 0 0 0 2px var(--pink-light);
+}
 .today-empty {
     font-size: 13px;
     color: var(--brown-mid);

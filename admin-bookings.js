@@ -123,6 +123,51 @@ function getSlotStartTime(slotStr) {
     return start && start.match(/^\d{2}:\d{2}$/) ? start : '';
 }
 
+function getEffectiveEndTime(adminTime, slotStart, slotStr) {
+    const start = adminTime || slotStart;
+    if (!start) return '';
+    const durMatch = slotStr?.match(/\|(\d+)$/);
+    const dur = durMatch ? parseInt(durMatch[1]) : 30;
+    const [h, m] = start.split(':').map(Number);
+    const totalMin = h * 60 + m + dur;
+    return `${String(Math.floor(totalMin / 60) % 24).padStart(2,'0')}:${String(totalMin % 60).padStart(2,'0')}`;
+}
+
+let _dragKey = null;
+
+function onTvcDragStart(e, key) {
+    _dragKey = key;
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => {
+        const el = document.querySelector(`.tvc-row[data-key="${CSS.escape(key)}"]`);
+        if (el) el.classList.add('tvc-dragging');
+    }, 0);
+}
+
+function onTvcDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+}
+
+function onTvcDragEnter(e, rowEl) {
+    if (rowEl.dataset.key === _dragKey) return;
+    document.querySelectorAll('.tvc-row').forEach(r => r.classList.remove('tvc-drop-target'));
+    rowEl.classList.add('tvc-drop-target');
+}
+
+function onTvcDrop(e, endTime, targetKey) {
+    e.preventDefault();
+    document.querySelectorAll('.tvc-row').forEach(r => r.classList.remove('tvc-drop-target', 'tvc-dragging'));
+    if (!_dragKey || _dragKey === targetKey || !endTime) { _dragKey = null; return; }
+    setVisitTime(_dragKey, endTime);
+    _dragKey = null;
+}
+
+function onTvcDragEnd() {
+    document.querySelectorAll('.tvc-row').forEach(r => r.classList.remove('tvc-drop-target', 'tvc-dragging'));
+    _dragKey = null;
+}
+
 function loadTodayTimes() {
     try { return JSON.parse(localStorage.getItem('wylie_visit_times') || '{}'); } catch { return {}; }
 }
@@ -231,11 +276,21 @@ function renderTodaySection(outerContainer) {
 
         const effectiveTime = adminTime || slotStart;
         const isOverridden = !!adminTime;
+        const endTime = getEffectiveEndTime(adminTime, slotStart, slotStr);
         const slotTimeLabel = slotStr ? fmtSlot(slotStr) : '—';
         const pencil = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+        const dragHandle = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg>`;
 
         const row = document.createElement('div');
         row.className = 'tvc-row';
+        row.draggable = true;
+        row.dataset.key = key;
+        row.dataset.endTime = endTime;
+        row.ondragstart = (e) => AdminBookings.onTvcDragStart(e, key);
+        row.ondragover  = (e) => AdminBookings.onTvcDragOver(e);
+        row.ondragenter = (e) => AdminBookings.onTvcDragEnter(e, row);
+        row.ondrop      = (e) => AdminBookings.onTvcDrop(e, endTime, key);
+        row.ondragend   = ()  => AdminBookings.onTvcDragEnd();
         row.innerHTML = `
             <div class="tvc-admin-time" onclick="AdminBookings.editVisitTime('${escHtml(key)}','${escHtml(adminTime)}')">
                 <span class="tvc-admin-time-label${isOverridden ? ' overridden' : ''}">${effectiveTime ? escHtml(fmt12h(effectiveTime)) : '—'}</span>
@@ -251,6 +306,7 @@ function renderTodaySection(outerContainer) {
                         <span class="tvc-slot-time">${escHtml(slotTimeLabel)}</span>
                     </div>
                     <span class="status-badge ${STATUS_COLORS[b.status]||'status-pending'}">${STATUS_LABELS[b.status]||'Pending'}</span>
+                    <span class="tvc-drag-handle">${dragHandle}</span>
                 </div>
             </div>`;
 
@@ -1763,7 +1819,9 @@ async function saveCloneBooking(bookingId) {
 
 // ─── EXPOSE ───────────────────────────────────────────────
 window.AdminBookings = {
-    init, setFilter, toggleHideRover, toggleCompletedSort, editVisitTime, openDetail, closeDetail,
+    init, setFilter, toggleHideRover, toggleCompletedSort, editVisitTime,
+    onTvcDragStart, onTvcDragOver, onTvcDragEnter, onTvcDrop, onTvcDragEnd,
+    openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
     markDepositReceived, markPaidInFull, markInService, markRoverConfirmed,
     addAdjustment, removeAdjustment, toggleAdjVisits,
