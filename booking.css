@@ -159,7 +159,7 @@
 
 .pill-option span {
     display: inline-block;
-    padding: 8px 16px;
+    padding: 14px 16px;
     border: 1.5px solid var(--border);
     border-radius: 50px;
     font-size: 13px;
