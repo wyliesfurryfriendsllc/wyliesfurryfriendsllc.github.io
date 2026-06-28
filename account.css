@@ -957,10 +957,10 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     -webkit-appearance: none;
     appearance: none;
     background: var(--cream);
-    border: 1.5px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: 12px;
-    padding: 8px 16px;
-    font-size: 13px;
+    padding: 14px 8px;
+    font-size: 15px;
     font-weight: 600;
     font-family: 'Inter', sans-serif;
     color: var(--brown-mid);
