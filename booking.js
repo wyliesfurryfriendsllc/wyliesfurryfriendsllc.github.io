@@ -265,11 +265,11 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots, isFirstDate = true) {
             <div id="slotWindowWrap_${tid}_${si}" style="${isSpecific?'display:none':''}">
                 <input type="hidden" id="slotPeriod_${tid}_${si}" value="${sl.period||''}">
                 <div class="time-period-pills">
-                    ${['Flexible','Morning','Noon','Afternoon','Evening','Night'].map(p =>
+                    ${['Anytime','Morning','Afternoon','Evening'].map(p =>
                         `<button type="button" class="time-period-pill${(sl.period||'')=== p?' active':''}" onclick="selectPeriod('${tid}',${si},'${p}')">${p}</button>`
                     ).join('')}
                 </div>
-                <div id="slotPickerWrap_${tid}_${si}" style="${sl.period==='Flexible'?'display:none':''}">
+                <div id="slotPickerWrap_${tid}_${si}">
                     <div class="time-range-inline">
                         <span class="time-range-label">From</span>
                         ${buildPickerHtml(`from_${tid}_${si}`, `slotFromHr_${tid}_${si}`, `slotFromMin_${tid}_${si}`, sl.fromHr, sl.fromMin)}
@@ -277,7 +277,6 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots, isFirstDate = true) {
                         ${buildPickerHtml(`to_${tid}_${si}`, `slotToHr_${tid}_${si}`, `slotToMin_${tid}_${si}`, sl.toHr, sl.toMin)}
                     </div>
                 </div>
-                <div id="slotFlexLabel_${tid}_${si}" class="slot-flexible-label" style="${sl.period==='Flexible'?'':'display:none'}">Any time · All day</div>
             </div>
         </div>`;
 }
@@ -304,12 +303,10 @@ function setSlotType(tid, si, type) {
 }
 
 const TP_PERIODS = {
-    Flexible:  null,
+    Anytime:   null,
     Morning:   { fromHr: 6,  fromMin: '00', toHr: 12, toMin: '00' },
-    Noon:      { fromHr: 10, fromMin: '00', toHr: 14, toMin: '00' },
     Afternoon: { fromHr: 12, fromMin: '00', toHr: 18, toMin: '00' },
-    Evening:   { fromHr: 16, fromMin: '00', toHr: 20, toMin: '00' },
-    Night:     { fromHr: 18, fromMin: '00', toHr: 22, toMin: '00' },
+    Evening:   { fromHr: 16, fromMin: '00', toHr: 21, toMin: '00' },
 };
 
 function setPickerVal(uid, hr24, min) {
@@ -338,17 +335,10 @@ function selectPeriod(tid, si, period) {
     if (periodInput) periodInput.value = period;
     const pickerWrap = document.getElementById(`slotPickerWrap_${tid}_${si}`);
     const flexLabel  = document.getElementById(`slotFlexLabel_${tid}_${si}`);
-    if (period === 'Flexible') {
-        if (pickerWrap) pickerWrap.style.display = 'none';
-        if (flexLabel)  flexLabel.style.display  = '';
-    } else {
-        if (pickerWrap) pickerWrap.style.display = '';
-        if (flexLabel)  flexLabel.style.display  = 'none';
-        const t = TP_PERIODS[period];
-        if (t) {
-            setPickerVal(`from_${tid}_${si}`, t.fromHr, t.fromMin);
-            setPickerVal(`to_${tid}_${si}`,   t.toHr,   t.toMin);
-        }
+    const t = TP_PERIODS[period];
+    if (t) {
+        setPickerVal(`from_${tid}_${si}`, t.fromHr, t.fromMin);
+        setPickerVal(`to_${tid}_${si}`,   t.toHr,   t.toMin);
     }
     updateSummary();
 }
@@ -789,8 +779,8 @@ function updateSummary() {
                     slotEls.forEach((_, si) => {
                         const type   = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
                         const period = document.getElementById(`slotPeriod_${tid}_${si}`)?.value || '';
-                        if (period === 'Flexible') {
-                            times.push('Flexible (All day)');
+                        if (period === 'Anytime') {
+                            times.push('Anytime (All day)');
                         } else if (type === 'specific') {
                             const v = getHMTime(`slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`);
                             times.push(v ? formatTime(v) : '—');
@@ -878,8 +868,8 @@ function collectDatesText() {
                 const type   = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
                 const period = document.getElementById(`slotPeriod_${tid}_${si}`)?.value || '';
                 const comboSuffix = isCombo ? ` (${document.getElementById(`comboDur_${tid}_${si}`)?.checked ? '60' : '30'} min)` : '';
-                if (period === 'Flexible') {
-                    times.push('Flexible (All day)' + comboSuffix);
+                if (period === 'Anytime') {
+                    times.push('Anytime (All day)' + comboSuffix);
                 } else if (type === 'specific') {
                     times.push(formatTime(getHMTime(`slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`)) + comboSuffix);
                 } else {
@@ -1096,8 +1086,8 @@ function reviewOrder(e) {
                     const type   = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
                     const period = document.getElementById(`slotPeriod_${tid}_${si}`)?.value || '';
                     const comboTag = isCombo ? `|${document.getElementById(`comboDur_${tid}_${si}`)?.checked ? '60' : '30'}` : '';
-                    if (period === 'Flexible') {
-                        times.push('flexible' + comboTag);
+                    if (period === 'Anytime') {
+                        times.push('anytime' + comboTag);
                     } else if (type === 'specific') {
                         const t = getHMTime(`slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`);
                         if (t) times.push(t + comboTag);

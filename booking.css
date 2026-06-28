@@ -474,7 +474,7 @@
     position: relative;
     background: var(--cream);
     border: 1.5px solid var(--border);
-    border-radius: 10px;
+    border-radius: 50px;
     padding: 3px;
     user-select: none;
 }
@@ -483,8 +483,8 @@
     top: 3px; bottom: 3px;
     width: calc(50% - 3px);
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    border-radius: 50px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
     transition: transform 0.22s cubic-bezier(.4,0,.2,1);
     transform: translateX(0);
     pointer-events: none;
@@ -493,14 +493,14 @@
 .slot-type-seg-label {
     position: relative;
     z-index: 1;
-    padding: 6px 14px;
+    padding: 6px 18px;
     font-size: 13px;
     font-weight: 600;
     color: var(--brown-mid);
     transition: color 0.2s;
     white-space: nowrap;
     cursor: pointer;
-    border-radius: 7px;
+    border-radius: 50px;
 }
 .slot-type-seg-label.active { color: var(--brown); }
 
