@@ -1168,18 +1168,23 @@ function sendRequest() {
 
     const datesText = collectDatesText();
     const { service, duration, total, clientName, clientPhone, clientEmail, clientNotes } = _bookingData;
+    const clientAddress = window._acctContactData?.address || '';
 
     let petsText = '';
     let pidx = 0;
     getSelectedSavedPets().forEach(p => {
         pidx++;
-        const ageStr = p.ageYears ? `${p.ageYears}yr${p.ageMonths ? ' ' + p.ageMonths + 'mo' : ''}` : (p.ageMonths ? p.ageMonths + 'mo' : '');
+        const birthday = p.birthday || p.birthDate || '';
+        const ageStr   = p.ageYears ? `${p.ageYears}yr${p.ageMonths ? ' ' + p.ageMonths + 'mo' : ''}` : (p.ageMonths ? p.ageMonths + 'mo' : '');
         petsText += `Pet ${pidx}: ${p.name || '—'} (${capitalize(p.type || 'dog')})\n`;
+        if (p.sex)            petsText += `  Sex: ${capitalize(p.sex)}\n`;
         if (p.breed)          petsText += `  Breed: ${p.breed}\n`;
-        if (p.birthDate)      petsText += `  Birthday: ${p.birthDate}\n`;
+        if (p.weight)         petsText += `  Weight: ${p.weight} lbs\n`;
+        if (birthday)         petsText += `  Birthday: ${birthday}\n`;
         else if (ageStr)      petsText += `  Age: ${ageStr}\n`;
         if (p.spayedNeutered) petsText += `  Spayed/Neutered: ${p.spayedNeutered}\n`;
-        if (p.careNotes)      petsText += `  Notes: ${p.careNotes}\n`;
+        if (p.microchipped)   petsText += `  Microchipped: ${p.microchipped}\n`;
+        if (p.careNotes || p.notes) petsText += `  Notes: ${p.careNotes || p.notes}\n`;
     });
     document.querySelectorAll('.pet-entry').forEach(entry => {
         pidx++;
@@ -1199,8 +1204,9 @@ function sendRequest() {
         `New booking request from your website:\n\n` +
         `Name: ${clientName}\n` +
         `Phone: ${clientPhone}\n` +
-        `Email: ${clientEmail}\n\n` +
-        `Service: ${service} (${duration})\n\n` +
+        `Email: ${clientEmail}\n` +
+        (clientAddress ? `Address: ${clientAddress}\n` : '') +
+        `\nService: ${service} (${duration})\n\n` +
         `Dates & Times:\n${datesText}\n\n` +
         `Pets:\n${petsText}\n` +
         `Estimated Total: $${total}\n` +
@@ -1506,7 +1512,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = snap.exists() ? snap.data() : {};
                 renderSavedPetCards(data.pets || []);
                 if (data.name || data.phone || data.email) {
-                    window._acctContactData = { name: data.name||'', phone: data.phone||'', email: data.email||'' };
+                    window._acctContactData = { name: data.name||'', phone: data.phone||'', email: data.email||'', address: data.address||'' };
                     if (data.name)  document.getElementById('clientName').value  = data.name;
                     if (data.phone) document.getElementById('clientPhone').value = data.phone;
                     if (data.email) document.getElementById('clientEmail').value = data.email;
