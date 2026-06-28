@@ -188,10 +188,14 @@
     margin-bottom: 12px;
 }
 
-.form-group label {
+.form-group label, .form-label-standalone {
     font-size: 13px;
     font-weight: 600;
     color: var(--brown);
+}
+.form-label-standalone {
+    display: block;
+    margin-bottom: 6px;
 }
 
 .optional {
