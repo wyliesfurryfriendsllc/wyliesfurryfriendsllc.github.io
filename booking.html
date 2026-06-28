@@ -224,9 +224,10 @@
             <!-- STEP 4: Contact Info (always shown when logged in) -->
             <div class="form-section">
                 <div class="form-section-label"><span class="step-num">4</span> Your Contact Info</div>
-                <div id="contactFromAccount" class="contact-from-acct-banner" style="display:none">
-                    Using info from your account &nbsp;·&nbsp;
-                    <button type="button" onclick="useManualContactInfo()">Use different info</button>
+                <div id="contactFromAccount" class="contact-info-seg" style="display:none">
+                    <div class="contact-seg-knob" id="contactSegKnob"></div>
+                    <span class="contact-seg-label active" onclick="useAccountContactInfo()">From account</span>
+                    <span class="contact-seg-label" onclick="useManualContactInfo()">Custom</span>
                 </div>
                 <div class="form-row">
                     <div class="form-group half"><label>Your name</label><input type="text" id="clientName" placeholder="Full name"></div>

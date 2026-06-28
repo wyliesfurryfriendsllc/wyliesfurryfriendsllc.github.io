@@ -1506,6 +1506,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = snap.exists() ? snap.data() : {};
                 renderSavedPetCards(data.pets || []);
                 if (data.name || data.phone || data.email) {
+                    window._acctContactData = { name: data.name||'', phone: data.phone||'', email: data.email||'' };
                     if (data.name)  document.getElementById('clientName').value  = data.name;
                     if (data.phone) document.getElementById('clientPhone').value = data.phone;
                     if (data.email) document.getElementById('clientEmail').value = data.email;
@@ -1527,6 +1528,21 @@ function useManualContactInfo() {
         el.readOnly = false;
         el.value = '';
     });
-    document.getElementById('contactFromAccount').style.display = 'none';
+    const knob = document.getElementById('contactSegKnob');
+    if (knob) knob.classList.add('right');
+    document.querySelectorAll('.contact-seg-label').forEach((l,i) => l.classList.toggle('active', i===1));
     document.getElementById('clientName').focus();
+}
+
+function useAccountContactInfo() {
+    const d = window._acctContactData || {};
+    document.getElementById('clientName').value  = d.name  || '';
+    document.getElementById('clientPhone').value = d.phone || '';
+    document.getElementById('clientEmail').value = d.email || '';
+    ['clientName','clientPhone','clientEmail'].forEach(id => {
+        document.getElementById(id).readOnly = true;
+    });
+    const knob = document.getElementById('contactSegKnob');
+    if (knob) knob.classList.remove('right');
+    document.querySelectorAll('.contact-seg-label').forEach((l,i) => l.classList.toggle('active', i===0));
 }
