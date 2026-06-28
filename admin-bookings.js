@@ -10,6 +10,7 @@ let activeFilter   = 'today';
 let activeBookingId = null;
 let hideRover      = false;
 let completedSortDesc = true;
+let allSortMode = 'date'; // 'date' | 'recent'
 let bookingSearch  = '';
 let clientFilter   = null; // { id, name } when viewing a specific client's bookings
 // admin-only visit schedule times (localStorage only, never sent to Firestore)
@@ -107,6 +108,11 @@ function toggleCompletedSort() {
     completedSortDesc = !completedSortDesc;
     const btn = document.getElementById('completedSortBtn');
     if (btn) btn.textContent = completedSortDesc ? '↓ Newest first' : '↑ Oldest first';
+    renderAdminBookings();
+}
+
+function toggleAllSort() {
+    allSortMode = allSortMode === 'date' ? 'recent' : 'date';
     renderAdminBookings();
 }
 
@@ -376,10 +382,20 @@ function renderAdminBookings() {
         return '9999-12-31';
     }
     const isCompleted = activeFilter === 'completed';
-    filtered.sort((a, b) => {
-        const cmp = getFirstDate(a).localeCompare(getFirstDate(b));
-        return isCompleted && completedSortDesc ? -cmp : cmp;
-    });
+    const isAll       = activeFilter === 'all' || activeFilter === 'today';
+
+    if (isAll && allSortMode === 'recent') {
+        filtered.sort((a, b) => {
+            const ta = (a.updatedAt || a.createdAt)?.toMillis?.() ?? 0;
+            const tb = (b.updatedAt || b.createdAt)?.toMillis?.() ?? 0;
+            return tb - ta;
+        });
+    } else {
+        filtered.sort((a, b) => {
+            const cmp = getFirstDate(a).localeCompare(getFirstDate(b));
+            return isCompleted && completedSortDesc ? -cmp : cmp;
+        });
+    }
 
     // Sort toggle button for completed
     const existing = document.getElementById('completedSortBtn');
@@ -397,6 +413,25 @@ function renderAdminBookings() {
         }
     } else {
         if (existing) existing.remove();
+    }
+
+    // Sort toggle button for All / Today's
+    const existingAllSort = document.getElementById('allSortBtn');
+    if (isAll) {
+        if (!existingAllSort) {
+            const btn = document.createElement('button');
+            btn.id = 'allSortBtn';
+            btn.className = 'filter-chip' + (allSortMode === 'recent' ? ' active' : '');
+            btn.style.marginBottom = '8px';
+            btn.textContent = allSortMode === 'recent' ? '↓ Recently updated' : '↕ Sort by date';
+            btn.onclick = () => AdminBookings.toggleAllSort();
+            container.parentNode.insertBefore(btn, container);
+        } else {
+            existingAllSort.textContent = allSortMode === 'recent' ? '↓ Recently updated' : '↕ Sort by date';
+            existingAllSort.classList.toggle('active', allSortMode === 'recent');
+        }
+    } else {
+        if (existingAllSort) existingAllSort.remove();
     }
 
     // Build date groups
@@ -1819,7 +1854,7 @@ async function saveCloneBooking(bookingId) {
 
 // ─── EXPOSE ───────────────────────────────────────────────
 window.AdminBookings = {
-    init, setFilter, toggleHideRover, toggleCompletedSort, editVisitTime,
+    init, setFilter, toggleHideRover, toggleCompletedSort, toggleAllSort, editVisitTime,
     onTvcDragStart, onTvcDragOver, onTvcDragEnter, onTvcDrop, onTvcDragEnd,
     openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
