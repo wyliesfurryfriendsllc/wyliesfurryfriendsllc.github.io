@@ -946,9 +946,15 @@ async function savePetModal() {
     if (!currentUser) return;
     const idx = parseInt(document.getElementById('petModalIdx').value);
     const ageMode    = document.querySelector('input[name="petAgeMode"]:checked')?.value || 'exact';
-    const birthday   = ageMode === 'exact' ? (document.getElementById('petModalBirthday').value || '') : '';
+    let birthday     = ageMode === 'exact' ? (document.getElementById('petModalBirthday').value || '') : '';
     const ageYear    = ageMode === 'yearmonth' ? (document.getElementById('petModalAgeYear').value.trim() || '') : '';
     const ageMonth   = ageMode === 'yearmonth' ? (document.getElementById('petModalAgeMonth').value || '') : '';
+    if (!birthday && (ageYear || ageMonth)) {
+        const d = new Date();
+        d.setFullYear(d.getFullYear() - (parseInt(ageYear) || 0));
+        d.setMonth(d.getMonth() - (parseInt(ageMonth) || 0));
+        birthday = d.toISOString().slice(0, 10);
+    }
     const sex        = getPillValue('petSexGroup');
     const type       = getPillValue('petTypeGroup') || 'dog';
 

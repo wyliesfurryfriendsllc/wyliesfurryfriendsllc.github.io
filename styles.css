@@ -239,8 +239,8 @@ nav {
     box-shadow: none;
 }
 .badge-icon-wrap {
-    width: 48px;
-    height: 48px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     background: #F2C4CE;
     display: flex;
@@ -250,8 +250,8 @@ nav {
     color: var(--pink);
 }
 .badge-icon-wrap svg {
-    width: 20px;
-    height: 20px;
+    width: 14px;
+    height: 14px;
 }
 .badge-icon-text {
     font-size: 13px;
@@ -896,7 +896,7 @@ footer {
         gap: 40px;
     }
 
-    .hero-title { font-size: 36px; }
+    .hero-title { font-size: 54px; }
 
     .hero-photo-placeholder { aspect-ratio: 1/1; }
 

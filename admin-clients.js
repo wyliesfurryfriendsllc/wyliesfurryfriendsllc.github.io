@@ -324,7 +324,15 @@ async function saveModal() {
 
     const data = {
         name, phone, email, address, notes,
-        pets: petEntries.filter(p => p.name.trim()),
+        pets: petEntries.filter(p => p.name.trim()).map(p => {
+            if (!p.birthDate && (p.ageYears || p.ageMonths)) {
+                const d = new Date();
+                d.setFullYear(d.getFullYear() - (parseInt(p.ageYears) || 0));
+                d.setMonth(d.getMonth() - (parseInt(p.ageMonths) || 0));
+                return { ...p, birthDate: d.toISOString().slice(0, 10) };
+            }
+            return p;
+        }),
         updatedAt: serverTimestamp()
     };
 
@@ -336,7 +344,7 @@ async function saveModal() {
             await updateDoc(doc(db, 'clients', editingClientId), data);
             const clientObj = allClients.find(x => x.id === editingClientId);
             if (clientObj?.uid) {
-                await updateDoc(doc(db, 'users', clientObj.uid), { pets: data.pets });
+                updateDoc(doc(db, 'users', clientObj.uid), { pets: data.pets }).catch(() => {});
             }
         } else {
             data.createdAt = serverTimestamp();

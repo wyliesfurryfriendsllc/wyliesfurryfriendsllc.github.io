@@ -386,6 +386,17 @@ function renderScheduleHtml(b) {
     return `<pre class="detail-dates">${escHtml((b.datesText || '—').trim())}</pre>`;
 }
 
+function _calcAgeFromDate(iso) {
+    if (!iso) return '';
+    const now = new Date(), bd = new Date(iso + 'T00:00:00');
+    let m = (now.getFullYear() - bd.getFullYear()) * 12 + (now.getMonth() - bd.getMonth());
+    if (now.getDate() < bd.getDate()) m--;
+    if (m < 0) return '';
+    const y = Math.floor(m / 12), mo = m % 12;
+    if (y === 0) return `${mo}mo`;
+    return mo ? `${y}yr ${mo}mo` : `${y}yr`;
+}
+
 function renderPetsHtml(pets) {
     if (!pets || pets.length === 0) return '<p style="color:var(--brown-mid);padding:8px 0">No pets listed.</p>';
     const items = pets.map(p => {
@@ -393,9 +404,12 @@ function renderPetsHtml(pets) {
         const avatar = p.photoUrl
             ? `<img class="detail-pet-avatar" src="${escHtml(p.photoUrl)}" alt="${escHtml(p.name || '')}">`
             : `<div class="detail-pet-emoji">${emoji}</div>`;
+        const ageStr = _calcAgeFromDate(p.birthDate || p.birthday)
+            || (p.age || [p.ageYears ? p.ageYears + 'yr' : '', p.ageMonths ? p.ageMonths + 'mo' : ''].filter(Boolean).join(' '));
         const metaParts = [
             p.gender,
-            p.weight ? p.weight + ' lbs' : ''
+            p.weight ? p.weight + ' lbs' : '',
+            ageStr
         ].filter(Boolean);
         return `
             <div class="detail-pet-row">

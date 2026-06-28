@@ -153,7 +153,7 @@ function updateCalendarTriggerText() {
 
 // ─── SELECTED DATES LIST ─────────────────────────────────
 function emptySlot() {
-    return { type: 'window', specHr: '', specMin: '00', fromHr: '', fromMin: '00', toHr: '', toMin: '00', comboDur: '30' };
+    return { type: 'window', period: '', specHr: '', specMin: '00', fromHr: '', fromMin: '00', toHr: '', toMin: '00', comboDur: '30' };
 }
 
 function saveCurrentDateState() {
@@ -169,6 +169,7 @@ function saveCurrentDateState() {
             const type = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
             slots.push({
                 type,
+                period:  document.getElementById(`slotPeriod_${tid}_${si}`)?.value ?? '',
                 specHr:  document.getElementById(`slotSpecHr_${tid}_${si}`)?.value ?? '',
                 specMin: document.getElementById(`slotSpecMin_${tid}_${si}`)?.value ?? '00',
                 fromHr:  document.getElementById(`slotFromHr_${tid}_${si}`)?.value ?? '',
@@ -247,15 +248,12 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots, isFirstDate = true) {
                 </div>
             </div>` : ''}
             <div class="slot-header">
-                <div class="slot-type-pills">
-                    <label class="pill-option">
-                        <input type="radio" name="slotType_${tid}_${si}" value="window" ${!isSpecific?'checked':''} onchange="toggleSlotType('${tid}',${si})">
-                        <span>Range</span>
-                    </label>
-                    <label class="pill-option">
-                        <input type="radio" name="slotType_${tid}_${si}" value="specific" ${isSpecific?'checked':''} onchange="toggleSlotType('${tid}',${si})">
-                        <span>Exact Time</span>
-                    </label>
+                <div class="slot-type-seg" id="slotSeg_${tid}_${si}">
+                    <input type="radio" name="slotType_${tid}_${si}" value="window" ${!isSpecific?'checked':''} style="display:none">
+                    <input type="radio" name="slotType_${tid}_${si}" value="specific" ${isSpecific?'checked':''} style="display:none">
+                    <div class="slot-type-seg-knob${isSpecific?' right':''}" id="slotSegKnob_${tid}_${si}"></div>
+                    <span class="slot-type-seg-label${!isSpecific?' active':''}" onclick="setSlotType('${tid}',${si},'window')">Range</span>
+                    <span class="slot-type-seg-label${isSpecific?' active':''}" onclick="setSlotType('${tid}',${si},'specific')">Exact Time</span>
                 </div>
                 ${totalSlots > 1 ? `<button type="button" class="slot-remove-btn" onclick="removeSlot('${dateStr}',${si})" title="Remove">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -265,12 +263,21 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots, isFirstDate = true) {
                 ${buildPickerHtml(`spec_${tid}_${si}`, `slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`, sl.specHr, sl.specMin)}
             </div>
             <div id="slotWindowWrap_${tid}_${si}" style="${isSpecific?'display:none':''}">
-                <div class="time-range-inline">
-                    <span class="time-range-label">From</span>
-                    ${buildPickerHtml(`from_${tid}_${si}`, `slotFromHr_${tid}_${si}`, `slotFromMin_${tid}_${si}`, sl.fromHr, sl.fromMin)}
-                    <span class="time-range-label">To</span>
-                    ${buildPickerHtml(`to_${tid}_${si}`, `slotToHr_${tid}_${si}`, `slotToMin_${tid}_${si}`, sl.toHr, sl.toMin)}
+                <input type="hidden" id="slotPeriod_${tid}_${si}" value="${sl.period||''}">
+                <div class="time-period-pills">
+                    ${['Flexible','Morning','Noon','Afternoon','Evening','Night'].map(p =>
+                        `<button type="button" class="time-period-pill${(sl.period||'')=== p?' active':''}" onclick="selectPeriod('${tid}',${si},'${p}')">${p}</button>`
+                    ).join('')}
                 </div>
+                <div id="slotPickerWrap_${tid}_${si}" style="${sl.period==='Flexible'?'display:none':''}">
+                    <div class="time-range-inline">
+                        <span class="time-range-label">From</span>
+                        ${buildPickerHtml(`from_${tid}_${si}`, `slotFromHr_${tid}_${si}`, `slotFromMin_${tid}_${si}`, sl.fromHr, sl.fromMin)}
+                        <span class="time-range-label">To</span>
+                        ${buildPickerHtml(`to_${tid}_${si}`, `slotToHr_${tid}_${si}`, `slotToMin_${tid}_${si}`, sl.toHr, sl.toMin)}
+                    </div>
+                </div>
+                <div id="slotFlexLabel_${tid}_${si}" class="slot-flexible-label" style="${sl.period==='Flexible'?'':'display:none'}">Any time · All day</div>
             </div>
         </div>`;
 }
@@ -283,10 +290,66 @@ function onDateModeChange(tid, dateStr) {
     updateSummary();
 }
 
-function toggleSlotType(tid, si) {
-    const type = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
-    document.getElementById(`slotSpecWrap_${tid}_${si}`).style.display   = type === 'specific' ? '' : 'none';
-    document.getElementById(`slotWindowWrap_${tid}_${si}`).style.display = type === 'window'   ? '' : 'none';
+function setSlotType(tid, si, type) {
+    document.querySelectorAll(`input[name="slotType_${tid}_${si}"]`).forEach(r => r.checked = r.value === type);
+    const isSpecific = type === 'specific';
+    document.getElementById(`slotSpecWrap_${tid}_${si}`).style.display   = isSpecific ? '' : 'none';
+    document.getElementById(`slotWindowWrap_${tid}_${si}`).style.display = isSpecific ? 'none' : '';
+    const knob = document.getElementById(`slotSegKnob_${tid}_${si}`);
+    if (knob) knob.classList.toggle('right', isSpecific);
+    document.querySelectorAll(`#slotSeg_${tid}_${si} .slot-type-seg-label`).forEach((el, i) => {
+        el.classList.toggle('active', isSpecific ? i === 1 : i === 0);
+    });
+    updateSummary();
+}
+
+const TP_PERIODS = {
+    Flexible:  null,
+    Morning:   { fromHr: 6,  fromMin: '00', toHr: 12, toMin: '00' },
+    Noon:      { fromHr: 10, fromMin: '00', toHr: 14, toMin: '00' },
+    Afternoon: { fromHr: 12, fromMin: '00', toHr: 18, toMin: '00' },
+    Evening:   { fromHr: 16, fromMin: '00', toHr: 20, toMin: '00' },
+    Night:     { fromHr: 18, fromMin: '00', toHr: 22, toMin: '00' },
+};
+
+function setPickerVal(uid, hr24, min) {
+    const wrap = document.getElementById(`tpWrap_${uid}`);
+    if (!wrap) return;
+    const [hrInput, minInput] = wrap.querySelectorAll('input[type="hidden"]');
+    if (hrInput) hrInput.value = hr24;
+    if (minInput) minInput.value = min;
+    const lbl = document.getElementById(`tpLabel_${uid}`);
+    if (lbl) lbl.textContent = _tpFmt(hr24, min);
+    const ampm = hr24 >= 12 ? 'PM' : 'AM';
+    const hr12 = hr24 % 12 || 12;
+    const ampmCol = document.getElementById(`tpAmpm_${uid}`);
+    const hrCol   = document.getElementById(`tpHr_${uid}`);
+    const minCol  = document.getElementById(`tpMin_${uid}`);
+    if (ampmCol) ampmCol.scrollTop = (ampm === 'PM' ? 1 : 0) * TP_H;
+    if (hrCol)   hrCol.scrollTop   = (hr12 - 1) * TP_H;
+    if (minCol)  minCol.scrollTop  = ['00','15','30','45'].indexOf(min) * TP_H;
+}
+
+function selectPeriod(tid, si, period) {
+    document.querySelectorAll(`#slotWindowWrap_${tid}_${si} .time-period-pill`).forEach(el => {
+        el.classList.toggle('active', el.textContent === period);
+    });
+    const periodInput = document.getElementById(`slotPeriod_${tid}_${si}`);
+    if (periodInput) periodInput.value = period;
+    const pickerWrap = document.getElementById(`slotPickerWrap_${tid}_${si}`);
+    const flexLabel  = document.getElementById(`slotFlexLabel_${tid}_${si}`);
+    if (period === 'Flexible') {
+        if (pickerWrap) pickerWrap.style.display = 'none';
+        if (flexLabel)  flexLabel.style.display  = '';
+    } else {
+        if (pickerWrap) pickerWrap.style.display = '';
+        if (flexLabel)  flexLabel.style.display  = 'none';
+        const t = TP_PERIODS[period];
+        if (t) {
+            setPickerVal(`from_${tid}_${si}`, t.fromHr, t.fromMin);
+            setPickerVal(`to_${tid}_${si}`,   t.toHr,   t.toMin);
+        }
+    }
     updateSummary();
 }
 
@@ -573,6 +636,17 @@ function populateRangeTimeSelects() {
 }
 
 // ─── SAVED PETS ──────────────────────────────────────────
+function _calcAgeFromDate(iso) {
+    if (!iso) return '';
+    const now = new Date(), bd = new Date(iso + 'T00:00:00');
+    let m = (now.getFullYear() - bd.getFullYear()) * 12 + (now.getMonth() - bd.getMonth());
+    if (now.getDate() < bd.getDate()) m--;
+    if (m < 0) return '';
+    const y = Math.floor(m / 12), mo = m % 12;
+    if (y === 0) return `${mo}mo`;
+    return mo ? `${y}yr ${mo}mo` : `${y}yr`;
+}
+
 function renderSavedPetCards(pets) {
     savedUserPets = pets;
     const container = document.getElementById('savedPetCards');
@@ -595,7 +669,8 @@ function renderSavedPetCards(pets) {
                 const avatar = p.photoUrl
                     ? `<img class="sp-avatar" src="${p.photoUrl}" alt="${p.name || ''}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
                     : '';
-                const ageStr = [p.ageYears ? p.ageYears + 'yr' : '', p.ageMonths ? p.ageMonths + 'mo' : ''].filter(Boolean).join(' ');
+                const ageStr = _calcAgeFromDate(p.birthDate || p.birthday)
+                    || [p.ageYears ? p.ageYears + 'yr' : '', p.ageMonths ? p.ageMonths + 'mo' : ''].filter(Boolean).join(' ');
                 const meta = [p.breed, ageStr].filter(Boolean).join(' · ');
                 return `<label class="saved-pet-card" id="spc${i}">
                     <input type="checkbox" class="sp-check" data-idx="${i}" checked onchange="updateSummary()">
@@ -712,8 +787,11 @@ function updateSummary() {
                     const slotEls = slotsWrap.querySelectorAll('.date-slot');
                     const times = [];
                     slotEls.forEach((_, si) => {
-                        const type = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
-                        if (type === 'specific') {
+                        const type   = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
+                        const period = document.getElementById(`slotPeriod_${tid}_${si}`)?.value || '';
+                        if (period === 'Flexible') {
+                            times.push('Flexible (All day)');
+                        } else if (type === 'specific') {
                             const v = getHMTime(`slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`);
                             times.push(v ? formatTime(v) : '—');
                         } else {
@@ -797,9 +875,12 @@ function collectDatesText() {
             const slotEls = slotsWrap ? slotsWrap.querySelectorAll('.date-slot') : [];
             const times = [];
             slotEls.forEach((_, si) => {
-                const type = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
+                const type   = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
+                const period = document.getElementById(`slotPeriod_${tid}_${si}`)?.value || '';
                 const comboSuffix = isCombo ? ` (${document.getElementById(`comboDur_${tid}_${si}`)?.checked ? '60' : '30'} min)` : '';
-                if (type === 'specific') {
+                if (period === 'Flexible') {
+                    times.push('Flexible (All day)' + comboSuffix);
+                } else if (type === 'specific') {
                     times.push(formatTime(getHMTime(`slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`)) + comboSuffix);
                 } else {
                     const from = getHMTime(`slotFromHr_${tid}_${si}`, `slotFromMin_${tid}_${si}`);
@@ -1012,9 +1093,12 @@ function reviewOrder(e) {
                 const slotEls = slotsWrap ? slotsWrap.querySelectorAll('.date-slot') : [];
                 const times = [];
                 slotEls.forEach((_, si) => {
-                    const type = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
+                    const type   = document.querySelector(`input[name="slotType_${tid}_${si}"]:checked`)?.value || 'specific';
+                    const period = document.getElementById(`slotPeriod_${tid}_${si}`)?.value || '';
                     const comboTag = isCombo ? `|${document.getElementById(`comboDur_${tid}_${si}`)?.checked ? '60' : '30'}` : '';
-                    if (type === 'specific') {
+                    if (period === 'Flexible') {
+                        times.push('flexible' + comboTag);
+                    } else if (type === 'specific') {
                         const t = getHMTime(`slotSpecHr_${tid}_${si}`, `slotSpecMin_${tid}_${si}`);
                         if (t) times.push(t + comboTag);
                     } else {
