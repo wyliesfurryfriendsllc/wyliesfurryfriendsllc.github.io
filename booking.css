@@ -503,6 +503,16 @@
 }
 .slot-type-seg-label.active { color: var(--brown); }
 
+/* Quick select label */
+.time-period-quick-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--brown-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 10px 0 6px;
+}
+
 /* Time period pills — matches .pill-option span style */
 .time-period-pills {
     display: flex;
