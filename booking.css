@@ -391,7 +391,6 @@
 .slot-type-tip {
     font-size: 12px;
     color: var(--brown-mid);
-    background: var(--cream);
     border-radius: 8px;
     padding: 8px 12px;
     margin-bottom: 10px;
@@ -504,7 +503,7 @@
 }
 .slot-type-seg-label.active { color: var(--brown); }
 
-/* Time period pills */
+/* Time period pills — matches .pill-option span style */
 .time-period-pills {
     display: flex;
     gap: 6px;
@@ -512,33 +511,29 @@
     margin-bottom: 10px;
 }
 .time-period-pill {
-    padding: 5px 11px;
-    border-radius: 20px;
+    display: inline-block;
+    padding: 8px 16px;
     border: 1.5px solid var(--border);
-    background: var(--cream);
-    font-size: 12px;
-    font-weight: 600;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 500;
     color: var(--brown-mid);
+    background: var(--cream);
     cursor: pointer;
-    transition: border-color 0.2s, background 0.2s, color 0.2s;
+    transition: all 0.2s;
     white-space: nowrap;
     font-family: 'Inter', sans-serif;
 }
 .time-period-pill:hover {
     border-color: var(--pink);
-    color: var(--pink);
     background: var(--pink-light);
+    color: var(--brown);
 }
 .time-period-pill.active {
     border-color: var(--pink);
     background: var(--pink-light);
-    color: var(--pink);
-}
-.slot-flexible-label {
-    font-size: 13px;
+    color: var(--brown);
     font-weight: 600;
-    color: var(--brown-mid);
-    padding: 6px 2px;
 }
 
 .slot-remove-btn {
@@ -1042,16 +1037,17 @@ details.deposit-policy[open] summary { color: var(--pink); }
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 10px 14px;
+    padding: 8px 16px;
     background: var(--cream);
     border: 1.5px solid var(--border);
-    border-radius: 10px;
-    font-size: 14px;
+    border-radius: 50px;
+    font-size: 13px;
     font-family: 'Inter', sans-serif;
-    color: var(--brown);
+    color: var(--brown-mid);
+    font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
 }
 .tp-trigger:hover { border-color: var(--pink); }
 

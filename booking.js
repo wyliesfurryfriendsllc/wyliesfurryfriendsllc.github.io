@@ -248,12 +248,15 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots, isFirstDate = true) {
                 </div>
             </div>` : ''}
             <div class="slot-header">
-                <div class="slot-type-seg" id="slotSeg_${tid}_${si}">
-                    <input type="radio" name="slotType_${tid}_${si}" value="window" ${!isSpecific?'checked':''} style="display:none">
-                    <input type="radio" name="slotType_${tid}_${si}" value="specific" ${isSpecific?'checked':''} style="display:none">
-                    <div class="slot-type-seg-knob${isSpecific?' right':''}" id="slotSegKnob_${tid}_${si}"></div>
-                    <span class="slot-type-seg-label${!isSpecific?' active':''}" onclick="setSlotType('${tid}',${si},'window')">Range</span>
-                    <span class="slot-type-seg-label${isSpecific?' active':''}" onclick="setSlotType('${tid}',${si},'specific')">Exact Time</span>
+                <div class="slot-type-pills">
+                    <label class="pill-option">
+                        <input type="radio" name="slotType_${tid}_${si}" value="window" ${!isSpecific?'checked':''} onchange="setSlotType('${tid}',${si},'window')">
+                        <span>Range</span>
+                    </label>
+                    <label class="pill-option">
+                        <input type="radio" name="slotType_${tid}_${si}" value="specific" ${isSpecific?'checked':''} onchange="setSlotType('${tid}',${si},'specific')">
+                        <span>Exact Time</span>
+                    </label>
                 </div>
                 ${totalSlots > 1 ? `<button type="button" class="slot-remove-btn" onclick="removeSlot('${dateStr}',${si})" title="Remove">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
