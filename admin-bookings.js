@@ -880,7 +880,7 @@ function renderDetail(b, panel) {
             <div class="detail-section-label">Pets (${pets.length})</div>
             ${renderPetsHtml(pets, pets.length > 0 ? b.id : null)}
             ${pets.length > 0 && b.clientId ? `
-            <button class="admin-btn-secondary" style="margin-top:8px;font-size:12px" onclick="AdminBookings.savePetsToClient('${b.id}')">＋ 保存所选宠物到客户档案</button>` : ''}
+            <button class="admin-btn-secondary no-export" style="margin-top:8px;font-size:12px" onclick="AdminBookings.savePetsToClient('${b.id}')">＋ 保存所选宠物到客户档案</button>` : ''}
         </div>
 
         <div class="detail-section">
@@ -1416,8 +1416,8 @@ async function exportImage(bookingId) {
     const svgIcon = btn?.innerHTML;
     if (btn) { btn.textContent = '…'; btn.disabled = true; }
 
-    const badges = target.querySelectorAll('.status-badge');
-    badges.forEach(badge => { badge.style.display = 'none'; });
+    const hideEls = target.querySelectorAll('.status-badge, .pet-save-chk, .detail-pet-meta, .no-export');
+    hideEls.forEach(el => { el.style.display = 'none'; });
 
     try {
         const canvas = await html2canvas(target, {
@@ -1468,7 +1468,7 @@ async function exportImage(bookingId) {
     } catch(e) {
         if (e.name !== 'AbortError') alert('Export failed: ' + e.message);
     } finally {
-        badges.forEach(badge => { badge.style.display = ''; });
+        hideEls.forEach(el => { el.style.display = ''; });
         if (btn) { btn.disabled = false; btn.innerHTML = svgIcon; }
     }
 }
