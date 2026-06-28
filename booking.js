@@ -330,20 +330,39 @@ function setPickerVal(uid, hr24, min) {
     if (minCol)  minCol.scrollTop  = ['00','15','30','45'].indexOf(min) * TP_H;
 }
 
+function clearPickerVal(uid) {
+    const wrap = document.getElementById(`tpWrap_${uid}`);
+    if (!wrap) return;
+    const [hrInput, minInput] = wrap.querySelectorAll('input[type="hidden"]');
+    if (hrInput) hrInput.value = '';
+    if (minInput) minInput.value = '00';
+    const lbl = document.getElementById(`tpLabel_${uid}`);
+    if (lbl) lbl.textContent = '—';
+}
+
 function selectPeriod(tid, si, period) {
-    document.querySelectorAll(`#slotWindowWrap_${tid}_${si} .time-period-pill`).forEach(el => {
-        el.classList.toggle('active', el.textContent === period);
-    });
     const periodInput = document.getElementById(`slotPeriod_${tid}_${si}`);
-    if (periodInput) periodInput.value = period;
+    const current = periodInput?.value || '';
+    const isToggleOff = current === period;
+    const newPeriod = isToggleOff ? '' : period;
+
+    document.querySelectorAll(`#slotWindowWrap_${tid}_${si} .time-period-pill`).forEach(el => {
+        el.classList.toggle('active', !isToggleOff && el.textContent === period);
+    });
+    if (periodInput) periodInput.value = newPeriod;
+
     const pickerWrap = document.getElementById(`slotPickerWrap_${tid}_${si}`);
-    const flexLabel  = document.getElementById(`slotFlexLabel_${tid}_${si}`);
-    const pickerWrap = document.getElementById(`slotPickerWrap_${tid}_${si}`);
-    if (pickerWrap) pickerWrap.style.display = period === 'Anytime' ? 'none' : '';
-    const t = TP_PERIODS[period];
-    if (t) {
-        setPickerVal(`from_${tid}_${si}`, t.fromHr, t.fromMin);
-        setPickerVal(`to_${tid}_${si}`,   t.toHr,   t.toMin);
+    if (pickerWrap) pickerWrap.style.display = newPeriod === 'Anytime' ? 'none' : '';
+
+    if (isToggleOff) {
+        clearPickerVal(`from_${tid}_${si}`);
+        clearPickerVal(`to_${tid}_${si}`);
+    } else {
+        const t = TP_PERIODS[period];
+        if (t) {
+            setPickerVal(`from_${tid}_${si}`, t.fromHr, t.fromMin);
+            setPickerVal(`to_${tid}_${si}`,   t.toHr,   t.toMin);
+        }
     }
     updateSummary();
 }
