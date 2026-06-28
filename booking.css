@@ -393,9 +393,7 @@
 .slot-type-tip {
     font-size: 12px;
     color: var(--brown-mid);
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin-bottom: 10px;
+    padding: 0 0 10px;
     line-height: 1.5;
 }
 .slot-header {
