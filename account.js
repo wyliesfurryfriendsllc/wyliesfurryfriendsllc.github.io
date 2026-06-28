@@ -1103,18 +1103,33 @@ async function saveProfile() {
 
 // ─── SYNC TO ADMIN CLIENTS ───────────────────────────────
 async function syncToClients(user, profile) {
-    const pets = (profile.pets || []).map(p => ({
-        name: p.name || '', type: p.type || 'dog', photoUrl: p.photoUrl || '',
-        age: [p.ageYears && p.ageYears + 'yr', p.ageMonths && p.ageMonths + 'mo'].filter(Boolean).join(' ')
-    }));
-    await setDoc(doc(db, 'clients', user.uid), {
-        name: profile.name || user.displayName || '',
-        email: user.email,
-        phone: profile.phone || '',
-        address: profile.address || '',
-        pets, uid: user.uid, source: 'account',
+    const updateData = {
+        name:      profile.name || user.displayName || '',
+        email:     user.email,
+        phone:     profile.phone   || '',
+        address:   profile.address || '',
+        uid:       user.uid,
+        source:    'account',
         updatedAt: serverTimestamp()
-    }, { merge: true });
+    };
+    const profilePets = profile.pets || [];
+    if (profilePets.length > 0) {
+        updateData.pets = profilePets.map(p => ({
+            name:           p.name           || '',
+            type:           p.type           || 'dog',
+            photoUrl:       p.photoUrl       || '',
+            breed:          p.breed          || '',
+            weight:         p.weight         || '',
+            sex:            p.sex            || '',
+            spayedNeutered: p.spayedNeutered || '',
+            microchipped:   p.microchipped   || '',
+            notes:          p.careNotes      || p.notes || '',
+            birthDate:      p.birthday       || p.birthDate  || '',
+            ageYears:       p.ageYear        || p.ageYears   || '',
+            ageMonths:      p.ageMonth       || p.ageMonths  || '',
+        }));
+    }
+    await setDoc(doc(db, 'clients', user.uid), updateData, { merge: true });
 }
 
 // ─── ACCOUNT CALENDAR ─────────────────────────────────────

@@ -1,6 +1,6 @@
 import {
     db, collection, query, orderBy, onSnapshot,
-    doc, updateDoc, addDoc, deleteDoc, serverTimestamp
+    doc, updateDoc, addDoc, deleteDoc, serverTimestamp, getDoc
 } from './firebase.js';
 
 let clientsUnsub = null;
@@ -103,6 +103,7 @@ function renderClients() {
                         <button class="admin-btn-primary" onclick="AdminClients.bookClient('${c.id}')">+ Book</button>
                         <button class="admin-btn-secondary" onclick="AdminClients.viewClientBookings('${c.id}','${escHtml(c.name||'')}')">Bookings</button>
                         <button class="admin-btn-secondary" onclick="AdminClients.openModal('${c.id}')">Edit</button>
+                        ${c.uid ? `<button class="admin-btn-secondary" onclick="AdminClients.restorePets('${c.id}','${c.uid}','${escHtml(c.name||'')}')">↻ 恢复宠物</button>` : ''}
                         <button class="admin-btn-delete" onclick="AdminClients.deleteClient('${c.id}','${escHtml(c.name||'')}')">Delete</button>
                     </div>
                 </div>
@@ -473,6 +474,39 @@ function viewClientBookings(clientId, clientName) {
     window.AdminBookings?.filterByClient(clientId, clientName);
 }
 
+async function restorePets(clientId, uid, clientName) {
+    try {
+        const userSnap = await getDoc(doc(db, 'users', uid));
+        if (!userSnap.exists()) {
+            alert(`找不到 ${clientName} 的账号数据。`);
+            return;
+        }
+        const pets = (userSnap.data().pets || []);
+        if (pets.length === 0) {
+            alert(`${clientName} 的账号里没有宠物信息。`);
+            return;
+        }
+        const mappedPets = pets.map(p => ({
+            name:           p.name           || '',
+            type:           p.type           || 'dog',
+            photoUrl:       p.photoUrl       || '',
+            breed:          p.breed          || '',
+            weight:         p.weight         || '',
+            sex:            p.sex            || '',
+            spayedNeutered: p.spayedNeutered || '',
+            microchipped:   p.microchipped   || '',
+            notes:          p.careNotes      || p.notes || '',
+            birthDate:      p.birthday       || p.birthDate  || '',
+            ageYears:       p.ageYear        || p.ageYears   || '',
+            ageMonths:      p.ageMonth       || p.ageMonths  || '',
+        }));
+        await updateDoc(doc(db, 'clients', clientId), { pets: mappedPets, updatedAt: serverTimestamp() });
+        alert(`✓ 已为 ${clientName} 恢复 ${mappedPets.length} 只宠物的信息。`);
+    } catch (e) {
+        alert('恢复失败：' + e.message);
+    }
+}
+
 async function deleteClient(clientId, clientName) {
     if (!confirm(`Delete client "${clientName}"? This cannot be undone.`)) return;
     try {
@@ -491,5 +525,5 @@ window.AdminClients = {
     init, openModal, closeModal, saveModal, onSearch,
     addPet, removePet, updatePet, refreshPetPreview, getAllClients,
     searchAddress, pickAddress, uploadPetPhoto, calcAge, bookClient, setBdayMode,
-    renderModalPets, deleteClient, viewClientBookings
+    renderModalPets, deleteClient, viewClientBookings, restorePets
 };
