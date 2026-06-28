@@ -329,7 +329,9 @@ function openNewBookingModal() {
 }
 
 // ─── TIME HELPERS ────────────────────────────────────────
-function emptySlot() { return { mode: 'time', start: '', end: '', dur: 30 }; }
+function emptySlot() {
+    return { type: 'window', period: '', specHr: '', specMin: '00', fromHr: '', fromMin: '00', toHr: '', toMin: '00', dur: 30 };
+}
 
 function parseSlotObj(t) {
     if (!t) return emptySlot();
@@ -363,6 +365,273 @@ function buildHHMM(h, m) {
     const raw = parseInt(h);
     if (!h || isNaN(raw)) return '';
     return `${String(Math.max(1, Math.min(24, raw))).padStart(2,'0')}:${m || '00'}`;
+}
+
+// ─── SCROLL-WHEEL PICKER (admin new-booking) ────────────────
+const NB_TP_H = 44;
+const _nbTpTimers = {};
+let _nbTpDrag = null;
+
+document.addEventListener('mousemove', e => {
+    if (!_nbTpDrag) return;
+    _nbTpDrag.col.scrollTop = _nbTpDrag.startScrollTop - (e.clientY - _nbTpDrag.startY);
+});
+document.addEventListener('mouseup', () => {
+    if (!_nbTpDrag) return;
+    const { col, uid } = _nbTpDrag;
+    _nbTpDrag = null;
+    col.style.cursor = '';
+    const snapped = Math.round(col.scrollTop / NB_TP_H) * NB_TP_H;
+    col.scrollTo({ top: snapped, behavior: 'smooth' });
+    setTimeout(() => nbSyncPickerToInputs(uid), 200);
+});
+
+const NB_PERIODS = {
+    Anytime:   null,
+    Morning:   { fromHr: 6,  fromMin: '00', toHr: 12, toMin: '00' },
+    Afternoon: { fromHr: 12, fromMin: '00', toHr: 18, toMin: '00' },
+    Evening:   { fromHr: 16, fromMin: '00', toHr: 21, toMin: '00' },
+};
+
+function _nbTpFmt(hr24, min) {
+    return `${hr24 % 12 || 12}:${min} ${hr24 >= 12 ? 'PM' : 'AM'}`;
+}
+
+function buildNbPickerHtml(uid, initHr, initMin) {
+    const hr24 = (initHr !== '' && initHr != null) ? parseInt(initHr) : -1;
+    const minVal = initMin || '00';
+    const label = hr24 >= 0 ? _nbTpFmt(hr24, minVal) : '—';
+    const hrItems = [1,2,3,4,5,6,7,8,9,10,11,12]
+        .map(h => `<div class="tp-item" data-val="${h}">${h}</div>`).join('');
+    const minItems = ['00','15','30','45']
+        .map(m => `<div class="tp-item" data-val="${m}">${m}</div>`).join('');
+    return `<div class="tp-wrap" id="tpWrap_${uid}">
+        <button type="button" class="tp-trigger" onclick="AdminCalendar.nbOpenPicker('${uid}')">
+            <span id="tpLabel_${uid}">${label}</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <input type="hidden" value="${hr24 >= 0 ? hr24 : ''}">
+        <input type="hidden" value="${minVal}">
+        <div class="tp-popup" id="tpPop_${uid}" style="display:none">
+            <div class="tp-picker-body">
+                <div class="tp-sel-bar"></div>
+                <div class="tp-cols">
+                    <div class="tp-col" id="tpAmpm_${uid}" onscroll="AdminCalendar.nbOnPickerScroll('${uid}')">
+                        <div class="tp-item" data-val="AM">AM</div>
+                        <div class="tp-item" data-val="PM">PM</div>
+                    </div>
+                    <div class="tp-col" id="tpHr_${uid}" onscroll="AdminCalendar.nbOnPickerScroll('${uid}')">${hrItems}</div>
+                    <div class="tp-col" id="tpMin_${uid}" onscroll="AdminCalendar.nbOnPickerScroll('${uid}')">${minItems}</div>
+                </div>
+                <div class="tp-fade-t"></div>
+                <div class="tp-fade-b"></div>
+            </div>
+        </div>
+    </div>`;
+}
+
+function nbSetPickerVal(uid, hr24, min) {
+    const wrap = document.getElementById(`tpWrap_${uid}`);
+    if (!wrap) return;
+    const [hrInput, minInput] = wrap.querySelectorAll('input[type="hidden"]');
+    if (hrInput) hrInput.value = hr24;
+    if (minInput) minInput.value = min;
+    const lbl = document.getElementById(`tpLabel_${uid}`);
+    if (lbl) lbl.textContent = _nbTpFmt(hr24, min);
+    const ampm = hr24 >= 12 ? 'PM' : 'AM';
+    const hr12 = hr24 % 12 || 12;
+    const ampmCol = document.getElementById(`tpAmpm_${uid}`);
+    const hrCol   = document.getElementById(`tpHr_${uid}`);
+    const minCol  = document.getElementById(`tpMin_${uid}`);
+    if (ampmCol) ampmCol.scrollTop = (ampm === 'PM' ? 1 : 0) * NB_TP_H;
+    if (hrCol)   hrCol.scrollTop   = (hr12 - 1) * NB_TP_H;
+    if (minCol)  minCol.scrollTop  = ['00','15','30','45'].indexOf(min) * NB_TP_H;
+}
+
+function nbClearPickerVal(uid) {
+    const wrap = document.getElementById(`tpWrap_${uid}`);
+    if (!wrap) return;
+    const [hrInput, minInput] = wrap.querySelectorAll('input[type="hidden"]');
+    if (hrInput) hrInput.value = '';
+    if (minInput) minInput.value = '00';
+    const lbl = document.getElementById(`tpLabel_${uid}`);
+    if (lbl) lbl.textContent = '—';
+}
+
+function _nbTpScrollTo(colId, val) {
+    const col = document.getElementById(colId);
+    if (!col) return;
+    const items = col.querySelectorAll('.tp-item');
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].dataset.val === val) { col.scrollTop = i * NB_TP_H; return; }
+    }
+}
+
+function nbOpenPicker(uid) {
+    document.querySelectorAll('.tp-popup').forEach(p => {
+        if (p.id !== `tpPop_${uid}`) p.style.display = 'none';
+    });
+    const popup = document.getElementById(`tpPop_${uid}`);
+    if (!popup) return;
+    popup.style.display = 'block';
+
+    const wrap = document.getElementById(`tpWrap_${uid}`);
+    const [hrInput, minInput] = wrap.querySelectorAll('input[type="hidden"]');
+    const hr24 = (hrInput && hrInput.value !== '') ? parseInt(hrInput.value) : 9;
+    const minVal = (minInput && minInput.value) || '00';
+
+    _nbTpScrollTo(`tpAmpm_${uid}`, hr24 >= 12 ? 'PM' : 'AM');
+    _nbTpScrollTo(`tpHr_${uid}`, String(hr24 % 12 || 12));
+    _nbTpScrollTo(`tpMin_${uid}`, minVal);
+
+    wrap.querySelectorAll('.tp-col').forEach(col => {
+        if (col._tpDragInit) return;
+        col._tpDragInit = true;
+        col.addEventListener('mousedown', e => {
+            _nbTpDrag = { col, uid, startY: e.clientY, startScrollTop: col.scrollTop };
+            col.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+    });
+
+    setTimeout(() => {
+        const handler = (e) => {
+            if (!wrap.contains(e.target)) {
+                nbClosePicker(uid);
+                document.removeEventListener('click', handler);
+            }
+        };
+        document.addEventListener('click', handler);
+    }, 0);
+}
+
+function nbClosePicker(uid) {
+    const p = document.getElementById(`tpPop_${uid}`);
+    if (p) p.style.display = 'none';
+}
+
+function nbOnPickerScroll(uid) {
+    clearTimeout(_nbTpTimers[uid]);
+    _nbTpTimers[uid] = setTimeout(() => nbSyncPickerToInputs(uid), 150);
+}
+
+function nbSyncPickerToInputs(uid) {
+    const wrap = document.getElementById(`tpWrap_${uid}`);
+    if (!wrap) return;
+    const getVal = id => {
+        const col = document.getElementById(id);
+        if (!col) return null;
+        return col.querySelectorAll('.tp-item')[Math.round(col.scrollTop / NB_TP_H)]?.dataset.val;
+    };
+    const ampm = getVal(`tpAmpm_${uid}`) || 'AM';
+    const hr12 = parseInt(getVal(`tpHr_${uid}`) || '12');
+    const min  = getVal(`tpMin_${uid}`) || '00';
+    let hr24 = hr12 % 12;
+    if (ampm === 'PM') hr24 += 12;
+
+    const [hrInput, minInput] = wrap.querySelectorAll('input[type="hidden"]');
+    if (hrInput) hrInput.value = hr24;
+    if (minInput) minInput.value = min;
+
+    const lbl = document.getElementById(`tpLabel_${uid}`);
+    if (lbl) lbl.textContent = _nbTpFmt(hr24, min);
+    calcNbTotal();
+}
+
+function selectNbPeriod(iso, idx, period) {
+    const periodInput = document.getElementById(`nbSlotPeriod_${iso}_${idx}`);
+    const current = periodInput?.value || '';
+    const isToggleOff = current === period;
+    const newPeriod = isToggleOff ? '' : period;
+
+    const windowWrap = document.getElementById(`nbSlotWindowWrap_${iso}_${idx}`);
+    if (windowWrap) windowWrap.querySelectorAll('.time-period-pill').forEach(el => {
+        el.classList.toggle('active', !isToggleOff && el.textContent.trim() === period);
+    });
+    if (periodInput) periodInput.value = newPeriod;
+
+    const pickerWrap = document.getElementById(`nbSlotPickerWrap_${iso}_${idx}`);
+    if (pickerWrap) pickerWrap.style.display = newPeriod === 'Anytime' ? 'none' : '';
+
+    const fromUid = `nbFrom_${iso}_${idx}`;
+    const toUid   = `nbTo_${iso}_${idx}`;
+    if (isToggleOff) {
+        nbClearPickerVal(fromUid);
+        nbClearPickerVal(toUid);
+    } else {
+        const t = NB_PERIODS[period];
+        if (t) {
+            nbSetPickerVal(fromUid, t.fromHr, t.fromMin);
+            nbSetPickerVal(toUid,   t.toHr,   t.toMin);
+        } else {
+            nbClearPickerVal(fromUid);
+            nbClearPickerVal(toUid);
+        }
+    }
+    calcNbTotal();
+}
+
+function setNbSlotType(iso, idx, type) {
+    saveNbDateState();
+    if (!nbDateTimes.has(iso)) return;
+    const slots = nbDateTimes.get(iso);
+    if (!slots[idx]) return;
+    slots[idx].type = type;
+    if (nbSameTimeAll) _syncSameTime();
+    renderNbVisitTimes();
+}
+
+function saveNbDateState() {
+    if (nbSameTimeAll) {
+        const first = [...nbDateTimes.keys()].sort()[0];
+        if (first) _readNbSlots(first);
+    } else {
+        nbDateTimes.forEach((_, iso) => _readNbSlots(iso));
+    }
+}
+
+function _readNbSlots(iso) {
+    const slots = nbDateTimes.get(iso);
+    if (!slots) return;
+    slots.forEach((slot, idx) => {
+        const typeRadio = document.querySelector(`input[name="nbSlotType_${iso}_${idx}"]:checked`);
+        if (!typeRadio) return;
+        slot.type = typeRadio.value;
+        const periodEl = document.getElementById(`nbSlotPeriod_${iso}_${idx}`);
+        if (periodEl) slot.period = periodEl.value;
+        const readPicker = (uid, hrKey, minKey) => {
+            const wrap = document.getElementById(`tpWrap_${uid}`);
+            if (!wrap) return;
+            const [hr, min] = wrap.querySelectorAll('input[type="hidden"]');
+            if (hr) slot[hrKey] = hr.value;
+            if (min) slot[minKey] = min.value;
+        };
+        readPicker(`nbSpec_${iso}_${idx}`, 'specHr', 'specMin');
+        readPicker(`nbFrom_${iso}_${idx}`, 'fromHr', 'fromMin');
+        readPicker(`nbTo_${iso}_${idx}`,   'toHr',   'toMin');
+    });
+}
+
+function serializeNbSlot(slot, isCombo) {
+    if (!slot) return '';
+    if (typeof slot === 'string') return slot;
+    if (slot.mode) return serializeSlot(slot, isCombo);
+    let base;
+    if (slot.type === 'specific') {
+        const hhmm = buildHHMM(slot.specHr, slot.specMin || '00');
+        if (!hhmm) return '';
+        base = hhmm;
+    } else {
+        if (slot.period === 'Anytime') return 'anytime';
+        const from = buildHHMM(slot.fromHr, slot.fromMin || '00');
+        const to   = buildHHMM(slot.toHr,   slot.toMin   || '00');
+        if (from && to) base = `${from}~${to}`;
+        else if (from) base = from;
+        else if (to)   base = to;
+        else return '';
+    }
+    if (isCombo && base) base += `|${slot.dur || 30}`;
+    return base;
 }
 
 // ─── VISIT TIMES (per-day) ────────────────────────────────
@@ -405,63 +674,59 @@ function renderNbVisitTimes() {
         }
 
         const isCombo = document.getElementById('nbDuration')?.value === 'combo';
-        const visitCount = slots.filter(s => s.start).length || 1;
-        const slotsHtml = slots.map((s, idx) => {
-            const slot = parseSlotObj(s);
-            const sh = parseHrMin(slot.start);
-            const eh = parseHrMin(slot.end);
-            const isRange = slot.mode === 'range';
-            const minOpts = cur => ['00','15','30','45'].map(v =>
-                `<option value="${v}" ${cur===v?'selected':''}>${v}</option>`).join('');
+        const visitCount = slots.length || 1;
 
-            const removeBtn = slots.length > 1 ? `<button type="button" class="nb-remove-time" onclick="AdminCalendar.removeTimeFromDate('${iso}',${idx})">×</button>` : '';
+        const slotsHtml = slots.map((s, idx) => {
+            const slot = (s && s.type) ? s : emptySlot();
+            const isSpec = slot.type === 'specific';
+
+            const removeBtn = slots.length > 1
+                ? `<button type="button" class="nb-slot-remove-btn" onclick="AdminCalendar.removeTimeFromDate('${iso}',${idx})" title="Remove">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                   </button>`
+                : '';
+
             const comboDurPills = isCombo ? `
-                <div class="nb-mode-pills" style="margin-left:8px">
+                <div class="nb-mode-pills" style="margin-top:10px">
                     <button type="button" class="nb-mode-pill ${(slot.dur||30)===30?'active':''}"
                         onclick="AdminCalendar.updateSlotDur('${iso}',${idx},30)">30 min</button>
                     <button type="button" class="nb-mode-pill ${(slot.dur||30)===60?'active':''}"
                         onclick="AdminCalendar.updateSlotDur('${iso}',${idx},60)">60 min</button>
                 </div>` : '';
+
             return `
-            <div class="nb-time-row">
-                <div class="nb-time-line">
-                    <div class="nb-mode-pills">
-                        <button type="button" class="nb-mode-pill ${!isRange?'active':''}"
-                            onclick="AdminCalendar.setSlotMode('${iso}',${idx},'time')">Time</button>
-                        <button type="button" class="nb-mode-pill ${isRange?'active':''}"
-                            onclick="AdminCalendar.setSlotMode('${iso}',${idx},'range')">Range</button>
+            <div class="nb-time-row" id="nbSlot_${iso}_${idx}">
+                <div class="nb-slot-header">
+                    <div class="slot-type-seg" id="nbSlotSeg_${iso}_${idx}">
+                        <input type="radio" name="nbSlotType_${iso}_${idx}" value="window" ${!isSpec?'checked':''} style="display:none">
+                        <input type="radio" name="nbSlotType_${iso}_${idx}" value="specific" ${isSpec?'checked':''} style="display:none">
+                        <div class="slot-type-seg-knob${isSpec?' right':''}" id="nbSlotSegKnob_${iso}_${idx}"></div>
+                        <span class="slot-type-seg-label${!isSpec?' active':''}" onclick="AdminCalendar.setNbSlotType('${iso}',${idx},'window')">Range</span>
+                        <span class="slot-type-seg-label${isSpec?' active':''}" onclick="AdminCalendar.setNbSlotType('${iso}',${idx},'specific')">Exact Time</span>
                     </div>
-                    ${!isRange ? `
-                    <input type="number" class="nb-hour-input" min="1" max="24" placeholder="Hr" value="${sh.h}"
-                        onchange="AdminCalendar.updateSlotStartHour('${iso}',${idx},this.value)"
-                        oninput="AdminCalendar.updateSlotStartHour('${iso}',${idx},this.value)">
-                    <span class="nb-time-colon">:</span>
-                    <select class="nb-min-select" onchange="AdminCalendar.updateSlotStartMin('${iso}',${idx},this.value)">
-                        ${minOpts(sh.m)}
-                    </select>
-                    ${comboDurPills}
-                    ${removeBtn}` : ''}
-                </div>
-                ${isRange ? `
-                <div class="nb-time-line">
-                    <input type="number" class="nb-hour-input" min="1" max="24" placeholder="Hr" value="${sh.h}"
-                        onchange="AdminCalendar.updateSlotStartHour('${iso}',${idx},this.value)"
-                        oninput="AdminCalendar.updateSlotStartHour('${iso}',${idx},this.value)">
-                    <span class="nb-time-colon">:</span>
-                    <select class="nb-min-select" onchange="AdminCalendar.updateSlotStartMin('${iso}',${idx},this.value)">
-                        ${minOpts(sh.m)}
-                    </select>
-                    <span class="nb-range-arrow">→</span>
-                    <input type="number" class="nb-hour-input" min="1" max="24" placeholder="Hr" value="${eh.h}"
-                        onchange="AdminCalendar.updateSlotEndHour('${iso}',${idx},this.value)"
-                        oninput="AdminCalendar.updateSlotEndHour('${iso}',${idx},this.value)">
-                    <span class="nb-time-colon">:</span>
-                    <select class="nb-min-select" onchange="AdminCalendar.updateSlotEndMin('${iso}',${idx},this.value)">
-                        ${minOpts(eh.m)}
-                    </select>
-                    ${comboDurPills}
                     ${removeBtn}
-                </div>` : ''}
+                </div>
+                <div id="nbSlotSpecWrap_${iso}_${idx}" style="${isSpec?'':'display:none'}">
+                    ${buildNbPickerHtml(`nbSpec_${iso}_${idx}`, slot.specHr, slot.specMin)}
+                </div>
+                <div id="nbSlotWindowWrap_${iso}_${idx}" style="${isSpec?'display:none':''}">
+                    <input type="hidden" id="nbSlotPeriod_${iso}_${idx}" value="${slot.period||''}">
+                    <div class="time-period-quick-label">Quick select</div>
+                    <div class="time-period-pills">
+                        ${['Anytime','Morning','Afternoon','Evening'].map(p =>
+                            `<button type="button" class="time-period-pill${(slot.period||'')=== p?' active':''}" onclick="AdminCalendar.selectNbPeriod('${iso}',${idx},'${p}')">${p}</button>`
+                        ).join('')}
+                    </div>
+                    <div id="nbSlotPickerWrap_${iso}_${idx}" class="slot-picker-wrap" style="${slot.period==='Anytime'?'display:none':''}">
+                        <div class="time-range-inline">
+                            <span class="time-range-label">From</span>
+                            ${buildNbPickerHtml(`nbFrom_${iso}_${idx}`, slot.fromHr, slot.fromMin)}
+                            <span class="time-range-label">To</span>
+                            ${buildNbPickerHtml(`nbTo_${iso}_${idx}`, slot.toHr, slot.toMin)}
+                        </div>
+                    </div>
+                </div>
+                ${comboDurPills}
             </div>`;
         }).join('');
 
@@ -481,6 +746,7 @@ function renderNbVisitTimes() {
 
 function addTimeToDate(iso) {
     if (!nbDateTimes.has(iso)) return;
+    saveNbDateState();
     nbDateTimes.get(iso).push(emptySlot());
     if (nbSameTimeAll) _syncSameTime();
     renderNbVisitTimes();
@@ -489,6 +755,7 @@ function addTimeToDate(iso) {
 
 function removeTimeFromDate(iso, idx) {
     if (!nbDateTimes.has(iso)) return;
+    saveNbDateState();
     const slots = nbDateTimes.get(iso);
     slots.splice(idx, 1);
     if (nbSameTimeAll) _syncSameTime();
@@ -498,8 +765,9 @@ function removeTimeFromDate(iso, idx) {
 
 function updateSlotDur(iso, idx, dur) {
     if (!nbDateTimes.has(iso)) return;
+    saveNbDateState();
     const slots = nbDateTimes.get(iso);
-    const s = parseSlotObj(slots[idx]);
+    const s = slots[idx] || emptySlot();
     s.dur = parseInt(dur);
     slots[idx] = s;
     if (nbSameTimeAll) _syncSameTime();
@@ -508,6 +776,7 @@ function updateSlotDur(iso, idx, dur) {
 }
 
 function onDurationChange() {
+    saveNbDateState();
     renderNbVisitTimes();
     calcNbTotal();
 }
@@ -515,7 +784,10 @@ function onDurationChange() {
 
 function toggleSameTime(on) {
     nbSameTimeAll = on;
-    if (on) _syncSameTime();
+    if (on) {
+        saveNbDateState();
+        _syncSameTime();
+    }
     renderNbVisitTimes();
 }
 
@@ -666,9 +938,14 @@ function calcNbTotal() {
 
     let numVisits = 0, num30 = 0, num60 = 0;
     for (const slots of nbDateTimes.values()) {
-        const active = slots.filter(s => s && s.start);
+        const active = slots.filter(s => {
+            if (!s) return false;
+            if (s.type) return s.type === 'specific' ? (s.specHr !== '' && s.specHr != null) : (s.period !== '');
+            if (typeof s === 'string') return !!s;
+            return !!(s.start);
+        });
         if (isCombo) {
-            const parsed = active.map(s => parseSlotObj(s));
+            const parsed = active.map(s => (typeof s === 'object' && s.type) ? s : parseSlotObj(s));
             num30 += parsed.filter(s => (s.dur || 30) === 30).length;
             num60 += parsed.filter(s => (s.dur || 30) === 60).length;
             numVisits += Math.max(1, active.length);
@@ -856,6 +1133,8 @@ async function saveNewBooking() {
     if (nbDateTimes.size === 0) { errEl.textContent = 'Please select at least one date.'; return; }
     errEl.textContent = '';
 
+    saveNbDateState();
+
     const isCombo = duration === 'combo';
     const sortedDates = [...nbDateTimes.keys()].sort();
 
@@ -863,14 +1142,18 @@ async function saveNewBooking() {
     const dateTimes = {};
     let datesText = '';
     sortedDates.forEach(iso => {
-        const serialized = nbDateTimes.get(iso)
-            .map(s => serializeSlot(parseSlotObj(s), isCombo))
+        const slotsForIso = nbSameTimeAll && iso !== sortedDates[0]
+            ? nbDateTimes.get(sortedDates[0])
+            : nbDateTimes.get(iso);
+        const serialized = slotsForIso
+            .map(s => serializeNbSlot(s, isCombo))
             .filter(Boolean)
             .sort();
         dateTimes[iso] = serialized;
         const d = new Date(iso + 'T12:00:00');
         const label = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
         const timesLabel = serialized.length ? serialized.map(t => {
+            if (t === 'anytime') return 'Anytime';
             const clean = t.replace(/\|\d+$/, '');
             if (clean.includes('~')) {
                 const [s, e] = clean.split('~');
@@ -1099,5 +1382,7 @@ window.AdminCalendar = {
     updateSlotStartHour, updateSlotStartMin,
     updateSlotEndHour, updateSlotEndMin,
     updateSlotDur, onDurationChange,
-    openEditBookingModal
+    openEditBookingModal,
+    nbOpenPicker, nbOnPickerScroll, nbClosePicker,
+    selectNbPeriod, setNbSlotType,
 };
