@@ -215,6 +215,9 @@
     font-weight: 400;
     color: var(--brown-mid);
 }
+.small-placeholder::placeholder {
+    font-size: 12px;
+}
 
 .form-group input,
 .form-group select,
