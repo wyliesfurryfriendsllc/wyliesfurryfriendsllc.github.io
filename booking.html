@@ -356,12 +356,12 @@
                 <button type="button" class="pet-type-card" data-value="other" onclick="bkTogglePill(this,'single')"><i data-lucide="rabbit" class="pet-type-icon"></i> Other</button>
             </div>
         </div>
-        <div class="form-row">
-            <div class="form-group" style="flex:2">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <div class="form-group" style="grid-column:span 2">
                 <label>Name <span class="req">*</span></label>
                 <input type="text" id="bkPetName" placeholder="">
             </div>
-            <div class="form-group" style="flex:1">
+            <div class="form-group">
                 <label>Weight (lbs)</label>
                 <input type="number" id="bkPetWeight" placeholder="" min="0">
             </div>
