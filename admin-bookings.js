@@ -1685,16 +1685,18 @@ async function savePetsToClient(bookingId) {
         const merged = [...existing, ...toAdd];
         await updateDoc(doc(db, 'clients', b.clientId), { pets: merged, updatedAt: serverTimestamp() });
 
-        // Also sync to users collection if linked
-        const userSnap = await getDoc(doc(db, 'users', b.clientId));
-        if (userSnap.exists()) {
-            const userPets = userSnap.data().pets || [];
-            const userNames = new Set(userPets.map(p => (p.name || '').toLowerCase()));
-            const userToAdd = toAdd.filter(p => !userNames.has(p.name.toLowerCase()));
-            if (userToAdd.length > 0) {
-                await updateDoc(doc(db, 'users', b.clientId), { pets: [...userPets, ...userToAdd] });
+        // Sync to users collection if linked (best-effort, may fail due to rules)
+        try {
+            const userSnap = await getDoc(doc(db, 'users', b.clientId));
+            if (userSnap.exists()) {
+                const userPets = userSnap.data().pets || [];
+                const userNames = new Set(userPets.map(p => (p.name || '').toLowerCase()));
+                const userToAdd = toAdd.filter(p => !userNames.has(p.name.toLowerCase()));
+                if (userToAdd.length > 0) {
+                    await updateDoc(doc(db, 'users', b.clientId), { pets: [...userPets, ...userToAdd] });
+                }
             }
-        }
+        } catch (_) { /* ignore — clients collection already updated */ }
 
         alert(`✓ 已将 ${toAdd.length} 只宠物添加到 ${b.clientName || '客户'} 的档案。`);
     } catch (e) {
