@@ -376,7 +376,6 @@
 .time-range-inline {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
     margin-bottom: 16px;
@@ -401,13 +400,8 @@
 .slot-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    position: relative;
+    justify-content: space-between;
     margin-bottom: 16px;
-}
-.slot-header .slot-remove-btn {
-    position: absolute;
-    right: 0;
 }
 
 /* Combo per-slot duration toggle */
