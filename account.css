@@ -960,6 +960,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     border: 2px solid var(--border);
     border-radius: 50px;
     padding: 14px 8px;
+    min-width: 100px;
     font-size: 15px;
     font-weight: 600;
     font-family: 'Inter', sans-serif;
@@ -997,7 +998,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     -webkit-appearance: none;
     appearance: none;
     background: var(--cream);
-    border: 1.5px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: 50px;
     padding: 14px 16px;
     font-size: 13px;
@@ -1007,6 +1008,8 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     cursor: pointer;
     transition: border-color 0.15s, background 0.15s, color 0.15s;
     white-space: nowrap;
+    min-width: 100px;
+    text-align: center;
 }
 .pet-pill:hover { border-color: var(--pink-light); color: var(--brown); }
 .pet-pill.active {
