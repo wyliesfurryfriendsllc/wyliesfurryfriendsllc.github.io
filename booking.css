@@ -917,12 +917,12 @@ details.deposit-policy[open] summary { color: var(--pink); }
     align-items: center;
     gap: 10px;
     width: 100%;
-    padding: 11px 14px;
+    padding: 14px 16px;
     border: 1.5px solid var(--border);
     border-radius: 10px;
     background: var(--cream);
     color: var(--brown-mid);
-    font-size: 14px;
+    font-size: 13px;
     font-family: 'Inter', sans-serif;
     font-weight: 500;
     cursor: pointer;
