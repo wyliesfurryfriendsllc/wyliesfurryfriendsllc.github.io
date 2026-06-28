@@ -264,6 +264,12 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots, isFirstDate = true) {
             </div>
             <div id="slotWindowWrap_${tid}_${si}" style="${isSpecific?'display:none':''}">
                 <input type="hidden" id="slotPeriod_${tid}_${si}" value="${sl.period||''}">
+                <div class="time-period-quick-label">Quick select</div>
+                <div class="time-period-pills">
+                    ${['Anytime','Morning','Afternoon','Evening'].map(p =>
+                        `<button type="button" class="time-period-pill${(sl.period||'')=== p?' active':''}" onclick="selectPeriod('${tid}',${si},'${p}')">${p}</button>`
+                    ).join('')}
+                </div>
                 <div id="slotPickerWrap_${tid}_${si}" style="${sl.period==='Anytime'?'display:none':''}">
                     <div class="time-range-inline">
                         <span class="time-range-label">From</span>
@@ -271,12 +277,6 @@ function renderSlotHtml(tid, dateStr, si, sl, totalSlots, isFirstDate = true) {
                         <span class="time-range-label">To</span>
                         ${buildPickerHtml(`to_${tid}_${si}`, `slotToHr_${tid}_${si}`, `slotToMin_${tid}_${si}`, sl.toHr, sl.toMin)}
                     </div>
-                </div>
-                <div class="time-period-quick-label">Quick select</div>
-                <div class="time-period-pills">
-                    ${['Anytime','Morning','Afternoon','Evening'].map(p =>
-                        `<button type="button" class="time-period-pill${(sl.period||'')=== p?' active':''}" onclick="selectPeriod('${tid}',${si},'${p}')">${p}</button>`
-                    ).join('')}
                 </div>
             </div>
         </div>`;
