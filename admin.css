@@ -1177,6 +1177,7 @@ input, select, textarea {
 .nb-visit-count { font-size: 12px; color: var(--brown-mid); }
 .nb-time-row {
     display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;
+    background: #fff; border: 1.5px solid var(--border); border-radius: 12px; padding: 14px;
 }
 .nb-time-line {
     display: flex; align-items: center; gap: 8px;
