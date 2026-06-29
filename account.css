@@ -864,38 +864,70 @@
 @media (max-width: 720px) {
     .account-layout {
         grid-template-columns: 1fr;
-        padding: 0 16px;
+        padding: 0;
         max-width: 100vw;
         overflow-x: hidden;
     }
+    /* Sidebar → sticky horizontal tab bar */
     .account-sidebar {
-        position: static;
-        height: auto;
+        position: sticky;
+        top: 60px;
+        z-index: 99;
+        background: #fff;
         border-right: none;
-        border-bottom: 1px solid var(--border);
-        padding: 20px 0;
+        border-bottom: 1.5px solid var(--border);
+        padding: 0 16px;
+        height: auto;
         flex-direction: row;
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
-        overflow-x: hidden;
+        flex-wrap: nowrap;
+        gap: 0;
+        align-items: stretch;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
     }
-    .account-avatar-wrap {
-        margin-bottom: 0;
-        flex: 1;
-        min-width: 160px;
-    }
+    .account-sidebar::-webkit-scrollbar { display: none; }
+    .account-avatar-wrap { display: none; }
     .account-nav {
+        display: flex;
         flex-direction: row;
-        flex-wrap: wrap;
-        flex: none;
-        width: 100%;
+        flex-wrap: nowrap;
+        flex: 1;
+        gap: 0;
+        width: auto;
     }
-    .account-nav-btn { padding: 8px 12px; font-size: 13px; width: auto; }
-    .signout-btn { padding: 8px 12px; margin-top: 0; }
-    .account-main { padding: 20px 0 40px; overflow-x: hidden; max-width: 100%; }
+    .account-nav-btn {
+        width: auto;
+        flex-shrink: 0;
+        padding: 12px 14px;
+        font-size: 13px;
+        border-radius: 0;
+        border-bottom: 2.5px solid transparent;
+        white-space: nowrap;
+    }
+    .account-nav-btn.active {
+        background: none;
+        border-bottom-color: var(--pink);
+        color: var(--pink);
+        font-weight: 600;
+    }
+    .signout-btn {
+        flex-shrink: 0;
+        margin-top: 0;
+        padding: 12px 14px;
+        font-size: 13px;
+        border-radius: 0;
+        white-space: nowrap;
+    }
+    .account-main { padding: 16px 16px 40px; overflow-x: hidden; max-width: 100%; }
     .tab-title { font-size: 22px; }
-    .bookings-panel, .bookings-list, .booking-card, .booking-detail-panel { max-width: 100%; }
+    .bookings-panel, .bookings-list, .booking-detail-panel { max-width: 100%; overflow-x: hidden; }
+    .booking-card { max-width: 100%; overflow: hidden; }
+    .upcoming-card { max-width: 100%; overflow: hidden; }
+    .upcoming-card-row > div { min-width: 0; overflow: hidden; }
+    .upcoming-card-row strong, .upcoming-card-row span { white-space: normal; word-break: break-word; }
+    .bc-date-line { white-space: normal; }
+    .tab-header { flex-wrap: wrap; gap: 8px; }
 }
 
 @media (max-width: 480px) {
