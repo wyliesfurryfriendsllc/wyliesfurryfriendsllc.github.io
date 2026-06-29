@@ -1161,7 +1161,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     background: #fff;
     color: var(--brown-mid);
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 400;
     cursor: pointer;
     transition: all 0.15s;
 }
