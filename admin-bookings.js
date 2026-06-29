@@ -444,10 +444,13 @@ function renderTodaySection(outerContainer) {
                     <div class="abc-avatar-stack">${avatarHtml}</div>
                     <div class="tvc-info">
                         <span class="tvc-pet">${escHtml(petNames)}</span>
-                        <span class="tvc-service">${String(b.duration||30).includes('&')?b.duration:(b.duration||30)+' min'}</span>
-                        <span class="tvc-slot-time">${escHtml(slotTimeLabel)}</span>
+                        <div class="tvc-time-row">
+                            <span class="tvc-service">${String(b.duration||30).includes('&')?b.duration:(b.duration||30)+' min'}</span>
+                            <span class="tvc-slot-time">${escHtml(slotTimeLabel)}</span>
+                        </div>
+                        <span class="tvc-status-mobile status-badge ${STATUS_COLORS[b.status]||'status-pending'}">${STATUS_LABELS[b.status]||'Pending'}</span>
                     </div>
-                    <span class="status-badge ${STATUS_COLORS[b.status]||'status-pending'}">${STATUS_LABELS[b.status]||'Pending'}</span>
+                    <span class="status-badge tvc-status-desktop ${STATUS_COLORS[b.status]||'status-pending'}">${STATUS_LABELS[b.status]||'Pending'}</span>
                     <span class="tvc-drag-handle">${dragHandle}</span>
                 </div>
             </div>`;

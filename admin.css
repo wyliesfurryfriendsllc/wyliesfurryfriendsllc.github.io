@@ -1665,6 +1665,9 @@ input, select, textarea {
     font-size: 13px;
     color: var(--brown-mid);
 }
+.tvc-time-row { display: flex; align-items: center; gap: 6px; }
+.tvc-status-mobile { display: none; }
+.tvc-status-desktop { display: inline-block; }
 .tvc-service {
     font-size: 12px;
     color: var(--brown-mid);
@@ -2047,10 +2050,12 @@ input, select, textarea {
     .tvc-body {
         flex-direction: column;
         align-items: flex-start;
-        gap: 6px;
+        gap: 5px;
     }
+    /* Row 1: avatars — horizontal overlap, no wrap */
     .tvc-body .abc-avatar-stack {
-        max-width: 68px;
+        flex-wrap: nowrap;
+        max-width: none;
     }
     .tvc-body .abc-pet-avatar,
     .tvc-body .abc-pet-emoji {
@@ -2058,15 +2063,17 @@ input, select, textarea {
         height: 36px;
         font-size: 18px;
     }
-    .tvc-body .abc-avatar-stack > *:nth-child(odd):not(:first-child) {
-        margin-left: 0;
-    }
     .tvc-body .abc-pet-avatar + .abc-pet-avatar,
     .tvc-body .abc-pet-avatar + .abc-pet-emoji,
     .tvc-body .abc-pet-emoji + .abc-pet-avatar,
     .tvc-body .abc-pet-emoji + .abc-pet-emoji {
         margin-left: -10px;
     }
+    /* Row 3: duration + time on same line */
+    .tvc-time-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    /* Status badge: show inside info on mobile, hide desktop version */
+    .tvc-status-mobile { display: inline-block; }
+    .tvc-status-desktop { display: none; }
 }
 
 /* Today's Visits: avatars max 2 per row */
