@@ -1418,13 +1418,18 @@ async function exportImage(bookingId) {
     const hideEls = target.querySelectorAll('.status-badge, .pet-save-chk, .detail-pet-meta, .no-export');
     hideEls.forEach(el => { el.style.display = 'none'; });
 
+    const EXPORT_WIDTH = 640;
+    const prevWidth    = target.style.width;
+    const prevMaxWidth = target.style.maxWidth;
+    target.style.width    = EXPORT_WIDTH + 'px';
+    target.style.maxWidth = EXPORT_WIDTH + 'px';
+
     try {
-        const targetWidth = target.scrollWidth;
         const canvas = await html2canvas(target, {
             backgroundColor: '#fffaf7',
             scale: 2,
-            width: targetWidth,
-            windowWidth: targetWidth,
+            width: EXPORT_WIDTH,
+            windowWidth: 1200,
             useCORS: true,
             logging: false
         });
@@ -1468,6 +1473,8 @@ async function exportImage(bookingId) {
     } catch(e) {
         if (e.name !== 'AbortError') alert('Export failed: ' + e.message);
     } finally {
+        target.style.width    = prevWidth;
+        target.style.maxWidth = prevMaxWidth;
         hideEls.forEach(el => { el.style.display = ''; });
         if (btn) { btn.disabled = false; btn.innerHTML = svgIcon; }
     }
