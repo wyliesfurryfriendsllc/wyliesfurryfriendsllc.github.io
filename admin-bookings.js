@@ -794,15 +794,14 @@ function renderPetsHtml(pets, bookingId) {
             p.weight ? p.weight + ' lbs' : '',
             ageStr
         ].filter(Boolean);
-        const chk = bookingId ? `<input type="checkbox" class="pet-save-chk" id="petChk_${bookingId}_${i}" checked style="margin-right:8px;cursor:pointer;width:15px;height:15px;flex-shrink:0">` : '';
+        const selAttr = bookingId ? ` data-pet-idx="${i}" data-selected="true" onclick="this.dataset.selected=this.dataset.selected==='true'?'false':'true';this.classList.toggle('pet-row-selected')"` : '';
         return `
-            <label class="detail-pet-row" style="${bookingId ? 'cursor:pointer;display:flex;align-items:center' : ''}">
-                ${chk}
+            <div class="detail-pet-row${bookingId ? ' pet-row-selected' : ''}"${selAttr} style="${bookingId ? 'cursor:pointer' : ''}">
                 ${avatar}
                 <div class="detail-pet-name">${escHtml(p.name || '—')}</div>
                 ${p.breed ? `<div class="detail-pet-breed">${escHtml(p.breed)}</div>` : ''}
                 ${metaParts.length ? `<div class="detail-pet-meta">${escHtml(metaParts.join(' · '))}</div>` : ''}
-            </label>`;
+            </div>`;
     }).join('');
     return `<div class="detail-pets-wrap">${items}</div>`;
 }
@@ -1794,10 +1793,10 @@ async function savePetsToClient(bookingId) {
 
     const bookingPets = b.pets || [];
     const selected = bookingPets.filter((_, i) => {
-        const chk = document.getElementById(`petChk_${bookingId}_${i}`);
-        return chk ? chk.checked : true;
+        const row = document.querySelector(`[data-pet-idx="${i}"][data-selected="true"]`);
+        return !!row;
     });
-    if (selected.length === 0) { alert('请先勾选要保存的宠物。'); return; }
+    if (selected.length === 0) { alert('请先选择要保存的宠物。'); return; }
 
     try {
         const clientSnap = await getDoc(doc(db, 'clients', b.clientId));
