@@ -446,7 +446,7 @@ function renderTodaySection(outerContainer) {
                         <div class="tvc-info">
                             <span class="tvc-pet">${escHtml(petNames)}</span>
                             <div class="tvc-time-row">
-                                <span class="tvc-service">${String(b.duration||30).includes('&')?b.duration:(b.duration||30)+' min'}</span>
+                                ${(()=>{const d=String(b.duration||30);return d.includes('&')?`<span class="tvc-service">${d}</span>`:parseInt(d)===60?`<span class="tvc-service">60 min</span>`:''})()}
                                 <span class="tvc-slot-time">${escHtml(slotTimeLabel)}</span>
                             </div>
                         </div>
