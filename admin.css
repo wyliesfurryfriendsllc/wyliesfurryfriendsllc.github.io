@@ -2030,6 +2030,40 @@ input, select, textarea {
 @media (max-width: 768px) {
     .time-period-pills { gap: 4px; flex-wrap: nowrap; }
     .time-period-pill { font-size: 13px; padding: 7px 11px; }
+
+    /* Today's Visits mobile layout */
+    .tvc-admin-time {
+        width: 44px;
+        align-items: flex-start;
+        padding-top: 10px;
+    }
+    .tvc-admin-time-label {
+        font-size: 12px;
+        text-align: left;
+    }
+    .tvc-body {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+    .tvc-body .abc-avatar-stack {
+        max-width: 68px;
+    }
+    .tvc-body .abc-pet-avatar,
+    .tvc-body .abc-pet-emoji {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+    .tvc-body .abc-avatar-stack > *:nth-child(odd):not(:first-child) {
+        margin-left: 0;
+    }
+    .tvc-body .abc-pet-avatar + .abc-pet-avatar,
+    .tvc-body .abc-pet-avatar + .abc-pet-emoji,
+    .tvc-body .abc-pet-emoji + .abc-pet-avatar,
+    .tvc-body .abc-pet-emoji + .abc-pet-emoji {
+        margin-left: -10px;
+    }
 }
 
 /* Today's Visits: avatars max 2 per row */
