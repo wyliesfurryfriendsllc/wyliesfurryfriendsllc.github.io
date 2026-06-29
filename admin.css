@@ -1602,7 +1602,7 @@ input, select, textarea {
 /* Timeline row: [admin time on left] [card on right] */
 .tvc-row {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
 }
 .tvc-admin-time {
@@ -1665,9 +1665,8 @@ input, select, textarea {
     font-size: 13px;
     color: var(--brown-mid);
 }
+.tvc-left { display: contents; }
 .tvc-time-row { display: flex; align-items: center; gap: 6px; }
-.tvc-status-mobile { display: none; }
-.tvc-status-desktop { display: inline-block; }
 .tvc-service {
     font-size: 12px;
     color: var(--brown-mid);
@@ -2041,21 +2040,24 @@ input, select, textarea {
     .tvc-admin-time {
         width: 44px;
         align-items: flex-start;
-        padding-top: 10px;
+        align-self: center;
+        padding-top: 0;
     }
     .tvc-admin-time-label {
         font-size: 12px;
         text-align: left;
     }
     .tvc-body {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
     }
-    /* Row 1: avatars — horizontal overlap, no wrap */
-    .tvc-body .abc-avatar-stack {
-        flex-wrap: nowrap;
-        max-width: none;
+    .tvc-left {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
     }
     .tvc-body .abc-pet-avatar,
     .tvc-body .abc-pet-emoji {
@@ -2069,11 +2071,6 @@ input, select, textarea {
     .tvc-body .abc-pet-emoji + .abc-pet-emoji {
         margin-left: -10px;
     }
-    /* Row 3: duration + time on same line */
-    .tvc-time-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    /* Status badge: show inside info on mobile, hide desktop version */
-    .tvc-status-mobile { display: inline-block; }
-    .tvc-status-desktop { display: none; }
 }
 
 /* Today's Visits: avatars all in one row */
