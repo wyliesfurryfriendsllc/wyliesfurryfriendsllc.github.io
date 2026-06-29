@@ -865,6 +865,8 @@
     .account-layout {
         grid-template-columns: 1fr;
         padding: 0 16px;
+        max-width: 100vw;
+        overflow-x: hidden;
     }
     .account-sidebar {
         position: static;
@@ -876,6 +878,7 @@
         flex-wrap: wrap;
         gap: 8px;
         align-items: center;
+        overflow-x: hidden;
     }
     .account-avatar-wrap {
         margin-bottom: 0;
@@ -886,11 +889,13 @@
         flex-direction: row;
         flex-wrap: wrap;
         flex: none;
+        width: 100%;
     }
-    .account-nav-btn { padding: 8px 12px; font-size: 13px; }
+    .account-nav-btn { padding: 8px 12px; font-size: 13px; width: auto; }
     .signout-btn { padding: 8px 12px; margin-top: 0; }
-    .account-main { padding: 20px 0 40px; }
+    .account-main { padding: 20px 0 40px; overflow-x: hidden; max-width: 100%; }
     .tab-title { font-size: 22px; }
+    .bookings-panel, .bookings-list, .booking-card, .booking-detail-panel { max-width: 100%; }
 }
 
 @media (max-width: 480px) {
