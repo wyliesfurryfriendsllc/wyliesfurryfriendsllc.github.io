@@ -230,7 +230,7 @@ nav {
     background: none;
     color: var(--pink);
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 400;
     padding: 0;
     border-radius: 0;
     display: flex;
@@ -250,12 +250,12 @@ nav {
     color: var(--pink);
 }
 .badge-icon-wrap svg {
-    width: 14px;
-    height: 14px;
+    width: 20px;
+    height: 20px;
 }
 .badge-icon-text {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 400;
     font-family: inherit;
 }
 
