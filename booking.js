@@ -1524,6 +1524,11 @@ async function saveBookingPet() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    const urlService = new URLSearchParams(window.location.search).get('service');
+    if (urlService) {
+        const radio = document.querySelector(`input[name="service"][value="${urlService}"]`);
+        if (radio) radio.checked = true;
+    }
     populateRangeTimeSelects();
     updateSummary();
 
