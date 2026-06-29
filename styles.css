@@ -350,6 +350,7 @@ nav {
     color: var(--brown-mid);
     margin-bottom: 20px;
     line-height: 1.6;
+    min-height: 3em;
 }
 .service-card-accent .service-desc { color: var(--brown-mid); }
 
