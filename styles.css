@@ -543,7 +543,7 @@ nav {
 
 .highlight-item {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 14px;
     background: #FBF0F2;
     border-radius: 16px;
