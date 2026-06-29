@@ -110,7 +110,7 @@
 <div id="accountSection" class="account-layout" style="display:none">
 
     <!-- Sidebar -->
-    <aside class="account-sidebar">
+    <aside class="account-sidebar" id="accountSidebar">
         <div class="account-avatar-wrap">
             <div class="account-avatar" id="accountAvatar">W</div>
             <div class="account-id">
@@ -119,30 +119,31 @@
             </div>
         </div>
 
-        <nav class="account-nav">
-            <button class="account-nav-btn active" id="navBtnBookings" onclick="showTab('bookings')">
+        <div class="account-nav">
+            <button class="account-nav-btn active" id="navBtnBookings" onclick="navClick(event,'bookings')">
                 <i data-lucide="clipboard-list" style="width:16px;height:16px"></i>
-                My Bookings
+                <span class="nav-btn-label">My Bookings</span>
             </button>
-            <button class="account-nav-btn" id="navBtnCalendar" onclick="showTab('calendar')">
+            <button class="account-nav-btn" id="navBtnCalendar" onclick="navClick(event,'calendar')">
                 <i data-lucide="calendar-days" style="width:16px;height:16px"></i>
-                Calendar
+                <span class="nav-btn-label">Calendar</span>
             </button>
-            <button class="account-nav-btn" id="navBtnPets" onclick="showTab('pets')">
+            <button class="account-nav-btn" id="navBtnPets" onclick="navClick(event,'pets')">
                 <i data-lucide="paw-print" style="width:16px;height:16px"></i>
-                My Pets
+                <span class="nav-btn-label">My Pets</span>
             </button>
-            <button class="account-nav-btn" id="navBtnProfile" onclick="showTab('profile')">
+            <button class="account-nav-btn" id="navBtnProfile" onclick="navClick(event,'profile')">
                 <i data-lucide="contact-round" style="width:16px;height:16px"></i>
-                Profile
+                <span class="nav-btn-label">Profile</span>
             </button>
-        </nav>
+        </div>
 
         <button class="signout-btn" onclick="doSignOut()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Sign Out
+            <span class="signout-label">Sign Out</span>
         </button>
     </aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
     <!-- Main content -->
     <main class="account-main">
@@ -525,6 +526,51 @@
 <script>
     document.getElementById('hamburger').addEventListener('click', () =>
         document.getElementById('navLinks').classList.toggle('open'));
+</script>
+<script>
+(function () {
+    var sidebar   = document.getElementById('accountSidebar');
+    var backdrop  = document.getElementById('sidebarBackdrop');
+    if (!sidebar || !backdrop) return;
+
+    function isMob() { return window.innerWidth <= 720; }
+
+    function openSidebar() {
+        sidebar.classList.add('mob-open');
+        backdrop.classList.add('visible');
+    }
+    function closeSidebar() {
+        sidebar.classList.remove('mob-open');
+        backdrop.classList.remove('visible');
+    }
+
+    /* Tapping the narrow sidebar (not on a nav button) opens it */
+    sidebar.addEventListener('click', function (e) {
+        if (!isMob()) return;
+        if (!sidebar.classList.contains('mob-open')) {
+            openSidebar();
+        }
+    });
+
+    /* Tapping the backdrop closes it */
+    backdrop.addEventListener('click', closeSidebar);
+
+    /* Close sidebar when window resizes beyond mobile breakpoint */
+    window.addEventListener('resize', function () {
+        if (!isMob()) closeSidebar();
+    });
+
+    /* navClick: called by nav button onclick attributes */
+    window.navClick = function (e, tab) {
+        e.stopPropagation(); /* prevent sidebar's own click handler from firing */
+        if (isMob() && !sidebar.classList.contains('mob-open')) {
+            openSidebar();
+            return; /* first tap: just open, don't switch tab */
+        }
+        closeSidebar();
+        if (typeof showTab === 'function') showTab(tab);
+    };
+})();
 </script>
 </body>
 </html>
