@@ -415,10 +415,12 @@ let _tpDrag = null;
 document.addEventListener('mousemove', e => {
     if (!_tpDrag) return;
     _tpDrag.col.scrollTop = _tpDrag.startScrollTop - (e.clientY - _tpDrag.startY);
+    _tpUpdateLabel(_tpDrag.uid);
 });
 document.addEventListener('mouseup', () => {
     if (!_tpDrag) return;
     const { col, uid } = _tpDrag;
+    col.style.scrollSnapType = '';
     _tpDrag = null;
     col.style.cursor = '';
     // Snap to nearest item then sync
@@ -426,6 +428,23 @@ document.addEventListener('mouseup', () => {
     col.scrollTo({ top: snapped, behavior: 'smooth' });
     setTimeout(() => syncPickerToInputs(uid), 200);
 });
+
+function _tpUpdateLabel(uid) {
+    const wrap = document.getElementById(`tpWrap_${uid}`);
+    if (!wrap) return;
+    const getVal = id => {
+        const col = document.getElementById(id);
+        if (!col) return null;
+        return col.querySelectorAll('.tp-item')[Math.round(col.scrollTop / TP_H)]?.dataset.val;
+    };
+    const ampm = getVal(`tpAmpm_${uid}`) || 'AM';
+    const hr12 = parseInt(getVal(`tpHr_${uid}`) || '12');
+    const min  = getVal(`tpMin_${uid}`) || '00';
+    let hr24 = hr12 % 12;
+    if (ampm === 'PM') hr24 += 12;
+    const lbl = document.getElementById(`tpLabel_${uid}`);
+    if (lbl) lbl.textContent = _tpFmt(hr24, min);
+}
 
 function buildPickerHtml(uid, hrId, minId, initHr, initMin) {
     const hr24 = (initHr !== '' && initHr != null) ? parseInt(initHr) : -1;
@@ -486,6 +505,7 @@ function openPicker(uid) {
         if (col._tpDragInit) return;
         col._tpDragInit = true;
         col.addEventListener('mousedown', e => {
+            col.style.scrollSnapType = 'none';
             _tpDrag = { col, uid, startY: e.clientY, startScrollTop: col.scrollTop };
             col.style.cursor = 'grabbing';
             e.preventDefault();
