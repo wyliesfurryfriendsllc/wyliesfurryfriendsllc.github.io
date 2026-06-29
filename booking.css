@@ -241,7 +241,7 @@
     border: 1.5px solid var(--border);
     border-radius: 10px;
     font-size: 14px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--brown);
     background: var(--cream);
     outline: none;
@@ -346,7 +346,7 @@
     width: 100%;
     justify-content: center;
     transition: border-color 0.2s, color 0.2s, background 0.2s;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     margin-top: 8px;
 }
 .add-btn:hover {
@@ -580,7 +580,7 @@
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
 }
 .time-period-pill:hover {
     border-color: var(--pink);
@@ -622,7 +622,7 @@
     font-weight: 600;
     color: var(--brown-mid);
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 .add-time-btn:hover {
@@ -714,7 +714,7 @@
     border-radius: 14px;
     font-size: 16px;
     font-weight: 700;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     transition: background 0.2s, transform 0.15s;
     margin-top: 8px;
@@ -948,7 +948,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
     background: var(--cream);
     color: var(--brown-mid);
     font-size: 13px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-weight: 500;
     cursor: pointer;
     text-align: left;
@@ -991,7 +991,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
     align-items: center;
     justify-content: center;
     transition: border-color 0.2s, color 0.2s;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
 }
 .cal-nav:hover { border-color: var(--pink); color: var(--brown); }
 
@@ -1058,7 +1058,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
     border-radius: 10px;
     font-size: 14px;
     font-weight: 700;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     transition: background 0.2s;
 }
@@ -1077,7 +1077,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
     font-weight: 600;
     color: var(--brown);
     background: var(--cream);
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     outline: none;
     transition: border-color 0.2s;
@@ -1100,7 +1100,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
     border: 1.5px solid var(--border);
     border-radius: 50px;
     font-size: 13px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--brown-mid);
     font-weight: 500;
     cursor: pointer;
@@ -1163,7 +1163,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
     font-size: 16px;
     font-weight: 500;
     color: var(--brown);
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     user-select: none;
 }
 .tp-fade-t, .tp-fade-b {
@@ -1185,7 +1185,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
     border: 1.5px solid var(--border);
     border-radius: 10px;
     font-size: 14px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--brown);
     background: var(--cream);
     outline: none;
@@ -1224,7 +1224,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
     font-weight: 600;
     color: var(--brown-mid);
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     transition: border-color 0.2s, color 0.2s;
     margin-bottom: 28px;
 }

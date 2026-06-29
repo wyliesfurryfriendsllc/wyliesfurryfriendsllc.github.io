@@ -52,7 +52,7 @@
     padding: 9px 16px;
     font-size: 14px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--brown-mid);
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
@@ -79,7 +79,7 @@
     padding: 13px;
     font-size: 15px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     transition: background 0.2s;
     margin-top: 4px;
@@ -96,7 +96,7 @@
     border-radius: 12px;
     padding: 11px;
     font-size: 15px; font-weight: 600;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     transition: background 0.15s, box-shadow 0.15s;
     margin-bottom: 4px;
@@ -128,7 +128,7 @@
     font-weight: 600;
     cursor: pointer;
     padding: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
 }
 .link-btn:hover { text-decoration: underline; }
 
@@ -151,7 +151,7 @@
     border: 1.5px solid var(--border);
     border-radius: 10px;
     font-size: 14px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--brown);
     background: var(--cream);
     outline: none;
@@ -247,7 +247,7 @@
     padding: 11px 14px;
     font-size: 14px;
     font-weight: 500;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--brown-mid);
     cursor: pointer;
     text-align: left;
@@ -273,7 +273,7 @@
     border: none;
     color: var(--brown-mid);
     font-size: 13px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     padding: 10px 14px;
     border-radius: 10px;
@@ -310,7 +310,7 @@
     padding: 9px 18px;
     font-size: 14px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     text-decoration: none;
     transition: background 0.2s;
@@ -536,7 +536,7 @@
 .charge-total span:last-child  { font-weight: 700; }
 
 .detail-dates {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 13px;
     color: var(--brown);
     white-space: pre-wrap;
@@ -643,7 +643,7 @@
     border: 1.5px solid var(--border);
     border-radius: 10px;
     font-size: 14px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--brown);
     background: var(--cream);
     outline: none;
@@ -674,7 +674,7 @@
     padding: 9px 18px;
     font-size: 14px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     transition: background 0.2s;
     white-space: nowrap;
@@ -717,7 +717,7 @@
     padding: 5px 12px;
     font-size: 12px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     transition: background 0.2s;
 }
@@ -758,7 +758,7 @@
     padding: 11px 24px;
     font-size: 14px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     transition: background 0.2s;
 }
@@ -822,7 +822,7 @@
     padding: 10px 20px;
     font-size: 14px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     transition: background 0.2s;
 }
@@ -835,7 +835,7 @@
     padding: 10px 20px;
     font-size: 14px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     transition: background 0.2s;
 }
@@ -963,7 +963,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     min-width: 100px;
     font-size: 15px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--brown-mid);
     cursor: pointer;
     transition: border-color 0.15s, background 0.15s, color 0.15s;
@@ -1003,7 +1003,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     padding: 14px 16px;
     font-size: 13px;
     font-weight: 500;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--brown-mid);
     cursor: pointer;
     transition: border-color 0.15s, background 0.15s, color 0.15s;
@@ -1056,7 +1056,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     width: 100%; margin-top: 10px;
     background: #fff; border: 1.5px solid var(--border);
     border-radius: 10px; padding: 10px 16px;
-    font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif;
+    font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif;
     color: var(--brown-mid); cursor: pointer;
     transition: border-color 0.15s, color 0.15s, background 0.15s;
     -webkit-appearance: none; appearance: none;
@@ -1569,7 +1569,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     font-weight: 600;
     color: var(--brown);
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     transition: border-color 0.15s, background 0.15s, color 0.15s;
     text-align: center;
     line-height: 1.2;
@@ -1624,7 +1624,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     color: var(--pink);
     font-size: 13px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
 }
@@ -1641,7 +1641,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     border: 1.5px solid var(--border);
     border-radius: 10px;
     font-size: 14px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     background: #fff;
     box-sizing: border-box;
 }
@@ -1664,7 +1664,7 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     transition: opacity 0.15s;
 }
 .tip-confirm-btn:hover { opacity: 0.85; }
