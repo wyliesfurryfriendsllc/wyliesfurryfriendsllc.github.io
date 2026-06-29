@@ -2076,15 +2076,9 @@ input, select, textarea {
     .tvc-status-desktop { display: none; }
 }
 
-/* Today's Visits: avatars max 2 per row */
+/* Today's Visits: avatars all in one row */
 .tvc-body .abc-avatar-stack {
-    flex-wrap: wrap;
-    max-width: 88px;
-    align-items: flex-start;
-    row-gap: 4px;
-}
-.tvc-body .abc-avatar-stack > *:nth-child(odd):not(:first-child) {
-    margin-left: 0;
+    flex-wrap: nowrap;
 }
 
 /* ─── Admin time picker overlay ──────────────────────────── */
