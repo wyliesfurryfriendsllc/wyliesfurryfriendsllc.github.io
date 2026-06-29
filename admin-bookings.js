@@ -642,7 +642,7 @@ function renderAdminBookings() {
                         <div class="abc-service">${escHtml(b.service || '')} · ${String(b.duration || 30).includes('&') ? b.duration : (b.duration || 30) + ' min'}</div>
                         <div style="margin-bottom:4px"><span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span>${b.isRover ? '<span class="rover-badge">Rover</span>' : ''}</div>
                         <div class="abc-dates">${cardDate}</div>
-                        <div class="abc-price">${b.finalTotal != null ? `$${b.finalTotal}` : `$${calcBaseTotal(b) || b.total || 0} est.`}</div>
+                        <div class="abc-price">${b.finalTotal != null ? `$${b.finalTotal}` : `$${calcBaseTotal(b) || b.total || 0}`}</div>
                     </div>
                 </div>`;
             cardsEl.appendChild(card);
