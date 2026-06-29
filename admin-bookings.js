@@ -209,11 +209,143 @@ function fmt12h(hhmm) {
     const [h, m] = hhmm.split(':').map(Number);
     return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
 }
-function editVisitTime(key, current) {
-    const val = prompt('Set your visit time (e.g. 7:30 or 730):', current ? fmt12h(current) : '');
-    if (val === null) return;
-    const parsed = parseAdminTime(val.trim());
-    setVisitTime(key, parsed);
+// ─── ADMIN TIME PICKER ───────────────────────────────────
+const ATP_H = 44;
+let _atpDrag  = null;
+let _atpKey   = null;
+let _atpTimer = null;
+
+(function() {
+    document.addEventListener('mousemove', e => {
+        if (!_atpDrag) return;
+        _atpDrag.col.scrollTop = _atpDrag.startScrollTop - (e.clientY - _atpDrag.startY);
+    });
+    document.addEventListener('mouseup', () => {
+        if (!_atpDrag) return;
+        const { col } = _atpDrag;
+        col.style.scrollSnapType = '';
+        _atpDrag = null;
+        col.style.cursor = '';
+        col.scrollTo({ top: Math.round(col.scrollTop / ATP_H) * ATP_H, behavior: 'smooth' });
+    });
+})();
+
+function _getOrCreateAtpPicker() {
+    let el = document.getElementById('adminTimePicker');
+    if (el) return el;
+    el = document.createElement('div');
+    el.id = 'adminTimePicker';
+    el.className = 'atp-overlay';
+    const hrItems  = [1,2,3,4,5,6,7,8,9,10,11,12].map(h => `<div class="tp-item" data-val="${h}">${h}</div>`).join('');
+    const minItems = ['00','15','30','45'].map(m => `<div class="tp-item" data-val="${m}">${m}</div>`).join('');
+    el.innerHTML = `
+        <div class="tp-picker-body">
+            <div class="tp-sel-bar"></div>
+            <div class="tp-cols">
+                <div class="tp-col" id="atpAmpm" onscroll="AdminBookings.atpOnScroll()">
+                    <div class="tp-item" data-val="AM">AM</div>
+                    <div class="tp-item" data-val="PM">PM</div>
+                </div>
+                <div class="tp-col" id="atpHr" onscroll="AdminBookings.atpOnScroll()">${hrItems}</div>
+                <div class="tp-col" id="atpMin" onscroll="AdminBookings.atpOnScroll()">${minItems}</div>
+            </div>
+            <div class="tp-fade-t"></div>
+            <div class="tp-fade-b"></div>
+        </div>
+        <div class="atp-footer">
+            <button class="atp-btn-clear" onclick="AdminBookings.atpClear()">Clear</button>
+            <button class="atp-btn-confirm" onclick="AdminBookings.atpConfirm()">Set Time</button>
+        </div>`;
+    document.body.appendChild(el);
+    el.querySelectorAll('.tp-col').forEach(col => {
+        col.addEventListener('mousedown', e => {
+            col.style.scrollSnapType = 'none';
+            _atpDrag = { col, startY: e.clientY, startScrollTop: col.scrollTop };
+            col.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+    });
+    return el;
+}
+
+function _atpScrollTo(colId, val) {
+    const col = document.getElementById(colId);
+    if (!col) return;
+    const items = col.querySelectorAll('.tp-item');
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].dataset.val === val) { col.scrollTop = i * ATP_H; return; }
+    }
+}
+
+function openAdminTimePicker(key, current, triggerEl) {
+    _atpKey = key;
+    const picker = _getOrCreateAtpPicker();
+    const rect = triggerEl.getBoundingClientRect();
+    picker.style.top  = (rect.bottom + 6) + 'px';
+    picker.style.left = Math.max(4, rect.left) + 'px';
+    picker.style.display = 'block';
+    const hr24 = current ? parseInt(current.split(':')[0]) : 9;
+    const minRaw = current ? (current.split(':')[1] || '00') : '00';
+    const minSnapped = ['00','15','30','45'].reduce((b, m) =>
+        Math.abs(parseInt(m) - parseInt(minRaw)) < Math.abs(parseInt(b) - parseInt(minRaw)) ? m : b, '00');
+    _atpScrollTo('atpAmpm', hr24 >= 12 ? 'PM' : 'AM');
+    _atpScrollTo('atpHr',   String(hr24 % 12 || 12));
+    _atpScrollTo('atpMin',  minSnapped);
+    setTimeout(() => {
+        const handler = e => {
+            if (!picker.contains(e.target) && !triggerEl.contains(e.target)) {
+                atpClose();
+                document.removeEventListener('click', handler);
+            }
+        };
+        document.addEventListener('click', handler);
+    }, 0);
+}
+
+function atpOnScroll() {
+    clearTimeout(_atpTimer);
+    _atpTimer = setTimeout(() => {
+        ['atpAmpm','atpHr','atpMin'].forEach(id => {
+            const col = document.getElementById(id);
+            if (col) col.scrollTo({ top: Math.round(col.scrollTop / ATP_H) * ATP_H, behavior: 'smooth' });
+        });
+    }, 150);
+}
+
+function _atpReadTime() {
+    const getVal = id => {
+        const col = document.getElementById(id);
+        if (!col) return null;
+        return col.querySelectorAll('.tp-item')[Math.round(col.scrollTop / ATP_H)]?.dataset.val;
+    };
+    const ampm = getVal('atpAmpm') || 'AM';
+    const hr12 = parseInt(getVal('atpHr') || '12');
+    const min  = getVal('atpMin') || '00';
+    let hr24 = hr12 % 12;
+    if (ampm === 'PM') hr24 += 12;
+    return `${String(hr24).padStart(2,'0')}:${min}`;
+}
+
+function atpConfirm() {
+    if (!_atpKey) return;
+    setVisitTime(_atpKey, _atpReadTime());
+    atpClose();
+}
+
+function atpClear() {
+    if (!_atpKey) return;
+    setVisitTime(_atpKey, '');
+    atpClose();
+}
+
+function atpClose() {
+    const picker = document.getElementById('adminTimePicker');
+    if (picker) picker.style.display = 'none';
+    _atpKey = null;
+}
+
+function editVisitTime(key, current, triggerEl) {
+    openAdminTimePicker(key, current, triggerEl || document.body);
 }
 
 function renderTodaySection(outerContainer) {
@@ -298,7 +430,7 @@ function renderTodaySection(outerContainer) {
         row.ondrop      = (e) => AdminBookings.onTvcDrop(e, endTime, key);
         row.ondragend   = ()  => AdminBookings.onTvcDragEnd();
         row.innerHTML = `
-            <div class="tvc-admin-time" onclick="AdminBookings.editVisitTime('${escHtml(key)}','${escHtml(adminTime)}')">
+            <div class="tvc-admin-time" onclick="AdminBookings.editVisitTime('${escHtml(key)}','${escHtml(adminTime)}',this)">
                 <span class="tvc-admin-time-label${isOverridden ? ' overridden' : ''}">${effectiveTime ? escHtml(fmt12h(effectiveTime)) : '—'}</span>
                 ${pencil}
             </div>
@@ -1926,6 +2058,7 @@ async function saveCloneBooking(bookingId) {
 // ─── EXPOSE ───────────────────────────────────────────────
 window.AdminBookings = {
     init, setFilter, toggleHideRover, toggleCompletedSort, toggleAllSort, savePetsToClient, editVisitTime,
+    atpConfirm, atpClear, atpOnScroll,
     onTvcDragStart, onTvcDragOver, onTvcDragEnter, onTvcDrop, onTvcDragEnd,
     openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,

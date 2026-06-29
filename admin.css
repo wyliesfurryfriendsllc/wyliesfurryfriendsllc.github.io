@@ -2030,10 +2030,63 @@ input, select, textarea {
 @media (max-width: 768px) {
     .time-period-pills { gap: 4px; flex-wrap: nowrap; }
     .time-period-pill { font-size: 12px; padding: 7px 11px; }
-    .tvc-body .abc-avatar-stack {
-        flex-wrap: wrap;
-        max-height: 116px;
-        overflow: hidden;
-    }
 }
+
+/* Today's Visits: avatars max 2 per row */
+.tvc-body .abc-avatar-stack {
+    flex-wrap: wrap;
+    max-width: 88px;
+    align-items: flex-start;
+    row-gap: 4px;
+}
+.tvc-body .abc-avatar-stack > *:nth-child(odd):not(:first-child) {
+    margin-left: 0;
+}
+
+/* ─── Admin time picker overlay ──────────────────────────── */
+.atp-overlay {
+    position: fixed; z-index: 9999;
+    background: #fffaf7; border: 1.5px solid #e8d5c4;
+    border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    padding: 8px; display: none;
+}
+.atp-overlay .tp-picker-body { position: relative; border-radius: 10px; overflow: hidden; }
+.atp-overlay .tp-sel-bar {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    left: 0; right: 0; height: 44px;
+    background: #fde8e8; border-top: 1px solid #e8d5c4;
+    border-bottom: 1px solid #e8d5c4; z-index: 0; pointer-events: none;
+}
+.atp-overlay .tp-cols { display: flex; position: relative; z-index: 1; }
+.atp-overlay .tp-col {
+    height: 220px; overflow-y: scroll; scroll-snap-type: y mandatory;
+    padding: 88px 0; scrollbar-width: none; flex: 1; min-width: 56px;
+    background: transparent; cursor: grab;
+}
+.atp-overlay .tp-col::-webkit-scrollbar { display: none; }
+.atp-overlay .tp-item {
+    height: 44px; scroll-snap-align: center;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 500; color: #5c3d2e;
+    font-family: 'Inter', sans-serif; user-select: none;
+}
+.atp-overlay .tp-fade-t,
+.atp-overlay .tp-fade-b {
+    position: absolute; left: 0; right: 0; height: 88px;
+    z-index: 2; pointer-events: none;
+}
+.atp-overlay .tp-fade-t { top: 0;    background: linear-gradient(to bottom, #fffaf7 20%, transparent); }
+.atp-overlay .tp-fade-b { bottom: 0; background: linear-gradient(to top,   #fffaf7 20%, transparent); }
+.atp-footer { display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end; }
+.atp-btn-clear {
+    padding: 7px 14px; border-radius: 8px;
+    border: 1.5px solid #e8d5c4; background: #fff;
+    color: #8c6a5a; font-size: 13px; cursor: pointer;
+}
+.atp-btn-confirm {
+    padding: 7px 14px; border-radius: 8px; border: none;
+    background: #e07c8a; color: #fff;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+}
+
 .detail-linked-badge { font-size:12px; color:#2e7d32; }
