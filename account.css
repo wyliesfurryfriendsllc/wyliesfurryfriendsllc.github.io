@@ -893,11 +893,11 @@
         position: fixed;
         top: 60px;
         left: 0;
-        height: calc(100vh - 60px);
+        height: calc(100dvh - 60px);
         width: 60px;
         flex-direction: column;
         align-items: center;
-        padding: 12px 0;
+        padding: 12px 0 max(env(safe-area-inset-bottom), 12px);
         gap: 4px;
         border-right: 1.5px solid var(--border);
         border-bottom: none;
@@ -915,12 +915,13 @@
         position: fixed;
         left: 0;
         top: 60px;
+        height: calc(100dvh - 60px);
         width: 50vw;
         align-items: stretch;
         overflow-y: auto;
         overflow-x: hidden;
         box-shadow: 4px 0 28px rgba(61,32,24,0.18);
-        padding: 16px 0;
+        padding: 16px 0 max(env(safe-area-inset-bottom), 16px);
         cursor: default;
     }
 
