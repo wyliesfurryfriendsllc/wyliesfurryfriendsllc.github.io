@@ -358,7 +358,7 @@ function renderBookingsList(bookings) {
         card.onclick = () => openBookingDetail(b.id);
         card.innerHTML = `
             <div class="upcoming-card-row">
-                <span class="upcoming-banner-icon">⏰</span>
+                <span class="upcoming-banner-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3 2 6"/><path d="m22 6-3-3"/><path d="M6.38 18.7 4 21"/><path d="M17.64 18.67 20 21"/></svg></span>
                 <div>
                     <strong>${escHtml(b.service || 'Booking')} · ${label}</strong>
                     <span>${escHtml(dateRange)}</span>
@@ -401,7 +401,7 @@ function renderBookingsList(bookings) {
                     <span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span>
                     ${needsDeposit ? `<div class="bc-deposit-chip">Deposit Required</div>` : ''}
                     ${needsReview  ? `<div class="bc-review-chip">Leave a Review</div>` : ''}
-                    ${showChip ? `<div class="bc-upcoming-chip">⏰ ${chipLabel}</div>` : ''}
+                    ${showChip ? `<div class="bc-upcoming-chip"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3 2 6"/><path d="m22 6-3-3"/><path d="M6.38 18.7 4 21"/><path d="M17.64 18.67 20 21"/></svg> ${chipLabel}</div>` : ''}
                     <div class="bc-date-line">${escHtml(dateRange)}</div>
                     <div class="bc-total-line">$${b.finalTotal != null ? b.finalTotal : (b.total || 0)} est.</div>
                 </div>
