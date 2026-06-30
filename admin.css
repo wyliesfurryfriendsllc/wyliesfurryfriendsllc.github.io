@@ -1652,7 +1652,7 @@ input, select, textarea {
     min-width: 0;
 }
 .tvc-pet {
-    font-size: 15px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--brown);
     white-space: nowrap;
