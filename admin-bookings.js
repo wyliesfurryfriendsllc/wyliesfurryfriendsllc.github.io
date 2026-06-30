@@ -441,17 +441,12 @@ function renderTodaySection(outerContainer) {
             </div>
             <div class="today-visit-card${b.id === activeBookingId ? ' active' : ''}" data-booking-id="${b.id}">
                 <div class="tvc-body">
-                    <div class="tvc-left">
-                        <div class="abc-avatar-stack">${avatarHtml}</div>
-                        <div class="tvc-info">
-                            <span class="tvc-pet">${escHtml(petNames)}</span>
-                            <div class="tvc-time-row">
-                                ${(()=>{const d=String(b.duration||30);return d.includes('&')?`<span class="tvc-service">${d}</span>`:parseInt(d)===60?`<span class="tvc-service">60 min</span>`:''})()}
-                                <span class="tvc-slot-time">${escHtml(slotTimeLabel)}</span>
-                            </div>
-                        </div>
+                    <div class="abc-avatar-stack">${avatarHtml}</div>
+                    <span class="tvc-pet">${escHtml(petNames)}</span>
+                    <div class="tvc-time-row">
+                        ${(()=>{const d=String(b.duration||30);return d.includes('&')?`<span class="tvc-service">${d}</span>`:parseInt(d)===60?`<span class="tvc-service">60 min</span>`:''})()}
+                        <span class="tvc-slot-time">${escHtml(slotTimeLabel)}</span>
                     </div>
-                    <span class="status-badge ${STATUS_COLORS[b.status]||'status-pending'}">${STATUS_LABELS[b.status]||'Pending'}</span>
                     <span class="tvc-drag-handle">${dragHandle}</span>
                 </div>
             </div>`;
