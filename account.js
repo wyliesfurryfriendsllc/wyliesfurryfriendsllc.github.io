@@ -541,7 +541,7 @@ function buildChargesHtml(b) {
                 calcBase += petTotal;
                 petHtml += `<div class="detail-row charge-item"><span>${escHtml(rateLabel)} · $${baseRate} × ${totalVisits} visit${totalVisits !== 1 ? 's' : ''}</span><span>$${baseRate * totalVisits}</span></div>`;
                 if (num60 > 0) {
-                    petHtml += `<div class="detail-row charge-item"><span>60-min upgrade · $${p.addon60} × ${num60} visit${num60 !== 1 ? 's' : ''}</span><span>$${p.addon60 * num60}</span></div>`;
+                    petHtml += `<div class="detail-row charge-item"><span>60-min rate · $${p.addon60} × ${num60} visit${num60 !== 1 ? 's' : ''}</span><span>$${p.addon60 * num60}</span></div>`;
                 }
             } else {
                 const rate = baseRate + (is60 ? p.addon60 : 0);

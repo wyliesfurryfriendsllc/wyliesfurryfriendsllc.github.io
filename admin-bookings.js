@@ -865,7 +865,7 @@ function renderChargesHtml(b) {
                         <div>
                             <div class="detail-charge-label">${escHtml(pet.name || '—')}</div>
                             <div class="detail-charge-sub">${escHtml(rateLabel)} · $${baseRate} × ${totalVisits} visit${totalVisits !== 1 ? 's' : ''}</div>
-                            ${num60 > 0 ? `<div class="detail-charge-sub">60-min upgrade · $${p.addon60} × ${num60} visit${num60 !== 1 ? 's' : ''}</div>` : ''}
+                            ${num60 > 0 ? `<div class="detail-charge-sub">60-min rate · $${p.addon60} × ${num60} visit${num60 !== 1 ? 's' : ''}</div>` : ''}
                         </div>
                         <div class="detail-charge-amount">$${petTotal}</div>
                     </div>`;
