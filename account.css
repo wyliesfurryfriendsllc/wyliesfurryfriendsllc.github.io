@@ -347,7 +347,8 @@
     align-items: flex-start;
     gap: 10px;
 }
-.upcoming-banner-icon { font-size: 18px; flex-shrink: 0; }
+.upcoming-banner-icon { font-size: 18px; flex-shrink: 0; display: flex; align-items: center; }
+.upcoming-banner-icon svg { display: block; }
 .upcoming-card-row > div { display: flex; flex-direction: column; gap: 2px; }
 .upcoming-card-row strong { font-size: 13px; color: #5D4037; font-weight: 700; }
 .upcoming-card-row span { font-size: 12px; color: #8D6E63; }
@@ -385,8 +386,11 @@
     padding: 2px 8px;
     margin-top: 4px;
 }
+.bc-upcoming-chip svg { vertical-align: middle; margin-top: -1px; }
 .bc-upcoming-chip {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     background: #FFF3E0;
     color: #E65100;
     border: 1px solid #FFCC80;
