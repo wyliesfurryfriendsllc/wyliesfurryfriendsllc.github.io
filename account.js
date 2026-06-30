@@ -397,7 +397,7 @@ function renderBookingsList(bookings) {
                 </div>
                 <div class="bc-right">
                     <div class="bc-svc-name">${escHtml(b.service || '—')}</div>
-                    <div class="bc-duration">${b.duration || 30} min</div>
+                    <div class="bc-duration">${fmtDuration(b.duration)}</div>
                     <span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span>
                     ${needsDeposit ? `<div class="bc-deposit-chip">Deposit Required</div>` : ''}
                     ${needsReview  ? `<div class="bc-review-chip">Leave a Review</div>` : ''}
@@ -521,7 +521,7 @@ function renderBookingDetail(b, panel) {
     panel.innerHTML = `
         <div class="detail-header">
             <div>
-                <h3 class="detail-title">${escHtml(b.service || '—')} · ${b.duration || 30} min</h3>
+                <h3 class="detail-title">${escHtml(b.service || '—')} · ${fmtDuration(b.duration)}</h3>
                 <span class="status-badge ${STATUS_COLORS[b.status] || 'status-pending'}">${STATUS_LABELS[b.status] || 'Pending'}</span>
             </div>
             <button class="detail-close" onclick="closeBookingDetail()">×</button>
@@ -1316,6 +1316,10 @@ function extractTimesFromText(datesText, iso) {
 }
 
 // ─── HELPERS ─────────────────────────────────────────────
+function fmtDuration(d) {
+    const s = String(d || 30);
+    return s.includes('min') ? s : s + ' min';
+}
 function escHtml(s) {
     return String(s)
         .replace(/&/g,'&amp;').replace(/</g,'&lt;')
