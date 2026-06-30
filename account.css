@@ -769,6 +769,9 @@
 /* Backdrop only used on mobile — hidden everywhere else */
 .sidebar-backdrop { display: none; }
 
+/* No footer on account page */
+.account-page footer { display: none; }
+
 /* ─── MODAL ──────────────────────────────────────── */
 .modal-overlay {
     position: fixed;
@@ -865,20 +868,21 @@
 }
 
 @media (max-width: 720px) {
-    /* ── Layout: narrow icon rail + content ── */
+    /* ── Layout: main content offset by fixed sidebar ── */
     .account-layout {
-        display: grid;
-        grid-template-columns: 60px 1fr;
-        padding: 0;
+        display: block;
+        padding-left: 60px;
         max-width: 100vw;
         overflow-x: hidden;
         min-height: calc(100vh - 60px);
+        box-sizing: border-box;
     }
 
-    /* ── Sidebar: narrow icon rail (default) ── */
+    /* ── Sidebar: fixed icon rail, never shifts ── */
     .account-sidebar {
-        position: sticky;
+        position: fixed;
         top: 60px;
+        left: 0;
         height: calc(100vh - 60px);
         width: 60px;
         flex-direction: column;
