@@ -851,41 +851,51 @@ function renderChargesHtml(b) {
     let petRows = '';
     let calcBase = 0;
     pets.forEach((pet, idx) => {
-        let petTotal, subHtml;
         if (idx === 0) {
             const baseRate = b.customBasePrice != null
                 ? b.customBasePrice
                 : (isHoliday ? p.holiday : ((service !== 'Dog Walking' && pet.type === 'cat') ? p.cat : p.base));
             const rateLabel = service + (b.customBasePrice != null ? ' · Custom Rate' : (isHoliday ? ' · Holiday Rate' : ''));
             if (isCombo) {
-                const rate30 = baseRate;
-                const rate60 = baseRate + p.addon60;
-                petTotal = rate30 * num30 + rate60 * num60;
-                subHtml = num30 > 0
-                    ? `<div class="detail-charge-sub">${escHtml(rateLabel)} (30 min) · $${rate30} × ${num30} visit${num30 !== 1 ? 's' : ''}</div>`
-                    : '';
-                subHtml += num60 > 0
-                    ? `<div class="detail-charge-sub">${escHtml(rateLabel)} (60 min) · $${rate60} × ${num60} visit${num60 !== 1 ? 's' : ''}</div>`
-                    : '';
+                const totalVisits = num30 + num60;
+                const petTotal = baseRate * totalVisits + p.addon60 * num60;
+                calcBase += petTotal;
+                petRows += `
+                    <div class="detail-charge-row">
+                        <div>
+                            <div class="detail-charge-label">${escHtml(pet.name || '—')}</div>
+                            <div class="detail-charge-sub">${escHtml(rateLabel)} · $${baseRate} × ${totalVisits} visit${totalVisits !== 1 ? 's' : ''}</div>
+                            ${num60 > 0 ? `<div class="detail-charge-sub">60-min upgrade · $${p.addon60} × ${num60} visit${num60 !== 1 ? 's' : ''}</div>` : ''}
+                        </div>
+                        <div class="detail-charge-amount">$${petTotal}</div>
+                    </div>`;
             } else {
                 const rate = baseRate + (is60 ? p.addon60 : 0);
-                petTotal = rate * numVisits;
-                subHtml = `<div class="detail-charge-sub">${escHtml(rateLabel)} · $${rate} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}</div>`;
+                const petTotal = rate * numVisits;
+                calcBase += petTotal;
+                petRows += `
+                    <div class="detail-charge-row">
+                        <div>
+                            <div class="detail-charge-label">${escHtml(pet.name || '—')}</div>
+                            <div class="detail-charge-sub">${escHtml(rateLabel)} · $${rate} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}</div>
+                        </div>
+                        <div class="detail-charge-amount">$${petTotal}</div>
+                    </div>`;
             }
         } else {
+            const totalV = isCombo ? (num30 + num60) : numVisits;
             const rate = pet.type === 'cat' ? (PRICING.dropin.extraCat || PRICING.dropin.extraDog) : PRICING.dropin.extraDog;
-            petTotal = rate * numVisits;
-            subHtml = `<div class="detail-charge-sub">Additional ${escHtml(pet.type || 'pet')} · $${rate} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}</div>`;
+            const petTotal = rate * totalV;
+            calcBase += petTotal;
+            petRows += `
+                <div class="detail-charge-row">
+                    <div>
+                        <div class="detail-charge-label">${escHtml(pet.name || '—')}</div>
+                        <div class="detail-charge-sub">Additional ${escHtml(pet.type || 'pet')} · $${rate} × ${totalV} visit${totalV !== 1 ? 's' : ''}</div>
+                    </div>
+                    <div class="detail-charge-amount">$${petTotal}</div>
+                </div>`;
         }
-        calcBase += petTotal;
-        petRows += `
-            <div class="detail-charge-row">
-                <div>
-                    <div class="detail-charge-label">${escHtml(pet.name || '—')}</div>
-                    ${subHtml}
-                </div>
-                <div class="detail-charge-amount">$${petTotal}</div>
-            </div>`;
     });
 
     // Use calculated base when pets exist; fall back to stored b.total when no pets

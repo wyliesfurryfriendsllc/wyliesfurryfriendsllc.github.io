@@ -529,32 +529,34 @@ function buildChargesHtml(b) {
     let calcBase = 0;
 
     pets.forEach((pet, idx) => {
-        let petTotal, subLabel;
         if (idx === 0) {
             const baseRate = b.customBasePrice != null
                 ? b.customBasePrice
                 : (isHoliday ? p.holiday : (service !== 'Dog Walking' && pet.type === 'cat' ? p.cat : p.base));
             const rateLabel = service + (b.customBasePrice != null ? ' · Custom Rate' : isHoliday ? ' · Holiday Rate' : '');
+            petHtml += `<div class="charge-pet-label">${escHtml(pet.name || '—')}</div>`;
             if (isCombo) {
-                const rate30 = baseRate, rate60 = baseRate + p.addon60;
-                petTotal = rate30 * num30 + rate60 * num60;
-                const parts = [];
-                if (num30 > 0) parts.push(`${escHtml(rateLabel)} (30 min) · $${rate30} × ${num30} visit${num30 !== 1 ? 's' : ''}`);
-                if (num60 > 0) parts.push(`${escHtml(rateLabel)} (60 min) · $${rate60} × ${num60} visit${num60 !== 1 ? 's' : ''}`);
-                subLabel = parts.join('<br>');
+                const totalVisits = num30 + num60;
+                const petTotal = baseRate * totalVisits + p.addon60 * num60;
+                calcBase += petTotal;
+                petHtml += `<div class="detail-row charge-item"><span>${escHtml(rateLabel)} · $${baseRate} × ${totalVisits} visit${totalVisits !== 1 ? 's' : ''}</span><span>$${baseRate * totalVisits}</span></div>`;
+                if (num60 > 0) {
+                    petHtml += `<div class="detail-row charge-item"><span>60-min upgrade · $${p.addon60} × ${num60} visit${num60 !== 1 ? 's' : ''}</span><span>$${p.addon60 * num60}</span></div>`;
+                }
             } else {
                 const rate = baseRate + (is60 ? p.addon60 : 0);
-                petTotal = rate * numVisits;
-                subLabel = `${escHtml(rateLabel)} · $${rate} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}`;
+                const petTotal = rate * numVisits;
+                calcBase += petTotal;
+                petHtml += `<div class="detail-row charge-item"><span>${escHtml(rateLabel)} · $${rate} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}</span><span>$${petTotal}</span></div>`;
             }
         } else {
+            const totalV = isCombo ? (num30 + num60) : numVisits;
             const rate = pet.type === 'cat' ? (PRICING.dropin.extraCat || PRICING.dropin.extraDog) : PRICING.dropin.extraDog;
-            petTotal = rate * numVisits;
-            subLabel = `Additional ${escHtml(pet.type || 'pet')} · $${rate} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}`;
+            const petTotal = rate * totalV;
+            calcBase += petTotal;
+            petHtml += `<div class="charge-pet-label">${escHtml(pet.name || '—')}</div>`;
+            petHtml += `<div class="detail-row charge-item"><span>Additional ${escHtml(pet.type || 'pet')} · $${rate} × ${totalV} visit${totalV !== 1 ? 's' : ''}</span><span>$${petTotal}</span></div>`;
         }
-        calcBase += petTotal;
-        petHtml += `<div class="charge-pet-label">${escHtml(pet.name || '—')}</div>`;
-        petHtml += `<div class="detail-row charge-item"><span>${subLabel}</span><span>$${petTotal}</span></div>`;
     });
 
     const baseTotal = pets.length > 0 ? calcBase : (b.total || 0);
