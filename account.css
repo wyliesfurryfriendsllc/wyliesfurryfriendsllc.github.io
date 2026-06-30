@@ -546,6 +546,12 @@
     padding: 10px 12px;
     line-height: 1.7;
 }
+.detail-sched-block { margin-bottom: 14px; }
+.detail-sched-block:last-child { margin-bottom: 0; }
+.detail-sched-date { font-weight: 700; font-size: 16px; color: var(--brown); margin-bottom: 4px; }
+.detail-sched-times-row { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.detail-sched-time { font-size: 15px; color: var(--brown-mid); }
+
 .detail-notes {
     font-size: 13px;
     color: var(--brown);

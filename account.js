@@ -351,7 +351,7 @@ function renderBookingsList(bookings) {
     upcoming.forEach(b => {
         const d = getDaysUntil(b);
         const label = d === 0 ? 'Today!' : `In ${d} day${d !== 1 ? 's' : ''}`;
-        const firstLine = b.datesText ? b.datesText.trim().split('\n')[0].trim() : '—';
+        const dateRange = fmtDateRangeStr(b);
         const needsPayment = b.status === 'deposit_received';
         const card = document.createElement('div');
         card.className = 'upcoming-card';
@@ -361,7 +361,7 @@ function renderBookingsList(bookings) {
                 <span class="upcoming-banner-icon">⏰</span>
                 <div>
                     <strong>${escHtml(b.service || 'Booking')} · ${label}</strong>
-                    <span>${escHtml(firstLine)}</span>
+                    <span>${escHtml(dateRange)}</span>
                     ${needsPayment ? `<span class="upcoming-payment-due">Final payment due before service starts</span>` : ''}
                 </div>
             </div>`;
@@ -373,7 +373,7 @@ function renderBookingsList(bookings) {
         card.className   = 'booking-card' + (b.id === activeBookingId ? ' active' : '');
         card.dataset.bid = b.id;
         card.onclick     = () => openBookingDetail(b.id);
-        const firstLine = b.datesText ? b.datesText.trim().split('\n')[0].trim() : '—';
+        const dateRange = fmtDateRangeStr(b);
 
         const pets = b.pets || [];
         const firstPet = pets[0] || {};
@@ -402,7 +402,7 @@ function renderBookingsList(bookings) {
                     ${needsDeposit ? `<div class="bc-deposit-chip">Deposit Required</div>` : ''}
                     ${needsReview  ? `<div class="bc-review-chip">Leave a Review</div>` : ''}
                     ${showChip ? `<div class="bc-upcoming-chip">⏰ ${chipLabel}</div>` : ''}
-                    <div class="bc-date-line">${escHtml(firstLine)}</div>
+                    <div class="bc-date-line">${escHtml(dateRange)}</div>
                     <div class="bc-total-line">$${b.finalTotal != null ? b.finalTotal : (b.total || 0)} est.</div>
                 </div>
             </div>
@@ -528,7 +528,7 @@ function renderBookingDetail(b, panel) {
         </div>
         <div class="detail-section">
             <div class="detail-section-label">Dates &amp; Times</div>
-            <pre class="detail-dates">${escHtml(buildDatesText(b).split('\n').map(l=>l.trim()).filter(Boolean).join('\n'))}</pre>
+            ${buildScheduleHtml(b)}
         </div>
         <div class="detail-section">
             <div class="detail-section-label">Services &amp; Charges</div>
@@ -1272,11 +1272,23 @@ function showCalDay(iso) {
 
 function fmtSlotAcc(t) {
     if (!t) return 'TBD';
-    if (t.includes('~')) {
-        const [s, e] = t.split('~');
-        return `${fmt12Acc(s)} – ${fmt12Acc(e)}`;
+    const durMatch = t.match(/\|(\d+)$/);
+    const durLabel = durMatch ? ` (${durMatch[1]} min)` : '';
+    const clean = t.replace(/\|\d+$/, '');
+    if (clean.includes('~')) {
+        const [s, e] = clean.split('~');
+        if (!e) return `Arrive ${fmt12Acc(s)}${durLabel}`;
+        const sH = Number(s.split(':')[0]);
+        const eH = Number(e.split(':')[0]);
+        const sMin = String(Number(s.split(':')[1])).padStart(2, '0');
+        const sAmPm = sH >= 12 ? 'PM' : 'AM';
+        const eFmt = fmt12Acc(e);
+        const sFmt = `${sH % 12 || 12}:${sMin}`;
+        return (sAmPm === (eH >= 12 ? 'PM' : 'AM')
+            ? `Arrive ${sFmt} – ${eFmt}`
+            : `Arrive ${sFmt} ${sAmPm} – ${eFmt}`) + durLabel;
     }
-    return fmt12Acc(t);
+    return fmt12Acc(clean) + durLabel;
 }
 
 function fmt12Acc(t) {
@@ -1285,6 +1297,33 @@ function fmt12Acc(t) {
     const h = Number(parts[0]), m = Number(parts[1]);
     if (isNaN(h) || isNaN(m)) return t;
     return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
+}
+
+function buildScheduleHtml(b) {
+    if (b.dateTimes && Object.keys(b.dateTimes).length > 0) {
+        return Object.keys(b.dateTimes).sort().map(iso => {
+            const d = new Date(iso + 'T12:00:00');
+            const dateLabel = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            const slots = [...(b.dateTimes[iso] || [])].filter(Boolean).sort();
+            const timesHtml = slots.length
+                ? `<div class="detail-sched-times-row">${slots.map(t => `<span class="detail-sched-time">${escHtml(fmtSlotAcc(t))}</span>`).join('')}</div>`
+                : '<div class="detail-sched-times-row"><span class="detail-sched-time">TBD</span></div>';
+            return `<div class="detail-sched-block"><div class="detail-sched-date">${escHtml(dateLabel)}</div>${timesHtml}</div>`;
+        }).join('');
+    }
+    return `<pre class="detail-dates">${escHtml(buildDatesText(b).split('\n').map(l => l.trim()).filter(Boolean).join('\n'))}</pre>`;
+}
+
+function fmtDateRangeStr(b) {
+    const dates = parseBDates(b).sort();
+    if (!dates.length) return '—';
+    const first = new Date(dates[0] + 'T12:00:00');
+    const last  = new Date(dates[dates.length - 1] + 'T12:00:00');
+    const opts  = { month: 'short', day: 'numeric' };
+    if (dates.length === 1) return first.toLocaleDateString('en-US', { ...opts, year: 'numeric' });
+    const fStr = first.toLocaleDateString('en-US', opts);
+    const lStr = last.toLocaleDateString('en-US', { ...opts, year: 'numeric' });
+    return `${fStr} – ${lStr}`;
 }
 
 function parse12hMin(t) {
