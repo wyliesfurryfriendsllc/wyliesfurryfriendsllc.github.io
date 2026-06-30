@@ -766,6 +766,9 @@
 .btn-save-profile:disabled { opacity: 0.65; cursor: not-allowed; }
 .save-ok-inline { font-size: 13px; color: var(--green); font-weight: 600; }
 
+/* Backdrop only used on mobile — hidden everywhere else */
+.sidebar-backdrop { display: none; }
+
 /* ─── MODAL ──────────────────────────────────────── */
 .modal-overlay {
     position: fixed;
