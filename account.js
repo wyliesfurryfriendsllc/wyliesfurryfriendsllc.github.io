@@ -472,46 +472,115 @@ function buildDatesText(b) {
     }).join('\n');
 }
 
+const PRICING = {
+    dropin:  { base: 23, addon60: 20, holiday: 31, extraDog: 9, cat: 23, extraCat: 9 },
+    walking: { base: 26, addon60: 23, holiday: 34, extraDog: 9 }
+};
+const HOLIDAY_RANGES = [
+    ['2026-05-22', '2026-05-25'],
+    ['2026-06-19', '2026-06-21'],
+    ['2026-07-03', '2026-07-05'],
+    ['2026-09-04', '2026-09-07'],
+    ['2026-11-26', '2026-11-29'],
+    ['2026-12-24', '2027-01-03'],
+];
+
+function isHolidayBooking(dates) {
+    return (dates || []).some(iso => HOLIDAY_RANGES.some(([s, e]) => iso >= s && iso <= e));
+}
+
+function getNumVisitsFromBooking(b) {
+    let n = 0;
+    if (b.dateTimes) {
+        for (const slots of Object.values(b.dateTimes)) n += Math.max(1, (slots || []).filter(Boolean).length);
+    } else if (b.dates) {
+        n = (b.dates.length || 1) * Math.max(1, b.times?.length || 1);
+    }
+    return n || 1;
+}
+
+function _getComboSlotCounts(b) {
+    let num30 = 0, num60 = 0;
+    if (b.dateTimes) {
+        for (const slots of Object.values(b.dateTimes))
+            for (const slot of (slots || []).filter(Boolean))
+                if (/\|60$/.test(slot)) num60++; else num30++;
+    } else {
+        num30 = b.priceBreakdown?.num30 || 0;
+        num60 = b.priceBreakdown?.num60 || 0;
+    }
+    return { num30, num60 };
+}
+
 function buildChargesHtml(b) {
-    const pb         = b.priceBreakdown;
-    const pets       = b.pets || [];
-    const adjs       = b.adjustments || [];
-    const baseTotal  = b.total || 0;
-    const finalTotal = b.finalTotal != null ? b.finalTotal : baseTotal;
+    const pets    = b.pets || [];
+    const adjs    = b.adjustments || [];
+    const service = b.service || 'Drop-In Visit';
+    const durStr  = String(b.duration || '30');
+    const isCombo = durStr.includes('&') || durStr.toLowerCase().includes('combo');
+    const p       = service === 'Dog Walking' ? PRICING.walking : PRICING.dropin;
+    const is60    = !isCombo && parseInt(durStr) === 60;
+    const bookingDates = b.dates || Object.keys(b.dateTimes || {});
+    const isHoliday    = isHolidayBooking(bookingDates);
+    const numVisits    = getNumVisitsFromBooking(b);
+    const { num30, num60 } = isCombo ? _getComboSlotCounts(b) : { num30: 0, num60: 0 };
+
+    let petHtml = '';
+    let calcBase = 0;
+
+    pets.forEach((pet, idx) => {
+        let petTotal, subLabel;
+        if (idx === 0) {
+            const baseRate = b.customBasePrice != null
+                ? b.customBasePrice
+                : (isHoliday ? p.holiday : (service !== 'Dog Walking' && pet.type === 'cat' ? p.cat : p.base));
+            const rateLabel = service + (b.customBasePrice != null ? ' · Custom Rate' : isHoliday ? ' · Holiday Rate' : '');
+            if (isCombo) {
+                const rate30 = baseRate, rate60 = baseRate + p.addon60;
+                petTotal = rate30 * num30 + rate60 * num60;
+                const parts = [];
+                if (num30 > 0) parts.push(`${escHtml(rateLabel)} (30 min) · $${rate30} × ${num30} visit${num30 !== 1 ? 's' : ''}`);
+                if (num60 > 0) parts.push(`${escHtml(rateLabel)} (60 min) · $${rate60} × ${num60} visit${num60 !== 1 ? 's' : ''}`);
+                subLabel = parts.join('<br>');
+            } else {
+                const rate = baseRate + (is60 ? p.addon60 : 0);
+                petTotal = rate * numVisits;
+                subLabel = `${escHtml(rateLabel)} · $${rate} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}`;
+            }
+        } else {
+            const rate = pet.type === 'cat' ? (PRICING.dropin.extraCat || PRICING.dropin.extraDog) : PRICING.dropin.extraDog;
+            petTotal = rate * numVisits;
+            subLabel = `Additional ${escHtml(pet.type || 'pet')} · $${rate} × ${numVisits} visit${numVisits !== 1 ? 's' : ''}`;
+        }
+        calcBase += petTotal;
+        petHtml += `<div class="charge-pet-label">${escHtml(pet.name || '—')}</div>`;
+        petHtml += `<div class="detail-row charge-item"><span>${subLabel}</span><span>$${petTotal}</span></div>`;
+    });
+
+    const baseTotal = pets.length > 0 ? calcBase : (b.total || 0);
+
+    let adjHtml = '';
+    let adjTotal = 0;
+    adjs.forEach(a => {
+        const v      = a.type === 'per_visit' ? (a.visits || numVisits) : 1;
+        const adjAmt = a.amount * v;
+        adjTotal += adjAmt;
+        const sign   = adjAmt >= 0 ? `+$${adjAmt}` : `-$${Math.abs(adjAmt)}`;
+        const vLabel = a.type === 'per_visit' ? ` · $${a.amount} × ${v} visit${v !== 1 ? 's' : ''}` : '';
+        const cls    = adjAmt >= 0 ? 'charge-adj-pos' : 'charge-adj-neg';
+        adjHtml += `<div class="detail-row charge-adj-item"><span>${escHtml(a.name)}${vLabel}</span><span class="${cls}">${sign}</span></div>`;
+    });
+
     const hasAdj     = adjs.length > 0;
+    const finalTotal = pets.length > 0
+        ? baseTotal + adjTotal
+        : (b.finalTotal != null ? b.finalTotal : (b.total || 0));
 
-    function adjRows(fallbackVisits) {
-        let h = `<div class="detail-row charge-sub-total"><span>Base Total</span><span>$${baseTotal}</span></div>`;
-        adjs.forEach(a => {
-            const v      = a.type === 'per_visit' ? (a.visits || fallbackVisits || 1) : 1;
-            const adjAmt = a.amount * v;
-            const sign   = adjAmt >= 0 ? `+$${adjAmt}` : `-$${Math.abs(adjAmt)}`;
-            const vLabel = a.type === 'per_visit' ? ` · $${a.amount} × ${v} ${v === 1 ? 'visit' : 'visits'}` : '';
-            const cls    = adjAmt >= 0 ? 'charge-adj-pos' : 'charge-adj-neg';
-            h += `<div class="detail-row charge-adj-item"><span>${escHtml(a.name)}${vLabel}</span><span class="${cls}">${sign}</span></div>`;
-        });
-        return h;
+    let html = petHtml;
+    if (hasAdj) {
+        html += `<div class="detail-row charge-sub-total"><span>Base Total</span><span>$${baseTotal}</span></div>`;
+        html += adjHtml;
     }
-
-    if (!pb) {
-        let html = '';
-        pets.forEach(p => { html += `<div class="charge-pet-label">${escHtml(p.name || '—')}</div>`; });
-        if (hasAdj) html += adjRows(1);
-        html += `<div class="detail-row charge-total"><span>${hasAdj ? 'Final Total' : 'Total'}</span><span>$${finalTotal}</span></div>`;
-        return html;
-    }
-
-    const { numVisits, serviceLabel, basePerVisit, extraRate, numExtra, isCat } = pb;
-    const visitWord  = numVisits === 1 ? 'visit' : 'visits';
-    let html = '';
-    html += `<div class="charge-pet-label">${escHtml(pets[0]?.name || '—')}</div>`;
-    html += `<div class="detail-row charge-item"><span>${escHtml(serviceLabel)} · $${basePerVisit} × ${numVisits} ${visitWord}</span><span>$${basePerVisit * numVisits}</span></div>`;
-    const extraLabel = isCat ? 'Additional cat' : 'Additional dog';
-    for (let i = 1; i <= numExtra; i++) {
-        html += `<div class="charge-pet-label">${escHtml(pets[i]?.name || '—')}</div>`;
-        html += `<div class="detail-row charge-item"><span>${extraLabel} · $${extraRate} × ${numVisits} ${visitWord}</span><span>$${extraRate * numVisits}</span></div>`;
-    }
-    if (hasAdj) html += adjRows(numVisits);
     html += `<div class="detail-row charge-total"><span>${hasAdj ? 'Final Total' : 'Total'}</span><span>$${finalTotal}</span></div>`;
     return html;
 }
