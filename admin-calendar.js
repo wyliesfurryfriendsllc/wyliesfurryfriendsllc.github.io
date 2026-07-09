@@ -960,7 +960,9 @@ function calcNbTotal() {
     for (const slots of nbDateTimes.values()) {
         const active = slots.filter(s => {
             if (!s) return false;
-            if (s.type) return s.type === 'specific' ? (s.specHr !== '' && s.specHr != null) : (s.period !== '');
+            if (s.type) return s.type === 'specific'
+                ? (s.specHr !== '' && s.specHr != null)
+                : (s.period !== '' || (s.fromHr !== '' && s.fromHr != null));
             if (typeof s === 'string') return !!s;
             return !!(s.start);
         });
@@ -1257,7 +1259,7 @@ function openEditBookingModal(bookingId) {
     document.getElementById('nbService').value  = b.service  || 'Drop-In Visit';
     const dStr = String(b.duration || '30');
     document.getElementById('nbDuration').value = (dStr.includes('&') || dStr.toLowerCase().includes('combo')) ? 'combo' : dStr;
-    document.getElementById('nbTotal').value    = b.total != null ? b.total : '';
+    // total pre-filled below, after calcNbTotal() runs
     document.getElementById('nbNotes').value    = b.notes || '';
     const roverChk = document.getElementById('nbIsRover');
     if (roverChk) roverChk.checked = !!b.isRover;
@@ -1331,6 +1333,12 @@ function openEditBookingModal(bookingId) {
     renderNbCal();
     renderNbVisitTimes();
     calcNbTotal();
+    // Restore stored total (finalTotal includes adjustments; override auto-calc)
+    const storedTotal = b.finalTotal != null ? b.finalTotal : b.total;
+    if (storedTotal != null) {
+        const totalEl = document.getElementById('nbTotal');
+        if (totalEl) totalEl.value = storedTotal;
+    }
 }
 
 function fmt12(t) {
