@@ -1038,6 +1038,8 @@
     .bc-date-line { white-space: normal; }
     .tab-header { flex-wrap: wrap; gap: 8px; }
     .acct-filter-row { flex-wrap: wrap; }
+    .detail-sched-date { font-size: 13px; }
+    .detail-sched-time { font-size: 13px; }
 }
 
 @media (max-width: 480px) {
