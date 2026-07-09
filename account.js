@@ -661,6 +661,17 @@ function renderBookingDetail(b, panel) {
         <div class="detail-section detail-payment-notice detail-payment-paid">
             <div class="detail-section-label">Payment Complete 💚</div>
             <p>Full payment received. Thank you! We look forward to caring for your pet 🐾</p>
+            <details class="detail-deposit-policy">
+                <summary>Deposit Policy</summary>
+                <div class="detail-deposit-policy-body">
+                    <p>50% of the booking total is required as a deposit to reserve your time slot.</p>
+                    <ul>
+                        <li>Cancel <strong>within 3 days</strong>: deposit is non-refundable</li>
+                        <li>Cancel <strong>within 7 days</strong>: 50% of deposit refunded</li>
+                        <li>Cancel <strong>more than 7 days</strong> out: full deposit refunded</li>
+                    </ul>
+                </div>
+            </details>
         </div>` : ''}
         ${b.status === 'completed' ? (() => {
             const bTotal = b.finalTotal != null ? b.finalTotal : (b.total || 0);
