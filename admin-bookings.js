@@ -982,6 +982,9 @@ function renderDetail(b, panel) {
         <div class="detail-top-bar">
             <div class="detail-header-actions">
                 ${b.status !== 'deleted' ? `
+                <button class="detail-edit-btn detail-payment-copy-btn" onclick="AdminBookings.copyPaymentMessage('${b.id}')" title="Copy payment request">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                </button>
                 <button class="detail-edit-btn" onclick="AdminCalendar.openEditBookingModal('${b.id}')" title="Edit booking">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
@@ -1625,6 +1628,40 @@ async function exportImage(bookingId) {
     }
 }
 
+// ─── COPY PAYMENT MESSAGE ────────────────────────────────
+function copyPaymentMessage(bookingId) {
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b) return;
+
+    const dates = b.dateTimes ? Object.keys(b.dateTimes).sort() : (b.dates || []).slice().sort();
+    const fmtMD = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+    let dateRange = dates.length === 0 ? 'TBD'
+        : dates.length === 1 ? fmtMD(dates[0])
+        : `${fmtMD(dates[0])} - ${fmtMD(dates[dates.length - 1])}`;
+
+    const total = b.finalTotal != null ? b.finalTotal : (b.total != null ? b.total : 0);
+    const deposit = total / 2;
+    const fmt$ = n => Number.isInteger(n) ? String(n) : n.toFixed(2);
+
+    const msg =
+`📆: ${dateRange}
+Total: $${fmt$(total)}💕
+
+Half of it for deposit to keep the timing spots ($${fmt$(deposit)})
+(You can pay half or full. If you pay half first, the other half just before the booking starts is fine!💕🥰）
+
+This is my Zelle account:
+wyliesfurryfriendsllc@gmail.com`;
+
+    navigator.clipboard.writeText(msg).then(() => {
+        const btn = document.querySelector('.detail-payment-copy-btn');
+        if (!btn) return;
+        btn.style.color = '#2d6a2d';
+        btn.style.borderColor = '#2d6a2d';
+        setTimeout(() => { btn.style.color = ''; btn.style.borderColor = ''; }, 1500);
+    });
+}
+
 // ─── EDIT DATES MODAL ────────────────────────────────────
 function openEditDatesModal(bookingId) {
     const b = allBookings.find(x => x.id === bookingId);
@@ -2077,7 +2114,7 @@ window.AdminBookings = {
     acceptBooking, rejectBooking, markCompleted,
     markDepositReceived, markPaidInFull, markInService, markRoverConfirmed,
     addAdjustment, removeAdjustment, toggleAdjVisits,
-    deleteBooking, permanentlyDeleteBooking, sendAdminMessage, exportImage,
+    deleteBooking, permanentlyDeleteBooking, sendAdminMessage, exportImage, copyPaymentMessage,
     openEditDatesModal, openEditPaymentModal,
     addToClients, linkToAccount, saveAdminTip,
     restoreBooking, setBookingSearch, filterByClient, clearClientFilter,
