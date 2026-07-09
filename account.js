@@ -319,6 +319,15 @@ const STATUS_COLORS = {
 
 function renderBookingsList(bookings) {
     const container = document.getElementById('bookingsList');
+
+    // Rescue detail panel before clearing the list — on mobile it gets moved
+    // inside the list container, so innerHTML='' would delete it from the DOM.
+    const detailPanel  = document.getElementById('bookingDetail');
+    const bookingsPanel = document.querySelector('.bookings-panel');
+    if (detailPanel && bookingsPanel && container.contains(detailPanel)) {
+        bookingsPanel.appendChild(detailPanel);
+    }
+
     const todayISO = isoDate(new Date());
 
     let filtered = acctFilter === 'all' ? bookings : bookings.filter(b => b.status === acctFilter);
@@ -409,6 +418,12 @@ function renderBookingsList(bookings) {
         `;
         container.appendChild(card);
     });
+
+    // Re-position detail panel after the active card on mobile
+    if (window.innerWidth <= 1100 && activeBookingId && detailPanel && detailPanel.style.display !== 'none') {
+        const activeCard = container.querySelector(`.booking-card[data-bid="${activeBookingId}"]`);
+        if (activeCard) activeCard.after(detailPanel);
+    }
 }
 
 function openBookingDetail(bookingId) {
