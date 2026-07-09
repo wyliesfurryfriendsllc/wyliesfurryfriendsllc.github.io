@@ -346,6 +346,26 @@ function parseSlotObj(t) {
     return { mode: 'time', start: clean, end: '', dur };
 }
 
+function parseSlotToUiFormat(t) {
+    if (!t) return emptySlot();
+    if (typeof t === 'object' && t.type) return t;
+    const str = (typeof t === 'object') ? (t.mode === 'range' ? `${t.start}~${t.end}` : t.start) + (t.dur ? `|${t.dur}` : '') : t;
+    const durMatch = str.match(/\|(\d+)$/);
+    const dur = durMatch ? parseInt(durMatch[1]) : 30;
+    const clean = str.replace(/\|\d+$/, '');
+    if (clean.includes('~')) {
+        const [start, end] = clean.split('~');
+        const [fromHr, fromMin] = start.split(':');
+        const [toHr, toMin] = (end || '').split(':');
+        return { type: 'window', period: '', fromHr: fromHr || '', fromMin: fromMin || '00', toHr: toHr || '', toMin: toMin || '00', specHr: '', specMin: '00', dur };
+    }
+    if (clean === 'anytime') {
+        return { type: 'window', period: 'Anytime', fromHr: '', fromMin: '00', toHr: '', toMin: '00', specHr: '', specMin: '00', dur };
+    }
+    const [specHr, specMin] = clean.split(':');
+    return { type: 'specific', specHr: specHr || '', specMin: specMin || '00', period: '', fromHr: '', fromMin: '00', toHr: '', toMin: '00', dur };
+}
+
 function serializeSlot(s, isCombo) {
     if (!s || !s.start) return '';
     let base;
@@ -1296,10 +1316,17 @@ function openEditBookingModal(bookingId) {
     nbDateTimes = new Map();
     if (b.dateTimes && Object.keys(b.dateTimes).length > 0) {
         Object.entries(b.dateTimes).sort().forEach(([iso, slots]) => {
-            nbDateTimes.set(iso, (slots || []).map(t => parseSlotObj(t)));
+            nbDateTimes.set(iso, (slots || []).map(t => parseSlotToUiFormat(t)));
         });
     } else if (b.dates && b.dates.length > 0) {
         b.dates.forEach(iso => nbDateTimes.set(iso, [emptySlot()]));
+    }
+    // Set calendar to the month of the first booking date
+    if (nbDateTimes.size > 0) {
+        const firstIso = [...nbDateTimes.keys()].sort()[0];
+        const firstDate = new Date(firstIso + 'T12:00:00');
+        nbModalYear  = firstDate.getFullYear();
+        nbModalMonth = firstDate.getMonth();
     }
     renderNbCal();
     renderNbVisitTimes();
