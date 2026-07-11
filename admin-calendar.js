@@ -395,16 +395,33 @@ let _nbTpDrag = null;
 document.addEventListener('mousemove', e => {
     if (!_nbTpDrag) return;
     _nbTpDrag.col.scrollTop = _nbTpDrag.startScrollTop - (e.clientY - _nbTpDrag.startY);
+    _nbTpUpdateLabel(_nbTpDrag.uid);
 });
 document.addEventListener('mouseup', () => {
     if (!_nbTpDrag) return;
     const { col, uid } = _nbTpDrag;
+    col.style.scrollSnapType = '';
     _nbTpDrag = null;
     col.style.cursor = '';
     const snapped = Math.round(col.scrollTop / NB_TP_H) * NB_TP_H;
     col.scrollTo({ top: snapped, behavior: 'smooth' });
     setTimeout(() => nbSyncPickerToInputs(uid), 200);
 });
+
+function _nbTpUpdateLabel(uid) {
+    const getVal = id => {
+        const col = document.getElementById(id);
+        if (!col) return null;
+        return col.querySelectorAll('.tp-item')[Math.round(col.scrollTop / NB_TP_H)]?.dataset.val;
+    };
+    const ampm = getVal(`tpAmpm_${uid}`) || 'AM';
+    const hr12 = parseInt(getVal(`tpHr_${uid}`) || '12');
+    const min  = getVal(`tpMin_${uid}`) || '00';
+    let hr24 = hr12 % 12;
+    if (ampm === 'PM') hr24 += 12;
+    const lbl = document.getElementById(`tpLabel_${uid}`);
+    if (lbl) lbl.textContent = _nbTpFmt(hr24, min);
+}
 
 const NB_PERIODS = {
     Anytime:   null,
@@ -508,6 +525,7 @@ function nbOpenPicker(uid) {
         if (col._tpDragInit) return;
         col._tpDragInit = true;
         col.addEventListener('mousedown', e => {
+            col.style.scrollSnapType = 'none';
             _nbTpDrag = { col, uid, startY: e.clientY, startScrollTop: col.scrollTop };
             col.style.cursor = 'grabbing';
             e.preventDefault();
