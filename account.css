@@ -1193,6 +1193,20 @@ details[open] .modal-section-toggle::after { transform: rotate(90deg); }
     border-color: var(--pink);
     background: var(--pink-light);
 }
+.ym-pickers-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 4px;
+}
+.ym-picker-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.ym-picker-field .tp-popup {
+    min-width: 110px;
+}
+
 .pet-photo-placeholder {
     display: flex;
     flex-direction: column;

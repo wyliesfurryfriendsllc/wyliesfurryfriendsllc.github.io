@@ -1042,14 +1042,14 @@ function editPet(idx) {
     } else if (pet.ageYear) {
         document.querySelector('input[name="petAgeMode"][value="yearmonth"]').checked = true;
         switchPetAgeMode('yearmonth');
-        document.getElementById('petModalAgeYear').value  = pet.ageYear  || '';
-        document.getElementById('petModalAgeMonth').value = pet.ageMonth || '';
+        setYmPickerVal('ymYear',  pet.ageYear  || '');
+        setYmPickerVal('ymMonth', pet.ageMonth || '');
     } else {
         // backward compat: old ageYears/ageMonths → show in yearmonth mode
         document.querySelector('input[name="petAgeMode"][value="yearmonth"]').checked = true;
         switchPetAgeMode('yearmonth');
-        document.getElementById('petModalAgeYear').value  = pet.ageYears  || '';
-        document.getElementById('petModalAgeMonth').value = '';
+        setYmPickerVal('ymYear',  pet.ageYears || '');
+        setYmPickerVal('ymMonth', '');
     }
     document.getElementById('petModalAdoptionDate').value = pet.adoptionDate || '';
     document.getElementById('petModalAbout').value        = pet.about        || '';
@@ -1718,6 +1718,125 @@ window.copyZelleEmail       = function(el) {
     const tab = new URLSearchParams(window.location.search).get('tab');
     if (tab === 'register') switchAuthMode('register');
 })();
+
+// ─── YEAR / MONTH DRUM PICKERS ───────────────────────────
+const YM_TP_H = 44;
+const YM_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let _ymDrag = null;
+const _ymTimers = {};
+
+(function initYmPickers() {
+    // Year column: current year → 1970
+    const yearCol = document.getElementById('tpCol_ymYear');
+    if (yearCol) {
+        const cur = new Date().getFullYear();
+        for (let y = cur; y >= 1970; y--) {
+            const d = document.createElement('div');
+            d.className = 'tp-item'; d.dataset.val = String(y); d.textContent = String(y);
+            yearCol.appendChild(d);
+        }
+    }
+    // Month column: Jan–Dec
+    const monthCol = document.getElementById('tpCol_ymMonth');
+    if (monthCol) {
+        YM_MONTHS.forEach((name, i) => {
+            const d = document.createElement('div');
+            d.className = 'tp-item'; d.dataset.val = String(i + 1); d.textContent = name;
+            monthCol.appendChild(d);
+        });
+    }
+})();
+
+document.addEventListener('mousemove', e => {
+    if (!_ymDrag) return;
+    _ymDrag.col.scrollTop = _ymDrag.startScrollTop - (e.clientY - _ymDrag.startY);
+});
+document.addEventListener('mouseup', () => {
+    if (!_ymDrag) return;
+    const { col, uid } = _ymDrag;
+    col.style.scrollSnapType = '';
+    _ymDrag = null;
+    col.style.cursor = '';
+    const snapped = Math.round(col.scrollTop / YM_TP_H) * YM_TP_H;
+    col.scrollTo({ top: snapped, behavior: 'smooth' });
+    setTimeout(() => syncYmPicker(uid), 200);
+});
+
+function openYmPicker(uid) {
+    document.querySelectorAll('.tp-popup').forEach(p => {
+        if (p.id !== `tpPop_${uid}`) p.style.display = 'none';
+    });
+    const popup = document.getElementById(`tpPop_${uid}`);
+    if (!popup) return;
+    popup.style.display = 'block';
+
+    const hidden = document.getElementById(uid === 'ymYear' ? 'petModalAgeYear' : 'petModalAgeMonth');
+    const val = hidden?.value || '';
+    if (val) _ymScrollTo(`tpCol_${uid}`, val);
+
+    const wrap = document.getElementById(`tpWrap_${uid}`);
+    wrap.querySelectorAll('.tp-col').forEach(col => {
+        if (col._ymDragInit) return;
+        col._ymDragInit = true;
+        col.addEventListener('mousedown', e => {
+            col.style.scrollSnapType = 'none';
+            _ymDrag = { col, uid, startY: e.clientY, startScrollTop: col.scrollTop };
+            col.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+    });
+
+    setTimeout(() => {
+        const handler = e => {
+            if (!wrap.contains(e.target)) {
+                closeYmPicker(uid);
+                document.removeEventListener('click', handler);
+            }
+        };
+        document.addEventListener('click', handler);
+    }, 0);
+}
+
+function closeYmPicker(uid) {
+    const p = document.getElementById(`tpPop_${uid}`);
+    if (p) p.style.display = 'none';
+}
+
+function onYmPickerScroll(uid) {
+    clearTimeout(_ymTimers[uid]);
+    _ymTimers[uid] = setTimeout(() => syncYmPicker(uid), 150);
+}
+
+function syncYmPicker(uid) {
+    const col = document.getElementById(`tpCol_${uid}`);
+    if (!col) return;
+    const idx = Math.round(col.scrollTop / YM_TP_H);
+    const val = col.querySelectorAll('.tp-item')[idx]?.dataset.val || '';
+    const hidden = document.getElementById(uid === 'ymYear' ? 'petModalAgeYear' : 'petModalAgeMonth');
+    if (hidden) hidden.value = val;
+    const lbl = document.getElementById(`tpLabel_${uid}`);
+    if (lbl) lbl.textContent = uid === 'ymMonth'
+        ? (val ? YM_MONTHS[parseInt(val) - 1] : '—')
+        : (val || '—');
+}
+
+function _ymScrollTo(colId, val) {
+    const col = document.getElementById(colId);
+    if (!col) return;
+    const items = col.querySelectorAll('.tp-item');
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].dataset.val === String(val)) { col.scrollTop = i * YM_TP_H; return; }
+    }
+}
+
+function setYmPickerVal(uid, val) {
+    const hidden = document.getElementById(uid === 'ymYear' ? 'petModalAgeYear' : 'petModalAgeMonth');
+    if (hidden) hidden.value = val ? String(val) : '';
+    const lbl = document.getElementById(`tpLabel_${uid}`);
+    if (lbl) lbl.textContent = uid === 'ymMonth'
+        ? (val ? YM_MONTHS[parseInt(val) - 1] : '—')
+        : (val ? String(val) : '—');
+}
 
 // On resize to wide screen, restore booking detail panel to its original grid position
 window.addEventListener('resize', () => {
