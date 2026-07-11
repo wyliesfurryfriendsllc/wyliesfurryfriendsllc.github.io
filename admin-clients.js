@@ -273,7 +273,7 @@ function renderModalPets() {
         } else {
             const div = document.createElement('div');
             div.className = 'cpet-avatar cpet-avatar-emoji';
-            div.textContent = emoji;
+            div.innerHTML = emoji;
             slot.replaceWith(div);
         }
 
