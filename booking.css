@@ -1017,7 +1017,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
 }
 
 .cal-day {
-    aspect-ratio: 2;
+    aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1047,6 +1047,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
 }
 .cal-day.cal-blank { cursor: default; }
 .cal-day.cal-unsure { opacity: 0.3; pointer-events: none; }
+#petBdayCalWrap .cal-day { aspect-ratio: 2; }
 
 .bday-unsure-label {
     display: flex;
