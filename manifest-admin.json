@@ -1,0 +1,11 @@
+{
+  "name": "WyliePets Admin",
+  "short_name": "WylieAdmin",
+  "start_url": "/admin.html",
+  "display": "standalone",
+  "background_color": "#fffdf8",
+  "theme_color": "#7c5c2c",
+  "icons": [
+    { "src": "icon.svg?v=2", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
