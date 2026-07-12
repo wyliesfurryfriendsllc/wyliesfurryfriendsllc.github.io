@@ -875,14 +875,14 @@ footer {
     nav {
         position: fixed;
         top: 0; left: 0; right: 0;
-        padding: 16px 20px;
+        padding: 8px 20px;
         width: 100%;
         min-width: 0;
         z-index: 200;
         box-sizing: border-box;
     }
 
-    body { padding-top: 60px; }
+    body { padding-top: 112px; }
 
     .hamburger { display: block; }
 
