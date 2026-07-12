@@ -329,6 +329,14 @@
             <label>Breed <span class="optional">(optional)</span></label>
             <input type="text" id="petModalBreed" placeholder="">
         </div>
+        <div class="form-group">
+            <label>About your pet <span class="optional">(optional)</span></label>
+            <textarea id="petModalCareNotes" rows="3" placeholder="Feeding details, walking instructions, special care..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Veterinary info <span class="optional">(optional)</span></label>
+            <textarea id="petModalVetInfo" rows="3" placeholder="Vet name, address, phone number..."></textarea>
+        </div>
 
         <!-- Additional Details -->
         <details class="modal-details">
@@ -380,79 +388,6 @@
                         <label>Adoption date <span class="optional">(optional)</span></label>
                         <input type="date" id="petModalAdoptionDate">
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>About your pet <span class="optional">(optional)</span></label>
-                    <textarea id="petModalAbout" rows="2" placeholder="Personality, quirks, anything Wylie should know..."></textarea>
-                </div>
-            </div>
-        </details>
-
-        <!-- Care Info -->
-        <details class="modal-details">
-            <summary class="modal-section-header modal-section-toggle">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                Care Info
-            </summary>
-            <div class="modal-details-body">
-                <div class="form-group">
-                    <label>Potty break</label>
-                    <div class="pet-pills" id="petPottyGroup">
-                        <button type="button" class="pet-pill" data-value="1hr" onclick="togglePill(this,'single')">Every 1 hr</button>
-                        <button type="button" class="pet-pill" data-value="2hrs" onclick="togglePill(this,'single')">Every 2 hrs</button>
-                        <button type="button" class="pet-pill" data-value="4hrs" onclick="togglePill(this,'single')">Every 4 hrs</button>
-                        <button type="button" class="pet-pill" data-value="8hrs" onclick="togglePill(this,'single')">Every 8 hrs</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Energy level</label>
-                    <div class="pet-pills" id="petEnergyGroup">
-                        <button type="button" class="pet-pill" data-value="high" onclick="togglePill(this,'single')">High energy</button>
-                        <button type="button" class="pet-pill" data-value="moderate" onclick="togglePill(this,'single')">Moderate</button>
-                        <button type="button" class="pet-pill" data-value="low" onclick="togglePill(this,'single')">Low energy</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Feeding schedule</label>
-                    <div class="pet-pills" id="petFeedingGroup">
-                        <button type="button" class="pet-pill" data-value="morning" onclick="togglePill(this,'single')">Morning only</button>
-                        <button type="button" class="pet-pill" data-value="twice" onclick="togglePill(this,'single')">Twice a day</button>
-                        <button type="button" class="pet-pill" data-value="special" onclick="togglePill(this,'single')">Special instructions</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Can be left alone</label>
-                    <div class="pet-pills" id="petAloneGroup">
-                        <button type="button" class="pet-pill" data-value="1hr" onclick="togglePill(this,'single')">1 hr or less</button>
-                        <button type="button" class="pet-pill" data-value="1-4hrs" onclick="togglePill(this,'single')">1–4 hrs</button>
-                        <button type="button" class="pet-pill" data-value="4-8hrs" onclick="togglePill(this,'single')">4–8 hrs</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Medication <span class="optional">(select all that apply)</span></label>
-                    <div class="pet-pills" id="petMedGroup">
-                        <button type="button" class="pet-pill" data-value="pill" onclick="togglePill(this,'multi')">Pill</button>
-                        <button type="button" class="pet-pill" data-value="topical" onclick="togglePill(this,'multi')">Topical</button>
-                        <button type="button" class="pet-pill" data-value="injection" onclick="togglePill(this,'multi')">Injection</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Anything else a sitter should know? <span class="optional">(optional)</span></label>
-                    <textarea id="petModalCareNotes" rows="2" placeholder="Feeding details, walking instructions, special care..."></textarea>
-                </div>
-            </div>
-        </details>
-
-        <!-- Health Info -->
-        <details class="modal-details">
-            <summary class="modal-section-header modal-section-toggle">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                Health Info
-            </summary>
-            <div class="modal-details-body">
-                <div class="form-group">
-                    <label>Veterinary info <span class="optional">(optional)</span></label>
-                    <textarea id="petModalVetInfo" rows="3" placeholder="Vet name, address, phone number..."></textarea>
                 </div>
             </div>
         </details>
