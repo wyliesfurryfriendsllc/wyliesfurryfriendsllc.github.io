@@ -899,7 +899,9 @@ footer {
         gap: 40px;
     }
 
-    .hero-title { font-size: 54px; }
+    .hero-title { font-size: 40px; }
+    .hero-sub { font-size: 14px; }
+    .badge { font-size: 14px; }
 
     .hero-photo-placeholder { aspect-ratio: 1/1; }
 
