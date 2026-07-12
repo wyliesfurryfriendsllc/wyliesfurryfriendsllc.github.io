@@ -137,10 +137,9 @@ nav {
     flex-shrink: 0;
 }
 .nav-logo-img {
-    width: 32px;
-    height: 32px;
+    width: 64px;
+    height: 64px;
     object-fit: contain;
-    border-radius: 6px;
 }
 
 .nav-links {
