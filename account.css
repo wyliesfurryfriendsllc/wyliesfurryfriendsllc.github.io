@@ -27,12 +27,13 @@
 
 .auth-logo {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--brown);
+    justify-content: center;
     margin-bottom: 28px;
+}
+.auth-logo-img {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
 }
 
 .auth-tab-row {
