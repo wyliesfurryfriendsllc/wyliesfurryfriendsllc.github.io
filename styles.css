@@ -136,6 +136,12 @@ nav {
     white-space: nowrap;
     flex-shrink: 0;
 }
+.nav-logo-img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    border-radius: 6px;
+}
 
 .nav-links {
     display: flex;
