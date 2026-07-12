@@ -284,88 +284,31 @@
         </div>
         <div class="form-group" style="margin-bottom:12px">
             <label>Birthday <span class="req">*</span></label>
-            <div class="toggle-pills mb-8" style="margin-top:6px">
-                <label class="pill-option">
-                    <input type="radio" name="petAgeMode" value="exact" checked onchange="switchPetAgeMode('exact')">
-                    <span>Exact date</span>
-                </label>
-                <label class="pill-option">
-                    <input type="radio" name="petAgeMode" value="yearmonth" onchange="switchPetAgeMode('yearmonth')">
-                    <span>Year &amp; Month</span>
-                </label>
-            </div>
-            <div id="petAgeBirthdayWrap">
-                <button type="button" class="calendar-trigger" style="margin-bottom:8px" onclick="openPetBdayCal()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    <span id="petBdayText">Choose birthday...</span>
-                </button>
-                <input type="hidden" id="petModalBirthday">
-                <div class="calendar-wrap" id="petBdayCalWrap" style="display:none">
-                    <div class="calendar-header">
-                        <button type="button" class="cal-nav" onclick="changePetBdayMonth(-1)">&#8249;</button>
-                        <div class="bday-selects">
-                            <select id="petBdayYearSel" class="bday-year-sel" onchange="onPetBdayYearChange()"></select>
-                            <select id="petBdayMonthSel" class="bday-month-sel" onchange="onPetBdayMonthChange()">
-                                <option value="0">Jan</option><option value="1">Feb</option>
-                                <option value="2">Mar</option><option value="3">Apr</option>
-                                <option value="4">May</option><option value="5">Jun</option>
-                                <option value="6">Jul</option><option value="7">Aug</option>
-                                <option value="8">Sep</option><option value="9">Oct</option>
-                                <option value="10">Nov</option><option value="11">Dec</option>
-                            </select>
-                        </div>
-                        <button type="button" class="cal-nav" onclick="changePetBdayMonth(1)">&#8250;</button>
+            <input type="hidden" id="petModalBirthday">
+            <div class="calendar-wrap" id="petBdayCalWrap">
+                <div class="calendar-header">
+                    <button type="button" class="cal-nav" onclick="changePetBdayMonth(-1)">&#8249;</button>
+                    <div class="bday-selects">
+                        <select id="petBdayYearSel" class="bday-year-sel" onchange="onPetBdayYearChange()"></select>
+                        <select id="petBdayMonthSel" class="bday-month-sel" onchange="onPetBdayMonthChange()">
+                            <option value="0">Jan</option><option value="1">Feb</option>
+                            <option value="2">Mar</option><option value="3">Apr</option>
+                            <option value="4">May</option><option value="5">Jun</option>
+                            <option value="6">Jul</option><option value="7">Aug</option>
+                            <option value="8">Sep</option><option value="9">Oct</option>
+                            <option value="10">Nov</option><option value="11">Dec</option>
+                        </select>
                     </div>
-                    <div class="calendar-weekdays">
-                        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-                    </div>
-                    <div class="calendar-days" id="petBdayDays"></div>
-                    <button type="button" class="cal-done-btn" onclick="closePetBdayCal()">Done</button>
+                    <button type="button" class="cal-nav" onclick="changePetBdayMonth(1)">&#8250;</button>
                 </div>
-            </div>
-            <div id="petAgeYMWrap" style="display:none">
-                <div class="ym-pickers-row">
-                    <div class="ym-picker-field">
-                        <label class="form-label">Year</label>
-                        <div class="tp-wrap" id="tpWrap_ymYear">
-                            <button type="button" class="tp-trigger" onclick="openYmPicker('ymYear')">
-                                <span id="tpLabel_ymYear">—</span>
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                            </button>
-                            <input type="hidden" id="petModalAgeYear" value="">
-                            <div class="tp-popup" id="tpPop_ymYear" style="display:none">
-                                <div class="tp-picker-body">
-                                    <div class="tp-sel-bar"></div>
-                                    <div class="tp-cols">
-                                        <div class="tp-col" id="tpCol_ymYear" onscroll="onYmPickerScroll('ymYear')"></div>
-                                    </div>
-                                    <div class="tp-fade-t"></div>
-                                    <div class="tp-fade-b"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ym-picker-field">
-                        <label class="form-label">Month <span style="font-weight:400;font-size:12px;color:var(--brown-mid)">(optional)</span></label>
-                        <div class="tp-wrap" id="tpWrap_ymMonth">
-                            <button type="button" class="tp-trigger" onclick="openYmPicker('ymMonth')">
-                                <span id="tpLabel_ymMonth">—</span>
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                            </button>
-                            <input type="hidden" id="petModalAgeMonth" value="">
-                            <div class="tp-popup" id="tpPop_ymMonth" style="display:none">
-                                <div class="tp-picker-body">
-                                    <div class="tp-sel-bar"></div>
-                                    <div class="tp-cols">
-                                        <div class="tp-col" id="tpCol_ymMonth" onscroll="onYmPickerScroll('ymMonth')"></div>
-                                    </div>
-                                    <div class="tp-fade-t"></div>
-                                    <div class="tp-fade-b"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="calendar-weekdays">
+                    <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
                 </div>
+                <div class="calendar-days" id="petBdayDays"></div>
+                <label class="bday-unsure-label">
+                    <input type="checkbox" id="petBdayUnsure" onchange="onPetBdayUnsureChange()">
+                    Year &amp; Month only
+                </label>
             </div>
         </div>
         <div class="form-group">

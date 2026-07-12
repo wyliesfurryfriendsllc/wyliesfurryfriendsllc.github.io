@@ -1046,6 +1046,18 @@ details.deposit-policy[open] summary { color: var(--pink); }
     border-radius: 8px;
 }
 .cal-day.cal-blank { cursor: default; }
+.cal-day.cal-unsure { opacity: 0.3; pointer-events: none; }
+
+.bday-unsure-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+.bday-unsure-label input[type="checkbox"] { cursor: pointer; }
 
 .cal-done-btn {
     display: block;

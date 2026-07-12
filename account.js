@@ -897,9 +897,21 @@ function updatePhotoPreview() {
 // ─── PET BIRTHDAY CALENDAR ───────────────────────────────
 let petBdayCalYear, petBdayCalMonth;
 
-function switchPetAgeMode(mode) {
-    document.getElementById('petAgeBirthdayWrap').style.display = mode === 'exact' ? '' : 'none';
-    document.getElementById('petAgeYMWrap').style.display       = mode === 'yearmonth' ? '' : 'none';
+function initPetBdayCal() {
+    const now = new Date();
+    if (petBdayCalYear === undefined) {
+        petBdayCalYear  = now.getFullYear();
+        petBdayCalMonth = now.getMonth();
+    }
+    populatePetBdayYears();
+    renderPetBdayCal();
+}
+
+function onPetBdayUnsureChange() {
+    if (document.getElementById('petBdayUnsure').checked) {
+        document.getElementById('petModalBirthday').value = '';
+    }
+    renderPetBdayCal();
 }
 
 function populatePetBdayYears() {
@@ -917,23 +929,6 @@ function onPetBdayYearChange() {
 function onPetBdayMonthChange() {
     petBdayCalMonth = parseInt(document.getElementById('petBdayMonthSel').value);
     renderPetBdayCal();
-}
-
-function openPetBdayCal() {
-    const now = new Date();
-    if (petBdayCalYear === undefined) {
-        petBdayCalYear  = now.getFullYear();
-        petBdayCalMonth = now.getMonth();
-    }
-    populatePetBdayYears();
-    renderPetBdayCal();
-    document.getElementById('petBdayCalWrap').style.display = 'block';
-}
-
-function closePetBdayCal() {
-    document.getElementById('petBdayCalWrap').style.display = 'none';
-    const val = document.getElementById('petModalBirthday').value;
-    document.getElementById('petBdayText').textContent = val ? fmtPetDate(val) : 'Choose birthday...';
 }
 
 function changePetBdayMonth(dir) {
@@ -955,13 +950,14 @@ function renderPetBdayCal() {
     for (let i = 0; i < firstDay; i++) {
         const blank = document.createElement('div'); blank.className = 'cal-day cal-blank'; grid.appendChild(blank);
     }
+    const unsure = document.getElementById('petBdayUnsure')?.checked;
     for (let d = 1; d <= daysIn; d++) {
         const dateStr = `${petBdayCalYear}-${String(petBdayCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const isFuture = new Date(petBdayCalYear, petBdayCalMonth, d) > today;
         const cell = document.createElement('div');
-        cell.className = 'cal-day' + (isFuture ? ' cal-past' : '') + (dateStr === selVal ? ' cal-selected' : '');
+        cell.className = 'cal-day' + (isFuture ? ' cal-past' : '') + (unsure ? ' cal-unsure' : '') + (dateStr === selVal ? ' cal-selected' : '');
         cell.textContent = d;
-        if (!isFuture) cell.onclick = () => {
+        if (!isFuture && !unsure) cell.onclick = () => {
             document.getElementById('petModalBirthday').value = dateStr;
             renderPetBdayCal();
         };
@@ -994,21 +990,18 @@ function petAgeStr(pet) {
 
 function resetPetModal() {
     ['petModalName','petModalPhotoUrl','petModalWeight','petModalBirthday',
-     'petModalAgeYear','petModalBreed','petModalAdoptionDate',
+     'petModalBreed','petModalAdoptionDate',
      'petModalAbout','petModalCareNotes','petModalVetInfo'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
-    const monthEl = document.getElementById('petModalAgeMonth');
-    if (monthEl) monthEl.value = '';
     document.querySelectorAll('#petModal .pet-pill, #petModal .pet-type-card').forEach(p => p.classList.remove('active'));
     const dogBtn = document.querySelector('#petTypeGroup [data-value="dog"]');
     if (dogBtn) dogBtn.classList.add('active');
-    // reset age mode to exact
-    const exactRadio = document.querySelector('input[name="petAgeMode"][value="exact"]');
-    if (exactRadio) { exactRadio.checked = true; switchPetAgeMode('exact'); }
-    document.getElementById('petBdayText').textContent = 'Choose birthday...';
+    const unsureEl = document.getElementById('petBdayUnsure');
+    if (unsureEl) unsureEl.checked = false;
     petBdayCalYear = undefined;
+    initPetBdayCal();
     updatePhotoPreview();
 }
 
@@ -1031,26 +1024,22 @@ function editPet(idx) {
     document.getElementById('petModalBreed').value        = pet.breed    || '';
 
     // Age — populate based on stored format
+    const unsureEl = document.getElementById('petBdayUnsure');
     if (pet.birthday) {
-        document.querySelector('input[name="petAgeMode"][value="exact"]').checked = true;
-        switchPetAgeMode('exact');
+        if (unsureEl) unsureEl.checked = false;
         document.getElementById('petModalBirthday').value = pet.birthday;
-        document.getElementById('petBdayText').textContent = fmtPetDate(pet.birthday);
         const bd = new Date(pet.birthday + 'T00:00:00');
         petBdayCalYear  = bd.getFullYear();
         petBdayCalMonth = bd.getMonth();
-    } else if (pet.ageYear) {
-        document.querySelector('input[name="petAgeMode"][value="yearmonth"]').checked = true;
-        switchPetAgeMode('yearmonth');
-        setYmPickerVal('ymYear',  pet.ageYear  || '');
-        setYmPickerVal('ymMonth', pet.ageMonth || '');
+    } else if (pet.ageYear || pet.ageYears) {
+        if (unsureEl) unsureEl.checked = true;
+        petBdayCalYear  = parseInt(pet.ageYear || pet.ageYears) || new Date().getFullYear();
+        petBdayCalMonth = pet.ageMonth ? parseInt(pet.ageMonth) - 1 : 0;
     } else {
-        // backward compat: old ageYears/ageMonths → show in yearmonth mode
-        document.querySelector('input[name="petAgeMode"][value="yearmonth"]').checked = true;
-        switchPetAgeMode('yearmonth');
-        setYmPickerVal('ymYear',  pet.ageYears || '');
-        setYmPickerVal('ymMonth', '');
+        if (unsureEl) unsureEl.checked = false;
+        petBdayCalYear  = undefined;
     }
+    initPetBdayCal();
     document.getElementById('petModalAdoptionDate').value = pet.adoptionDate || '';
     document.getElementById('petModalAbout').value        = pet.about        || '';
     document.getElementById('petModalCareNotes').value    = pet.careNotes    || '';
@@ -1077,16 +1066,10 @@ function editPet(idx) {
 async function savePetModal() {
     if (!currentUser) return;
     const idx = parseInt(document.getElementById('petModalIdx').value);
-    const ageMode    = document.querySelector('input[name="petAgeMode"]:checked')?.value || 'exact';
-    let birthday     = ageMode === 'exact' ? (document.getElementById('petModalBirthday').value || '') : '';
-    const ageYear    = ageMode === 'yearmonth' ? (document.getElementById('petModalAgeYear').value.trim() || '') : '';
-    const ageMonth   = ageMode === 'yearmonth' ? (document.getElementById('petModalAgeMonth').value || '') : '';
-    if (!birthday && (ageYear || ageMonth)) {
-        const d = new Date();
-        d.setFullYear(d.getFullYear() - (parseInt(ageYear) || 0));
-        d.setMonth(d.getMonth() - (parseInt(ageMonth) || 0));
-        birthday = d.toISOString().slice(0, 10);
-    }
+    const unsure   = document.getElementById('petBdayUnsure')?.checked;
+    const birthday = unsure ? '' : (document.getElementById('petModalBirthday').value || '');
+    const ageYear  = unsure ? String(petBdayCalYear  || '') : '';
+    const ageMonth = unsure ? String(petBdayCalMonth + 1)  : '';
     const sex        = getPillValue('petSexGroup');
     const type       = getPillValue('petTypeGroup') || 'dog';
 
@@ -1687,9 +1670,8 @@ window.setBookingFilter  = setBookingFilter;
 window.acctCalPrev       = acctCalPrev;
 window.acctCalNext       = acctCalNext;
 window.showCalDay        = showCalDay;
-window.switchPetAgeMode  = switchPetAgeMode;
-window.openPetBdayCal    = openPetBdayCal;
-window.closePetBdayCal   = closePetBdayCal;
+window.initPetBdayCal       = initPetBdayCal;
+window.onPetBdayUnsureChange = onPetBdayUnsureChange;
 window.changePetBdayMonth   = changePetBdayMonth;
 window.onPetBdayYearChange  = onPetBdayYearChange;
 window.onPetBdayMonthChange = onPetBdayMonthChange;
@@ -1719,124 +1701,8 @@ window.copyZelleEmail       = function(el) {
     if (tab === 'register') switchAuthMode('register');
 })();
 
-// ─── YEAR / MONTH DRUM PICKERS ───────────────────────────
-const YM_TP_H = 44;
-const YM_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-let _ymDrag = null;
-const _ymTimers = {};
+// ─── YEAR / MONTH SELECTS (pet modal) ────────────────────
 
-(function initYmPickers() {
-    // Year column: current year → 1970
-    const yearCol = document.getElementById('tpCol_ymYear');
-    if (yearCol) {
-        const cur = new Date().getFullYear();
-        for (let y = cur; y >= 1970; y--) {
-            const d = document.createElement('div');
-            d.className = 'tp-item'; d.dataset.val = String(y); d.textContent = String(y);
-            yearCol.appendChild(d);
-        }
-    }
-    // Month column: Jan–Dec
-    const monthCol = document.getElementById('tpCol_ymMonth');
-    if (monthCol) {
-        YM_MONTHS.forEach((name, i) => {
-            const d = document.createElement('div');
-            d.className = 'tp-item'; d.dataset.val = String(i + 1); d.textContent = name;
-            monthCol.appendChild(d);
-        });
-    }
-})();
-
-document.addEventListener('mousemove', e => {
-    if (!_ymDrag) return;
-    _ymDrag.col.scrollTop = _ymDrag.startScrollTop - (e.clientY - _ymDrag.startY);
-});
-document.addEventListener('mouseup', () => {
-    if (!_ymDrag) return;
-    const { col, uid } = _ymDrag;
-    col.style.scrollSnapType = '';
-    _ymDrag = null;
-    col.style.cursor = '';
-    const snapped = Math.round(col.scrollTop / YM_TP_H) * YM_TP_H;
-    col.scrollTo({ top: snapped, behavior: 'smooth' });
-    setTimeout(() => syncYmPicker(uid), 200);
-});
-
-function openYmPicker(uid) {
-    document.querySelectorAll('.tp-popup').forEach(p => {
-        if (p.id !== `tpPop_${uid}`) p.style.display = 'none';
-    });
-    const popup = document.getElementById(`tpPop_${uid}`);
-    if (!popup) return;
-    popup.style.display = 'block';
-
-    const hidden = document.getElementById(uid === 'ymYear' ? 'petModalAgeYear' : 'petModalAgeMonth');
-    const val = hidden?.value || '';
-    if (val) _ymScrollTo(`tpCol_${uid}`, val);
-
-    const wrap = document.getElementById(`tpWrap_${uid}`);
-    wrap.querySelectorAll('.tp-col').forEach(col => {
-        if (col._ymDragInit) return;
-        col._ymDragInit = true;
-        col.addEventListener('mousedown', e => {
-            col.style.scrollSnapType = 'none';
-            _ymDrag = { col, uid, startY: e.clientY, startScrollTop: col.scrollTop };
-            col.style.cursor = 'grabbing';
-            e.preventDefault();
-        });
-    });
-
-    setTimeout(() => {
-        const handler = e => {
-            if (!wrap.contains(e.target)) {
-                closeYmPicker(uid);
-                document.removeEventListener('click', handler);
-            }
-        };
-        document.addEventListener('click', handler);
-    }, 0);
-}
-
-function closeYmPicker(uid) {
-    const p = document.getElementById(`tpPop_${uid}`);
-    if (p) p.style.display = 'none';
-}
-
-function onYmPickerScroll(uid) {
-    clearTimeout(_ymTimers[uid]);
-    _ymTimers[uid] = setTimeout(() => syncYmPicker(uid), 150);
-}
-
-function syncYmPicker(uid) {
-    const col = document.getElementById(`tpCol_${uid}`);
-    if (!col) return;
-    const idx = Math.round(col.scrollTop / YM_TP_H);
-    const val = col.querySelectorAll('.tp-item')[idx]?.dataset.val || '';
-    const hidden = document.getElementById(uid === 'ymYear' ? 'petModalAgeYear' : 'petModalAgeMonth');
-    if (hidden) hidden.value = val;
-    const lbl = document.getElementById(`tpLabel_${uid}`);
-    if (lbl) lbl.textContent = uid === 'ymMonth'
-        ? (val ? YM_MONTHS[parseInt(val) - 1] : '—')
-        : (val || '—');
-}
-
-function _ymScrollTo(colId, val) {
-    const col = document.getElementById(colId);
-    if (!col) return;
-    const items = col.querySelectorAll('.tp-item');
-    for (let i = 0; i < items.length; i++) {
-        if (items[i].dataset.val === String(val)) { col.scrollTop = i * YM_TP_H; return; }
-    }
-}
-
-function setYmPickerVal(uid, val) {
-    const hidden = document.getElementById(uid === 'ymYear' ? 'petModalAgeYear' : 'petModalAgeMonth');
-    if (hidden) hidden.value = val ? String(val) : '';
-    const lbl = document.getElementById(`tpLabel_${uid}`);
-    if (lbl) lbl.textContent = uid === 'ymMonth'
-        ? (val ? YM_MONTHS[parseInt(val) - 1] : '—')
-        : (val ? String(val) : '—');
-}
 
 // On resize to wide screen, restore booking detail panel to its original grid position
 window.addEventListener('resize', () => {
