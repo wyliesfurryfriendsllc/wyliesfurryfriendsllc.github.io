@@ -339,7 +339,6 @@
         <div class="pet-photo-preview-wrap" onclick="document.getElementById('bkPetPhotoFile').click()" style="cursor:pointer">
             <img id="bkPetPhotoPreview" class="pet-photo-preview-img" src="" alt="" style="display:none" onerror="this.style.display='none'">
             <div id="bkPetPhotoPlaceholder" class="pet-photo-placeholder">
-                
                 <span>Upload photo</span>
             </div>
         </div>
@@ -364,68 +363,41 @@
                 <input type="number" id="bkPetWeight" placeholder="" min="0">
             </div>
         </div>
+
         <div class="form-group" style="margin-bottom:12px">
             <label>Birthday <span class="req">*</span></label>
-            <div class="toggle-pills mb-8" style="margin-top:6px">
-                <label class="pill-option">
-                    <input type="radio" name="bkPetAgeMode" value="exact" checked onchange="bkSwitchAgeMode('exact')">
-                    <span>Exact date</span>
-                </label>
-                <label class="pill-option">
-                    <input type="radio" name="bkPetAgeMode" value="yearmonth" onchange="bkSwitchAgeMode('yearmonth')">
-                    <span>Year &amp; Month</span>
-                </label>
-            </div>
-            <div id="bkPetBdayWrap">
-                <button type="button" class="calendar-trigger" style="margin-bottom:8px" onclick="bkOpenBdayCal()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    <span id="bkPetBdayText">Choose birthday...</span>
-                </button>
-                <input type="hidden" id="bkPetBirthday">
-                <div class="calendar-wrap" id="bkPetBdayCalWrap" style="display:none">
-                    <div class="calendar-header">
-                        <button type="button" class="cal-nav" onclick="bkChangeBdayMonth(-1)">&#8249;</button>
-                        <div class="bday-selects">
-                            <select id="bkBdayYearSel" class="bday-year-sel" onchange="onBkBdayYearChange()"></select>
-                            <select id="bkBdayMonthSel" class="bday-month-sel" onchange="onBkBdayMonthChange()">
-                                <option value="0">Jan</option><option value="1">Feb</option>
-                                <option value="2">Mar</option><option value="3">Apr</option>
-                                <option value="4">May</option><option value="5">Jun</option>
-                                <option value="6">Jul</option><option value="7">Aug</option>
-                                <option value="8">Sep</option><option value="9">Oct</option>
-                                <option value="10">Nov</option><option value="11">Dec</option>
-                            </select>
+            <input type="hidden" id="bkPetBirthday">
+            <div class="calendar-wrap" id="bkPetBdayCalWrap">
+                <div class="calendar-header">
+                    <button type="button" class="cal-nav" onclick="bkChangeBdayYear(-1)">&#171;</button>
+                    <span class="bday-hdr-label" id="bkBdayYearLabel" onclick="bkOpenBdayPicker('year')"></span>
+                    <button type="button" class="cal-nav" onclick="bkChangeBdayYear(1)">&#187;</button>
+                    <button type="button" class="cal-nav" onclick="bkChangeBdayMonth(-1)">&#8249;</button>
+                    <span class="bday-hdr-label" id="bkBdayMonthLabel" onclick="bkOpenBdayPicker('month')"></span>
+                    <button type="button" class="cal-nav" onclick="bkChangeBdayMonth(1)">&#8250;</button>
+                </div>
+                <div id="bkBdayPickerPopup" class="bday-picker-popup" style="display:none">
+                    <div class="tp-picker-body">
+                        <div class="tp-sel-bar"></div>
+                        <div class="tp-cols">
+                            <div class="tp-col" id="bkBdayPickerCol"></div>
                         </div>
-                        <button type="button" class="cal-nav" onclick="bkChangeBdayMonth(1)">&#8250;</button>
+                        <div class="tp-fade-t"></div>
+                        <div class="tp-fade-b"></div>
                     </div>
-                    <div class="calendar-weekdays">
-                        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-                    </div>
-                    <div class="calendar-days" id="bkPetBdayDays"></div>
-                    <button type="button" class="cal-done-btn" onclick="bkCloseBdayCal()">Done</button>
+                    <button type="button" class="cal-done-btn" onclick="bkCloseBdayPicker()">Done</button>
                 </div>
-            </div>
-            <div id="bkPetAgeYMWrap" style="display:none">
-                <div class="form-row">
-                    <div class="form-group half">
-                        <label>Year</label>
-                        <input type="number" id="bkPetAgeYear" placeholder="e.g. 2020" min="1980" max="2026">
-                    </div>
-                    <div class="form-group half">
-                        <label>Month</label>
-                        <select id="bkPetAgeMonth">
-                            <option value="">Select...</option>
-                            <option value="1">January</option><option value="2">February</option>
-                            <option value="3">March</option><option value="4">April</option>
-                            <option value="5">May</option><option value="6">June</option>
-                            <option value="7">July</option><option value="8">August</option>
-                            <option value="9">September</option><option value="10">October</option>
-                            <option value="11">November</option><option value="12">December</option>
-                        </select>
-                    </div>
+                <div class="calendar-weekdays">
+                    <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
                 </div>
+                <div class="calendar-days" id="bkPetBdayDays"></div>
+                <label class="bday-unsure-label">
+                    <input type="checkbox" id="bkPetBdayUnsure" onchange="bkOnBdayUnsureChange()">
+                    Year &amp; Month only
+                </label>
             </div>
         </div>
+
         <div class="form-group">
             <label>Sex <span class="req">*</span></label>
             <div class="pet-pills" id="bkPetSexGroup">
@@ -442,12 +414,63 @@
         </div>
         <div class="form-group">
             <label>Breed <span class="optional">(optional)</span></label>
-            <input type="text" id="bkPetBreed" placeholder="e.g. Golden Retriever" class="small-placeholder">
+            <input type="text" id="bkPetBreed" placeholder="">
         </div>
         <div class="form-group">
-            <label>Notes <span class="optional">(optional)</span></label>
-            <textarea id="bkPetNotes" rows="2" placeholder="Medical needs, feeding instructions, anything we should know..." class="small-placeholder"></textarea>
+            <label>About your pet <span class="optional">(optional)</span></label>
+            <textarea id="bkPetAbout" rows="3" placeholder="Feeding details, walking instructions, special care..."></textarea>
         </div>
+        <div class="form-group">
+            <label>Veterinary info <span class="optional">(optional)</span></label>
+            <textarea id="bkPetVetInfo" rows="3" placeholder="Vet name, address, phone number..."></textarea>
+        </div>
+
+        <details class="modal-details">
+            <summary class="modal-section-header modal-section-toggle">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Additional Details
+            </summary>
+            <div class="modal-details-body">
+                <div class="form-group">
+                    <label>Microchipped?</label>
+                    <div class="pet-pills" id="bkPetMicrochipGroup">
+                        <button type="button" class="pet-pill" data-value="yes" onclick="bkTogglePill(this,'single')">Microchipped</button>
+                        <button type="button" class="pet-pill" data-value="no" onclick="bkTogglePill(this,'single')">Not microchipped</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>House trained?</label>
+                    <div class="pet-pills" id="bkPetHouseTrainedGroup">
+                        <button type="button" class="pet-pill" data-value="yes" onclick="bkTogglePill(this,'single')">House trained</button>
+                        <button type="button" class="pet-pill" data-value="no" onclick="bkTogglePill(this,'single')">Not house trained</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Friendly with children?</label>
+                    <div class="pet-pills" id="bkPetFriendlyChildrenGroup">
+                        <button type="button" class="pet-pill" data-value="yes" onclick="bkTogglePill(this,'single')">Friendly</button>
+                        <button type="button" class="pet-pill" data-value="no" onclick="bkTogglePill(this,'single')">Not friendly</button>
+                        <button type="button" class="pet-pill" data-value="unsure" onclick="bkTogglePill(this,'single')">Unsure</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Friendly with dogs?</label>
+                    <div class="pet-pills" id="bkPetFriendlyDogsGroup">
+                        <button type="button" class="pet-pill" data-value="yes" onclick="bkTogglePill(this,'single')">Friendly</button>
+                        <button type="button" class="pet-pill" data-value="no" onclick="bkTogglePill(this,'single')">Not friendly</button>
+                        <button type="button" class="pet-pill" data-value="unsure" onclick="bkTogglePill(this,'single')">Unsure</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Friendly with cats?</label>
+                    <div class="pet-pills" id="bkPetFriendlyCatsGroup">
+                        <button type="button" class="pet-pill" data-value="yes" onclick="bkTogglePill(this,'single')">Friendly</button>
+                        <button type="button" class="pet-pill" data-value="no" onclick="bkTogglePill(this,'single')">Not friendly</button>
+                        <button type="button" class="pet-pill" data-value="unsure" onclick="bkTogglePill(this,'single')">Unsure</button>
+                    </div>
+                </div>
+            </div>
+        </details>
 
         <div class="modal-footer">
             <button class="btn-modal-cancel" onclick="closeBookingPetModal()">Cancel</button>

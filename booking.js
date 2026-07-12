@@ -1343,42 +1343,31 @@ function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 // ─── BOOKING PAGE PET MODAL ──────────────────────────────
 // ─── BOOKING PET BIRTHDAY CALENDAR ───────────────────────
 let bkBdayCalYear, bkBdayCalMonth;
+const BK_PK_H = 44;
+let _bkBdayDrag = null, _bkBdayPickerType = null;
+document.addEventListener('mousemove', e => {
+    if (!_bkBdayDrag) return;
+    _bkBdayDrag.col.scrollTop = _bkBdayDrag.start - (e.clientY - _bkBdayDrag.y);
+});
+document.addEventListener('mouseup', () => {
+    if (!_bkBdayDrag) return;
+    const col = _bkBdayDrag.col;
+    col.style.scrollSnapType = ''; col.style.cursor = ''; _bkBdayDrag = null;
+    col.scrollTo({ top: Math.round(col.scrollTop / BK_PK_H) * BK_PK_H, behavior: 'smooth' });
+});
 
-function bkSwitchAgeMode(mode) {
-    document.getElementById('bkPetBdayWrap').style.display    = mode === 'exact'     ? '' : 'none';
-    document.getElementById('bkPetAgeYMWrap').style.display   = mode === 'yearmonth' ? '' : 'none';
-}
-
-function populateBkBdayYears() {
-    const sel = document.getElementById('bkBdayYearSel');
-    if (sel.options.length > 0) return;
-    const now = new Date().getFullYear();
-    for (let y = now; y >= 1980; y--) sel.add(new Option(y, y));
-}
-
-function onBkBdayYearChange() {
-    bkBdayCalYear = parseInt(document.getElementById('bkBdayYearSel').value);
-    bkRenderBdayCal();
-}
-
-function onBkBdayMonthChange() {
-    bkBdayCalMonth = parseInt(document.getElementById('bkBdayMonthSel').value);
-    bkRenderBdayCal();
-}
-
-function bkOpenBdayCal() {
+function bkInitBdayCal() {
     const now = new Date();
     if (bkBdayCalYear === undefined) { bkBdayCalYear = now.getFullYear(); bkBdayCalMonth = now.getMonth(); }
-    populateBkBdayYears();
     bkRenderBdayCal();
-    document.getElementById('bkPetBdayCalWrap').style.display = 'block';
 }
 
-function bkCloseBdayCal() {
-    document.getElementById('bkPetBdayCalWrap').style.display = 'none';
-    const val = document.getElementById('bkPetBirthday').value;
-    document.getElementById('bkPetBdayText').textContent = val ? bkFmtDate(val) : 'Choose birthday...';
+function bkOnBdayUnsureChange() {
+    if (document.getElementById('bkPetBdayUnsure').checked) document.getElementById('bkPetBirthday').value = '';
+    bkRenderBdayCal();
 }
+
+function bkChangeBdayYear(dir) { bkBdayCalYear += dir; bkRenderBdayCal(); }
 
 function bkChangeBdayMonth(dir) {
     bkBdayCalMonth += dir;
@@ -1388,8 +1377,11 @@ function bkChangeBdayMonth(dir) {
 }
 
 function bkRenderBdayCal() {
-    document.getElementById('bkBdayYearSel').value  = bkBdayCalYear;
-    document.getElementById('bkBdayMonthSel').value = bkBdayCalMonth;
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const yrLbl = document.getElementById('bkBdayYearLabel');
+    const moLbl = document.getElementById('bkBdayMonthLabel');
+    if (yrLbl) yrLbl.textContent = bkBdayCalYear;
+    if (moLbl) moLbl.textContent = MONTHS[bkBdayCalMonth];
     const today    = new Date(); today.setHours(0,0,0,0);
     const firstDay = new Date(bkBdayCalYear, bkBdayCalMonth, 1).getDay();
     const daysIn   = new Date(bkBdayCalYear, bkBdayCalMonth + 1, 0).getDate();
@@ -1399,38 +1391,88 @@ function bkRenderBdayCal() {
     for (let i = 0; i < firstDay; i++) {
         const b = document.createElement('div'); b.className = 'cal-day cal-blank'; grid.appendChild(b);
     }
+    const unsure = document.getElementById('bkPetBdayUnsure')?.checked;
     for (let d = 1; d <= daysIn; d++) {
         const dateStr  = `${bkBdayCalYear}-${String(bkBdayCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const isFuture = new Date(bkBdayCalYear, bkBdayCalMonth, d) > today;
         const cell     = document.createElement('div');
-        cell.className = 'cal-day' + (isFuture ? ' cal-past' : '') + (dateStr === selVal ? ' cal-selected' : '');
+        cell.className = 'cal-day' + (isFuture ? ' cal-past' : '') + (unsure ? ' cal-unsure' : '') + (dateStr === selVal ? ' cal-selected' : '');
         cell.textContent = d;
-        if (!isFuture) cell.onclick = () => { document.getElementById('bkPetBirthday').value = dateStr; bkRenderBdayCal(); };
+        if (!isFuture && !unsure) cell.onclick = () => { document.getElementById('bkPetBirthday').value = dateStr; bkRenderBdayCal(); };
         grid.appendChild(cell);
     }
 }
 
-function bkFmtDate(d) {
-    if (!d) return '—';
-    const [y, mo, day] = d.split('-');
-    const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return `${m[parseInt(mo)-1]} ${parseInt(day)}, ${y}`;
+function bkOpenBdayPicker(type) {
+    _bkBdayPickerType = type;
+    const popup = document.getElementById('bkBdayPickerPopup');
+    const col   = document.getElementById('bkBdayPickerCol');
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    col.innerHTML = '';
+    if (type === 'year') {
+        const now = new Date().getFullYear();
+        for (let y = now; y >= 1980; y--) {
+            const item = document.createElement('div');
+            item.className = 'tp-item'; item.dataset.val = y; item.textContent = y; col.appendChild(item);
+        }
+        col.style.scrollSnapType = 'none'; popup.style.display = '';
+        col.scrollTop = (new Date().getFullYear() - bkBdayCalYear) * BK_PK_H;
+    } else {
+        MONTHS.forEach((m, i) => {
+            const item = document.createElement('div');
+            item.className = 'tp-item'; item.dataset.val = i; item.textContent = m; col.appendChild(item);
+        });
+        col.style.scrollSnapType = 'none'; popup.style.display = '';
+        col.scrollTop = bkBdayCalMonth * BK_PK_H;
+    }
+    requestAnimationFrame(() => { col.style.scrollSnapType = 'y mandatory'; });
+    if (!col._bkDragInit) {
+        col._bkDragInit = true;
+        col.addEventListener('mousedown', e => {
+            col.style.scrollSnapType = 'none'; col.style.cursor = 'grabbing';
+            _bkBdayDrag = { col, y: e.clientY, start: col.scrollTop }; e.preventDefault();
+        });
+        col.addEventListener('touchstart', e => {
+            col.style.scrollSnapType = 'none';
+            _bkBdayDrag = { col, y: e.touches[0].clientY, start: col.scrollTop, touch: true };
+        }, { passive: true });
+        col.addEventListener('touchmove', e => {
+            if (!_bkBdayDrag?.touch) return;
+            col.scrollTop = _bkBdayDrag.start - (e.touches[0].clientY - _bkBdayDrag.y);
+        }, { passive: true });
+        col.addEventListener('touchend', () => {
+            if (!_bkBdayDrag) return;
+            col.style.scrollSnapType = 'y mandatory'; _bkBdayDrag = null;
+            col.scrollTo({ top: Math.round(col.scrollTop / BK_PK_H) * BK_PK_H, behavior: 'smooth' });
+        });
+    }
+}
+
+function bkCloseBdayPicker() {
+    const col   = document.getElementById('bkBdayPickerCol');
+    const popup = document.getElementById('bkBdayPickerPopup');
+    const idx   = Math.round(col.scrollTop / BK_PK_H);
+    const item  = col.querySelectorAll('.tp-item')[idx];
+    if (item) {
+        const val = parseInt(item.dataset.val);
+        if (_bkBdayPickerType === 'year') bkBdayCalYear = val; else bkBdayCalMonth = val;
+    }
+    popup.style.display = 'none';
+    bkRenderBdayCal();
 }
 
 function openBookingPetModal() {
-    // Reset form
-    ['bkPetName','bkPetWeight','bkPetBreed','bkPetNotes','bkPetPhotoUrl','bkPetBirthday','bkPetAgeYear'].forEach(id => {
+    ['bkPetName','bkPetWeight','bkPetBreed','bkPetAbout','bkPetVetInfo','bkPetPhotoUrl','bkPetBirthday'].forEach(id => {
         const el = document.getElementById(id); if (el) el.value = '';
     });
-    const mo = document.getElementById('bkPetAgeMonth'); if (mo) mo.value = '';
     document.getElementById('bkPetPhotoPreview').style.display = 'none';
     document.getElementById('bkPetPhotoPlaceholder').style.display = '';
     document.querySelectorAll('[data-group="bkPetTypeGroup"]').forEach((b,i) => b.classList.toggle('active', i===0));
-    document.querySelectorAll('#bkPetSexGroup .pet-pill, #bkPetSpayedGroup .pet-pill').forEach(b => b.classList.remove('active'));
-    const exactR = document.querySelector('input[name="bkPetAgeMode"][value="exact"]');
-    if (exactR) { exactR.checked = true; bkSwitchAgeMode('exact'); }
-    document.getElementById('bkPetBdayText').textContent = 'Choose birthday...';
+    document.querySelectorAll('#bkPetSexGroup .pet-pill, #bkPetSpayedGroup .pet-pill, #bkPetMicrochipGroup .pet-pill, #bkPetHouseTrainedGroup .pet-pill, #bkPetFriendlyChildrenGroup .pet-pill, #bkPetFriendlyDogsGroup .pet-pill, #bkPetFriendlyCatsGroup .pet-pill').forEach(b => b.classList.remove('active'));
+    const unsureEl = document.getElementById('bkPetBdayUnsure');
+    if (unsureEl) unsureEl.checked = false;
     bkBdayCalYear = undefined;
+    bkInitBdayCal();
     document.getElementById('bkPetModal').style.display = '';
     document.body.style.overflow = 'hidden';
 }
@@ -1481,11 +1523,11 @@ async function saveBookingPet() {
     const name = document.getElementById('bkPetName').value.trim();
     if (!name) { alert("Please enter your pet's name."); return; }
 
-    const bkAgeMode = document.querySelector('input[name="bkPetAgeMode"]:checked')?.value || 'exact';
-    const birthday  = bkAgeMode === 'exact'     ? (document.getElementById('bkPetBirthday').value || '') : '';
-    const ageYear   = bkAgeMode === 'yearmonth' ? (document.getElementById('bkPetAgeYear').value.trim() || '') : '';
-    const ageMonth  = bkAgeMode === 'yearmonth' ? (document.getElementById('bkPetAgeMonth').value || '') : '';
-    const sex           = bkGetPillValue('bkPetSexGroup');
+    const unsure  = document.getElementById('bkPetBdayUnsure')?.checked;
+    const birthday = unsure ? '' : (document.getElementById('bkPetBirthday').value || '');
+    const ageYear  = unsure ? String(bkBdayCalYear  || '') : '';
+    const ageMonth = unsure ? String(bkBdayCalMonth + 1)  : '';
+    const sex            = bkGetPillValue('bkPetSexGroup');
     const spayedNeutered = bkGetPillValue('bkPetSpayedGroup');
 
     if (!birthday && !ageYear) { alert("Please enter your pet's birthday or birth year."); return; }
@@ -1494,12 +1536,18 @@ async function saveBookingPet() {
 
     const pet = {
         name,
-        type:     bkGetPillValue('bkPetTypeGroup') || 'dog',
+        type:             bkGetPillValue('bkPetTypeGroup') || 'dog',
         sex, spayedNeutered, birthday, ageYear, ageMonth,
-        weight:   document.getElementById('bkPetWeight').value.trim(),
-        breed:    document.getElementById('bkPetBreed').value.trim(),
-        careNotes:document.getElementById('bkPetNotes').value.trim(),
-        photoUrl: document.getElementById('bkPetPhotoUrl').value.trim(),
+        weight:           document.getElementById('bkPetWeight').value.trim(),
+        breed:            document.getElementById('bkPetBreed').value.trim(),
+        careNotes:        document.getElementById('bkPetAbout').value.trim(),
+        vetInfo:          document.getElementById('bkPetVetInfo').value.trim(),
+        microchipped:     bkGetPillValue('bkPetMicrochipGroup'),
+        houseTrained:     bkGetPillValue('bkPetHouseTrainedGroup'),
+        friendlyChildren: bkGetPillValue('bkPetFriendlyChildrenGroup'),
+        friendlyDogs:     bkGetPillValue('bkPetFriendlyDogsGroup'),
+        friendlyCats:     bkGetPillValue('bkPetFriendlyCatsGroup'),
+        photoUrl:         document.getElementById('bkPetPhotoUrl').value.trim(),
     };
 
     // Save to Firestore if logged in
