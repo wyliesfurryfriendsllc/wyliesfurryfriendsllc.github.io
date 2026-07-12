@@ -903,7 +903,6 @@ function initPetBdayCal() {
         petBdayCalYear  = now.getFullYear();
         petBdayCalMonth = now.getMonth();
     }
-    populatePetBdayYears();
     renderPetBdayCal();
 }
 
@@ -914,20 +913,8 @@ function onPetBdayUnsureChange() {
     renderPetBdayCal();
 }
 
-function populatePetBdayYears() {
-    const sel = document.getElementById('petBdayYearSel');
-    if (sel.options.length > 0) return;
-    const now = new Date().getFullYear();
-    for (let y = now; y >= 1980; y--) sel.add(new Option(y, y));
-}
-
-function onPetBdayYearChange() {
-    petBdayCalYear = parseInt(document.getElementById('petBdayYearSel').value);
-    renderPetBdayCal();
-}
-
-function onPetBdayMonthChange() {
-    petBdayCalMonth = parseInt(document.getElementById('petBdayMonthSel').value);
+function changePetBdayYear(dir) {
+    petBdayCalYear += dir;
     renderPetBdayCal();
 }
 
@@ -939,8 +926,9 @@ function changePetBdayMonth(dir) {
 }
 
 function renderPetBdayCal() {
-    document.getElementById('petBdayYearSel').value  = petBdayCalYear;
-    document.getElementById('petBdayMonthSel').value = petBdayCalMonth;
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const lbl = document.getElementById('petBdayLabel');
+    if (lbl) lbl.textContent = MONTHS[petBdayCalMonth] + ' ' + petBdayCalYear;
     const today    = new Date(); today.setHours(0,0,0,0);
     const firstDay = new Date(petBdayCalYear, petBdayCalMonth, 1).getDay();
     const daysIn   = new Date(petBdayCalYear, petBdayCalMonth + 1, 0).getDate();
@@ -1673,8 +1661,7 @@ window.showCalDay        = showCalDay;
 window.initPetBdayCal       = initPetBdayCal;
 window.onPetBdayUnsureChange = onPetBdayUnsureChange;
 window.changePetBdayMonth   = changePetBdayMonth;
-window.onPetBdayYearChange  = onPetBdayYearChange;
-window.onPetBdayMonthChange = onPetBdayMonthChange;
+window.changePetBdayYear    = changePetBdayYear;
 window.setReviewStar        = setReviewStar;
 window.submitReview         = submitReview;
 window.selectTip            = selectTip;

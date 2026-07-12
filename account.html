@@ -287,19 +287,11 @@
             <input type="hidden" id="petModalBirthday">
             <div class="calendar-wrap" id="petBdayCalWrap">
                 <div class="calendar-header">
+                    <button type="button" class="cal-nav" onclick="changePetBdayYear(-1)">&#171;</button>
                     <button type="button" class="cal-nav" onclick="changePetBdayMonth(-1)">&#8249;</button>
-                    <div class="bday-selects">
-                        <select id="petBdayYearSel" class="bday-year-sel" onchange="onPetBdayYearChange()"></select>
-                        <select id="petBdayMonthSel" class="bday-month-sel" onchange="onPetBdayMonthChange()">
-                            <option value="0">Jan</option><option value="1">Feb</option>
-                            <option value="2">Mar</option><option value="3">Apr</option>
-                            <option value="4">May</option><option value="5">Jun</option>
-                            <option value="6">Jul</option><option value="7">Aug</option>
-                            <option value="8">Sep</option><option value="9">Oct</option>
-                            <option value="10">Nov</option><option value="11">Dec</option>
-                        </select>
-                    </div>
+                    <span class="cal-month-label" id="petBdayLabel"></span>
                     <button type="button" class="cal-nav" onclick="changePetBdayMonth(1)">&#8250;</button>
+                    <button type="button" class="cal-nav" onclick="changePetBdayYear(1)">&#187;</button>
                 </div>
                 <div class="calendar-weekdays">
                     <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
