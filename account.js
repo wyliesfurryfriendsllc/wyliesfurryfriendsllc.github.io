@@ -896,6 +896,20 @@ function updatePhotoPreview() {
 
 // ─── PET BIRTHDAY CALENDAR ───────────────────────────────
 let petBdayCalYear, petBdayCalMonth;
+const BDAY_PK_H = 44;
+let _bdayDrag = null, _petBdayPickerType = null;
+document.addEventListener('mousemove', e => {
+    if (!_bdayDrag) return;
+    _bdayDrag.col.scrollTop = _bdayDrag.start - (e.clientY - _bdayDrag.y);
+});
+document.addEventListener('mouseup', () => {
+    if (!_bdayDrag) return;
+    const col = _bdayDrag.col;
+    col.style.scrollSnapType = '';
+    col.style.cursor = '';
+    _bdayDrag = null;
+    col.scrollTo({ top: Math.round(col.scrollTop / BDAY_PK_H) * BDAY_PK_H, behavior: 'smooth' });
+});
 
 function initPetBdayCal() {
     const now = new Date();
@@ -925,10 +939,78 @@ function changePetBdayMonth(dir) {
     renderPetBdayCal();
 }
 
+function openPetBdayPicker(type) {
+    _petBdayPickerType = type;
+    const popup = document.getElementById('petBdayPickerPopup');
+    const col   = document.getElementById('petBdayPickerCol');
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    col.innerHTML = '';
+    if (type === 'year') {
+        const now = new Date().getFullYear();
+        for (let y = now; y >= 1980; y--) {
+            const item = document.createElement('div');
+            item.className = 'tp-item'; item.dataset.val = y; item.textContent = y;
+            col.appendChild(item);
+        }
+        col.style.scrollSnapType = 'none';
+        popup.style.display = '';
+        col.scrollTop = (new Date().getFullYear() - petBdayCalYear) * BDAY_PK_H;
+    } else {
+        MONTHS.forEach((m, i) => {
+            const item = document.createElement('div');
+            item.className = 'tp-item'; item.dataset.val = i; item.textContent = m;
+            col.appendChild(item);
+        });
+        col.style.scrollSnapType = 'none';
+        popup.style.display = '';
+        col.scrollTop = petBdayCalMonth * BDAY_PK_H;
+    }
+    requestAnimationFrame(() => { col.style.scrollSnapType = 'y mandatory'; });
+    if (!col._bdayDragInit) {
+        col._bdayDragInit = true;
+        col.addEventListener('mousedown', e => {
+            col.style.scrollSnapType = 'none';
+            col.style.cursor = 'grabbing';
+            _bdayDrag = { col, y: e.clientY, start: col.scrollTop };
+            e.preventDefault();
+        });
+        col.addEventListener('touchstart', e => {
+            col.style.scrollSnapType = 'none';
+            _bdayDrag = { col, y: e.touches[0].clientY, start: col.scrollTop, touch: true };
+        }, { passive: true });
+        col.addEventListener('touchmove', e => {
+            if (!_bdayDrag?.touch) return;
+            col.scrollTop = _bdayDrag.start - (e.touches[0].clientY - _bdayDrag.y);
+        }, { passive: true });
+        col.addEventListener('touchend', () => {
+            if (!_bdayDrag) return;
+            col.style.scrollSnapType = 'y mandatory';
+            _bdayDrag = null;
+            col.scrollTo({ top: Math.round(col.scrollTop / BDAY_PK_H) * BDAY_PK_H, behavior: 'smooth' });
+        });
+    }
+}
+
+function closePetBdayPicker() {
+    const col   = document.getElementById('petBdayPickerCol');
+    const popup = document.getElementById('petBdayPickerPopup');
+    const idx   = Math.round(col.scrollTop / BDAY_PK_H);
+    const item  = col.querySelectorAll('.tp-item')[idx];
+    if (item) {
+        const val = parseInt(item.dataset.val);
+        if (_petBdayPickerType === 'year') petBdayCalYear  = val;
+        else                               petBdayCalMonth = val;
+    }
+    popup.style.display = 'none';
+    renderPetBdayCal();
+}
+
 function renderPetBdayCal() {
     const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const lbl = document.getElementById('petBdayLabel');
-    if (lbl) lbl.textContent = MONTHS[petBdayCalMonth] + ' ' + petBdayCalYear;
+    const yrLbl = document.getElementById('petBdayYearLabel');
+    const moLbl = document.getElementById('petBdayMonthLabel');
+    if (yrLbl) yrLbl.textContent = petBdayCalYear;
+    if (moLbl) moLbl.textContent = MONTHS[petBdayCalMonth];
     const today    = new Date(); today.setHours(0,0,0,0);
     const firstDay = new Date(petBdayCalYear, petBdayCalMonth, 1).getDay();
     const daysIn   = new Date(petBdayCalYear, petBdayCalMonth + 1, 0).getDate();
@@ -1662,6 +1744,8 @@ window.initPetBdayCal       = initPetBdayCal;
 window.onPetBdayUnsureChange = onPetBdayUnsureChange;
 window.changePetBdayMonth   = changePetBdayMonth;
 window.changePetBdayYear    = changePetBdayYear;
+window.openPetBdayPicker    = openPetBdayPicker;
+window.closePetBdayPicker   = closePetBdayPicker;
 window.setReviewStar        = setReviewStar;
 window.submitReview         = submitReview;
 window.selectTip            = selectTip;

@@ -963,6 +963,7 @@ details.deposit-policy[open] summary { color: var(--pink); }
     background: var(--card-bg);
     padding: 16px;
     margin-bottom: 12px;
+    position: relative;
 }
 
 .calendar-header {
@@ -1048,6 +1049,31 @@ details.deposit-policy[open] summary { color: var(--pink); }
 .cal-day.cal-blank { cursor: default; }
 .cal-day.cal-unsure { opacity: 0.3; pointer-events: none; }
 #petBdayCalWrap .cal-day { aspect-ratio: 2; }
+
+.bday-hdr-label {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--brown);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background 0.15s, color 0.15s;
+}
+.bday-hdr-label:hover { background: var(--pink-light); color: var(--pink); }
+
+.bday-picker-popup {
+    position: absolute;
+    top: 52px;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background: var(--cream-2);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+.bday-picker-popup .tp-col { min-width: 80px; }
 
 .bday-unsure-label {
     display: flex;

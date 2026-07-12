@@ -288,10 +288,22 @@
             <div class="calendar-wrap" id="petBdayCalWrap">
                 <div class="calendar-header">
                     <button type="button" class="cal-nav" onclick="changePetBdayYear(-1)">&#171;</button>
-                    <button type="button" class="cal-nav" onclick="changePetBdayMonth(-1)">&#8249;</button>
-                    <span class="cal-month-label" id="petBdayLabel"></span>
-                    <button type="button" class="cal-nav" onclick="changePetBdayMonth(1)">&#8250;</button>
+                    <span class="bday-hdr-label" id="petBdayYearLabel" onclick="openPetBdayPicker('year')"></span>
                     <button type="button" class="cal-nav" onclick="changePetBdayYear(1)">&#187;</button>
+                    <button type="button" class="cal-nav" onclick="changePetBdayMonth(-1)">&#8249;</button>
+                    <span class="bday-hdr-label" id="petBdayMonthLabel" onclick="openPetBdayPicker('month')"></span>
+                    <button type="button" class="cal-nav" onclick="changePetBdayMonth(1)">&#8250;</button>
+                </div>
+                <div id="petBdayPickerPopup" class="bday-picker-popup" style="display:none">
+                    <div class="tp-picker-body">
+                        <div class="tp-sel-bar"></div>
+                        <div class="tp-cols">
+                            <div class="tp-col" id="petBdayPickerCol"></div>
+                        </div>
+                        <div class="tp-fade-t"></div>
+                        <div class="tp-fade-b"></div>
+                    </div>
+                    <button type="button" class="cal-done-btn" onclick="closePetBdayPicker()">Done</button>
                 </div>
                 <div class="calendar-weekdays">
                     <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
