@@ -80,9 +80,9 @@ a { text-decoration: none; color: inherit; }
    SECTION COMMON
 ================================ */
 .section-inner {
-    max-width: 1100px;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 0 48px;
+    padding: 0 24px;
 }
 
 .section-label {
@@ -117,7 +117,7 @@ nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 4px 56px;
+    padding: 4px 28px;
     background: rgba(253,248,243,0.92);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
@@ -193,7 +193,7 @@ nav {
     gap: 60px;
     max-width: 1100px;
     margin: 0 auto;
-    padding: 80px 48px 100px;
+    padding: 80px 24px 100px;
 }
 
 .hero-eyebrow {
@@ -796,7 +796,7 @@ nav {
 ================================ */
 .cta-section {
     background: var(--pink);
-    padding: 80px 48px;
+    padding: 80px 24px;
     text-align: center;
 }
 
@@ -827,7 +827,7 @@ nav {
 footer {
     background: #4a2535;
     color: rgba(255,255,255,0.8);
-    padding: 48px 56px;
+    padding: 48px 28px;
 }
 
 .footer-inner {
@@ -919,7 +919,7 @@ footer {
 
     .hero-float-card { left: 0; right: 0; margin: 0 auto; bottom: -16px; }
 
-    .section-inner { padding: 0 24px; }
+    .section-inner { padding: 0 12px; }
 
     .section-title { font-size: 30px; margin-bottom: 32px; }
 
