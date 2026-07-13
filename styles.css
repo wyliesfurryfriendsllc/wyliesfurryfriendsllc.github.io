@@ -140,6 +140,7 @@ nav {
     height: 84px;
     width: auto;
     object-fit: contain;
+    display: block;
 }
 
 .nav-links {
