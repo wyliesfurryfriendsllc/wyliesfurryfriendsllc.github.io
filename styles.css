@@ -322,21 +322,9 @@ nav {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 64px;
-    align-items: stretch;
+    align-items: start;
 }
 .services-col, .about-col { min-width: 0; }
-.about-col {
-    display: flex;
-    flex-direction: column;
-}
-.about-text {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
-.about-highlights {
-    margin-top: auto;
-}
 
 @media (max-width: 1100px) {
     .services-about-grid { grid-template-columns: 1fr; }
@@ -574,8 +562,7 @@ nav {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin-bottom: 0;
-    padding-top: 28px;
+    margin: 28px 0 36px;
 }
 
 .highlight-item {
