@@ -117,7 +117,7 @@ nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 18px 56px;
+    padding: 4px 56px;
     background: rgba(253,248,243,0.92);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
@@ -137,7 +137,7 @@ nav {
     flex-shrink: 0;
 }
 .nav-logo-img {
-    height: 56px;
+    height: 84px;
     width: auto;
     object-fit: contain;
 }
@@ -882,7 +882,7 @@ footer {
         box-sizing: border-box;
     }
 
-    body { padding-top: 112px; }
+    body { padding-top: 100px; }
 
     .hamburger { display: block; }
 
