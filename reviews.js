@@ -7,7 +7,7 @@ let allReviews  = [];
 let allTags     = [];
 let activeService  = '';
 let activeTags     = new Set();
-let sortOrder      = 'newest';
+let sortOrder      = 'popular';
 
 async function init() {
     try {
@@ -84,6 +84,9 @@ function getFiltered() {
     }
 
     list.sort((a, b) => {
+        if (sortOrder === 'popular') {
+            return (b.text || '').length - (a.text || '').length;
+        }
         const ta = a.dateLabel ? new Date(a.dateLabel).getTime() : 0;
         const tb = b.dateLabel ? new Date(b.dateLabel).getTime() : 0;
         return sortOrder === 'newest' ? tb - ta : ta - tb;
