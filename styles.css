@@ -322,7 +322,7 @@ nav {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 64px;
-    align-items: end;
+    align-items: start;
 }
 .services-col, .about-col { min-width: 0; }
 
