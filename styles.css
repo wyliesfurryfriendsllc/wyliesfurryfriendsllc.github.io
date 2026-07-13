@@ -599,7 +599,7 @@ nav {
 ================================ */
 .gallery-section {
     padding: 96px 0;
-    background: var(--cream-2);
+    background: var(--cream);
 }
 
 .gallery-section .section-title { margin-bottom: 40px; }
@@ -747,6 +747,7 @@ nav {
 ================================ */
 .reviews-section {
     padding: 96px 0;
+    background: var(--cream-2);
 }
 
 .reviews-grid {
