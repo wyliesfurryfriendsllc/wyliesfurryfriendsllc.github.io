@@ -161,7 +161,6 @@ nav {
 }
 .nav-links a:hover {
     color: var(--pink);
-    text-decoration: underline;
 }
 
 .nav-book-btn {
@@ -171,6 +170,7 @@ nav {
     border-radius: 50px;
     font-weight: 600 !important;
     transition: background 0.2s !important;
+    flex-shrink: 0;
 }
 .nav-book-btn:hover { background: #b0667a !important; }
 
