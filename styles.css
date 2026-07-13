@@ -117,7 +117,7 @@ nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 4px 28px;
+    padding: 4px clamp(24px, calc((100vw - 1400px) / 2 + 24px), 300px);
     background: rgba(253,248,243,0.92);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
