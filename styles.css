@@ -123,6 +123,7 @@ nav {
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
     min-width: 360px;
+    gap: 0;
 }
 
 .nav-logo {
@@ -148,15 +149,20 @@ nav {
     align-items: center;
     gap: 36px;
     list-style: none;
+    flex: 1;
+    justify-content: center;
 }
 
 .nav-links a {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--brown-mid);
     transition: color 0.2s;
 }
-.nav-links a:hover { color: var(--brown); }
+.nav-links a:hover {
+    color: var(--pink);
+    text-decoration: underline;
+}
 
 .nav-book-btn {
     background: var(--pink) !important;
