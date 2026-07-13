@@ -326,6 +326,10 @@ nav {
 }
 .services-col, .about-col { min-width: 0; }
 
+@media (max-width: 1100px) {
+    .services-about-grid { grid-template-columns: 1fr; }
+}
+
 .services-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -932,7 +936,7 @@ footer {
 
     .services-section { padding: 64px 0; }
     .services-grid { grid-template-columns: 1fr; }
-    .services-about-grid { grid-template-columns: 1fr; gap: 40px; }
+    .services-about-grid { gap: 40px; }
     .about-rover-badge { right: 0; }
 
     .gallery-section { padding: 64px 0; }
