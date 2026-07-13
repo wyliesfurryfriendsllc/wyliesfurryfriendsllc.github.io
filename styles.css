@@ -318,6 +318,13 @@ nav {
     padding: 96px 0;
     background: var(--cream-2);
 }
+.services-about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: start;
+}
+.services-col, .about-col { min-width: 0; }
 
 .services-grid {
     display: grid;
@@ -925,10 +932,7 @@ footer {
 
     .services-section { padding: 64px 0; }
     .services-grid { grid-template-columns: 1fr; }
-
-    .about-section { padding: 64px 0; }
-    .about-grid { grid-template-columns: 1fr; gap: 40px; }
-    .about-photo-box { aspect-ratio: 1/1; }
+    .services-about-grid { grid-template-columns: 1fr; gap: 40px; }
     .about-rover-badge { right: 0; }
 
     .gallery-section { padding: 64px 0; }
