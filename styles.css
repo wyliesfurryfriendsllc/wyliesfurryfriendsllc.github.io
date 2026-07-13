@@ -320,7 +320,7 @@ nav {
 }
 .services-about-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     gap: 64px;
     align-items: start;
 }
@@ -565,7 +565,7 @@ nav {
     display: flex;
     align-items: center;
     gap: 14px;
-    background: #FBF0F2;
+    background: var(--cream);
     border-radius: 16px;
     padding: 18px 16px;
     font-size: 15px;
