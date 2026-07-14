@@ -919,7 +919,7 @@ footer {
 
     .hero {
         grid-template-columns: 1fr;
-        padding: 40px 12px 60px;
+        padding: 40px 24px 60px;
         gap: 40px;
     }
 
@@ -931,7 +931,7 @@ footer {
 
     .hero-float-card { left: 0; right: 0; margin: 0 auto; bottom: -16px; }
 
-    .section-inner { padding: 0 12px; }
+    .section-inner { padding: 0 24px; }
 
     .section-title { font-size: 30px; margin-bottom: 32px; }
 
