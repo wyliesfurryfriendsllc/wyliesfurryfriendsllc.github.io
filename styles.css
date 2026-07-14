@@ -919,7 +919,7 @@ footer {
 
     .hero {
         grid-template-columns: 1fr;
-        padding: 40px 24px 60px;
+        padding: 40px 12px 60px;
         gap: 40px;
     }
 
