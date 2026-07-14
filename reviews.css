@@ -141,10 +141,34 @@
     color: inherit;
 }
 
+/* ─── CARD LAYOUT ───────────────────────────────── */
+.rv-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 16px;
+}
+.rv-author-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--brown);
+}
+.rv-stars-filled { color: #F5A623; font-size: 20px; letter-spacing: 1px; }
+.rv-stars-empty  { color: #ddd;    font-size: 20px; letter-spacing: 1px; }
+.rv-card-meta {
+    font-size: 13px;
+    color: var(--brown-mid);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
 /* ─── REVIEW TEXT OVERRIDE ───────────────────────── */
 .rv-grid-section .review-text {
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.75;
+    color: var(--brown);
+    margin: 0;
 }
 
 /* ─── MOBILE ─────────────────────────────────────── */

@@ -96,7 +96,14 @@ function getFiltered() {
 }
 
 function starsHtml(n) {
-    return '★'.repeat(n) + '☆'.repeat(5 - n);
+    return `<span class="rv-stars-filled">${'★'.repeat(n)}</span><span class="rv-stars-empty">${'☆'.repeat(5 - n)}</span>`;
+}
+
+function serviceIconHtml(service) {
+    if (!service) return '';
+    const walkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 4 6-4"/></svg>`;
+    const homeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
+    return (service.includes('Walk') ? walkIcon : homeIcon) + ' ';
 }
 
 function renderGrid() {
@@ -119,17 +126,16 @@ function renderGrid() {
             ? `<div class="rv-card-tags">${tagLabels.map(l => `<span class="rv-card-tag">${l}</span>`).join('')}</div>`
             : '';
 
+        const metaParts = [r.service, r.dateLabel].filter(Boolean).join(' · ');
         return `
         <div class="review-card ${color}">
-            <div class="review-stars">${starsHtml(r.rating || 5)}</div>
-            <p class="review-text">"${r.text}"</p>
-            ${tagsHtml}
-            <div class="review-footer">
-                <div class="review-author">
-                    <strong>${r.authorName || 'Client'}</strong>
-                    <span>${r.service ? r.service + ' · ' : ''}${r.dateLabel || ''}</span>
-                </div>
+            <div class="rv-card-header">
+                <strong class="rv-author-name">${r.authorName || 'Client'}</strong>
+                <div class="review-stars">${starsHtml(r.rating || 5)}</div>
+                ${metaParts ? `<div class="rv-card-meta">${serviceIconHtml(r.service)}${metaParts}</div>` : ''}
             </div>
+            <p class="review-text">${r.text}</p>
+            ${tagsHtml}
         </div>`;
     }).join('');
 }
