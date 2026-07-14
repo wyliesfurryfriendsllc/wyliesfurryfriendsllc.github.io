@@ -689,6 +689,13 @@ nav {
 }
 .gallery-more-btn:hover { background: var(--brown); color: #fff; }
 
+.reviews-btn-uniform {
+    width: 200px;
+    text-align: center;
+    padding: 10px 0 !important;
+    font-size: 14px !important;
+}
+
 /* ─── Lightbox ─── */
 .lightbox {
     position: fixed;
