@@ -957,6 +957,8 @@ footer {
 
     .cta-section { padding: 60px 24px; }
     .cta-section h2 { font-size: 30px; }
+    .cta-section p { font-size: 13px; }
+    .cta-section .btn-primary { padding: 10px 24px; font-size: 14px; }
 
     footer { padding: 40px 24px; }
     .footer-inner { flex-direction: column; gap: 28px; }
