@@ -784,7 +784,7 @@ nav {
     line-height: 1.75;
     color: var(--brown-mid);
     flex: 1;
-    font-style: italic;
+    font-style: normal;
 }
 .review-card-large .review-text { color: var(--brown-mid); }
 
