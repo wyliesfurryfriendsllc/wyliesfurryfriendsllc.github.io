@@ -98,6 +98,11 @@
 .rv-tag-chip.active { background: var(--brown); border-color: var(--brown); color: #fff; }
 
 /* ─── GRID ──────────────────────────────────────── */
+.rv-grid-section .review-card {
+    background: #fff;
+    border-color: var(--border);
+}
+
 .rv-grid-section {
     max-width: 900px;
     margin: 0 auto;
