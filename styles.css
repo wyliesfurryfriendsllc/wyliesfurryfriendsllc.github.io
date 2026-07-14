@@ -962,7 +962,7 @@ footer {
     .footer-inner { flex-direction: column; gap: 28px; }
 
     .about-highlights { grid-template-columns: 1fr; gap: 4px; }
-    .about-highlights .highlight-item { padding: 6px 12px; }
+    .about-highlights .highlight-item { padding: 6px 0; }
 }
 
 /* ── About Bio Collapse ── */
