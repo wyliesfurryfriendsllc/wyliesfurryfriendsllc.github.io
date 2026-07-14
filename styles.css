@@ -937,6 +937,7 @@ footer {
 
     .services-section { padding: 64px 0; }
     .services-grid { grid-template-columns: 1fr; }
+    .service-card { padding: 24px; }
     .services-about-grid { gap: 40px; }
     .about-rover-badge { right: 0; }
 
