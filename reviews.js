@@ -95,8 +95,12 @@ function getFiltered() {
     return list;
 }
 
+function starSvg(filled) {
+    const c = filled ? '#F5A623' : '#D8D8D8';
+    return `<svg width="16" height="16" viewBox="0 0 24 24" fill="${c}" stroke="${c}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+}
 function starsHtml(n) {
-    return `<span class="rv-stars-filled">${'★'.repeat(n)}</span><span class="rv-stars-empty">${'☆'.repeat(5 - n)}</span>`;
+    return `<span class="rv-stars-wrap">${Array.from({length:5},(_,i)=>starSvg(i<n)).join('')}</span>`;
 }
 
 function serviceIconHtml(service) {
