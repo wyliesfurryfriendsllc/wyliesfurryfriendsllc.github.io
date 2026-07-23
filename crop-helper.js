@@ -45,7 +45,7 @@
         ctx.closePath();
         ctx.clip();
         ctx.drawImage(sq, 0, 0, 300, 300);
-        const dataUrl = out.toDataURL('image/png');
+        const dataUrl = out.toDataURL('image/jpeg', 0.82);
         closeCropModal();
         if (pendingResolve) { pendingResolve(dataUrl); pendingResolve = null; }
     }

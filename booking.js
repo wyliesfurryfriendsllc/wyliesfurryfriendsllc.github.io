@@ -1561,7 +1561,7 @@ async function saveBookingPet() {
             renderSavedPetCards(existing);
         } catch (err) {
             console.error('saveBookingPet error:', err);
-            alert('Failed to save pet. Please try again.');
+            alert('Failed to save pet: ' + (err.code || err.message || 'unknown error') + '\nPlease try again.');
             return;
         }
     } else {

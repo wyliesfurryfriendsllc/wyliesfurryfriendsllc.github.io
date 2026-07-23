@@ -1172,8 +1172,15 @@ async function savePetModal() {
     if (!sex) { alert('Please select your pet\'s sex.'); return; }
     if (!pet.spayedNeutered) { alert('Please indicate if your pet is spayed/neutered.'); return; }
     if (idx === -1) { userPets.push(pet); } else { userPets[idx] = pet; }
-    await updateDoc(doc(db, 'users', currentUser.uid), { pets: userPets });
-    await syncToClients(currentUser, { name: currentUser.displayName || '', email: currentUser.email, phone: '', pets: userPets });
+    try {
+        await updateDoc(doc(db, 'users', currentUser.uid), { pets: userPets });
+        await syncToClients(currentUser, { name: currentUser.displayName || '', email: currentUser.email, phone: '', pets: userPets });
+    } catch (err) {
+        console.error('savePetModal error:', err);
+        alert('Failed to save pet: ' + (err.code || err.message || 'unknown error') + '\nPlease try again.');
+        if (idx === -1) { userPets.pop(); } else { userPets[idx] = userPets[idx]; }
+        return;
+    }
     closePetModal();
     renderPets();
 }

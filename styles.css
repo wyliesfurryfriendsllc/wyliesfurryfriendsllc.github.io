@@ -54,7 +54,10 @@ a { text-decoration: none; color: inherit; }
     display: inline-block;
     background: var(--pink);
     color: #fff;
-    padding: 14px 32px;
+    padding: 0 32px;
+    height: 44px;
+    line-height: 44px;
+    box-sizing: border-box;
     border-radius: 50px;
     font-weight: 600;
     font-size: 16px;
@@ -66,7 +69,10 @@ a { text-decoration: none; color: inherit; }
     display: inline-block;
     border: 2px solid var(--brown);
     color: var(--brown);
-    padding: 13px 28px;
+    padding: 0 28px;
+    height: 44px;
+    line-height: 40px;
+    box-sizing: border-box;
     border-radius: 50px;
     font-weight: 600;
     font-size: 16px;
@@ -166,7 +172,10 @@ nav {
 .nav-book-btn {
     background: var(--pink) !important;
     color: #fff !important;
-    padding: 10px 22px;
+    padding: 0 22px;
+    height: 44px;
+    line-height: 44px;
+    box-sizing: border-box;
     border-radius: 50px;
     font-weight: 600 !important;
     transition: background 0.2s !important;
@@ -479,7 +488,10 @@ nav {
 .service-book-btn {
     display: block;
     text-align: center;
-    padding: 13px;
+    padding: 0;
+    height: 44px;
+    line-height: 44px;
+    box-sizing: border-box;
     border-radius: 50px;
     font-weight: 600;
     font-size: 15px;
@@ -679,7 +691,10 @@ nav {
     background: none;
     border: 2px solid var(--brown);
     border-radius: 50px;
-    padding: 13px 28px;
+    padding: 0 28px;
+    height: 44px;
+    line-height: 40px;
+    box-sizing: border-box;
     font-size: 16px;
     font-weight: 600;
     font-family: 'DM Sans', sans-serif;
@@ -694,8 +709,8 @@ nav {
     text-align: center;
     padding: 0 !important;
     font-size: 14px !important;
-    height: 42px;
-    line-height: 42px;
+    height: 44px;
+    line-height: 40px;
     display: block;
     box-sizing: border-box;
 }
@@ -910,19 +925,32 @@ footer {
         min-width: 0;
         z-index: 200;
         box-sizing: border-box;
+        justify-content: flex-start;
+        gap: 12px;
     }
+    /* Home page: restore original Logo-center-BookNow layout */
+    .home-page nav { justify-content: space-between; gap: 0; }
 
     body { padding-top: 100px; }
 
-    .hamburger { display: block; }
+    /* Other pages: hamburger left, Book Now right, no logo */
+    .hamburger { display: block; order: 1; }
+    .nav-book-btn { order: 2; }
+    .nav-logo { display: none; }
+
+    /* Home page: reset order, show logo */
+    .home-page .nav-logo { display: flex; order: unset; margin-left: 0; }
+    .home-page .hamburger { order: unset; }
+    .home-page .nav-book-btn { order: unset; }
 
     .nav-links {
         display: none;
         flex-direction: column;
+        align-items: flex-start;
         position: absolute;
         top: 60px; left: 0; right: 0;
         background: var(--cream);
-        padding: 16px 20px 24px;
+        padding: 16px 24px 24px;
         gap: 16px;
         border-bottom: 1px solid var(--border);
     }
@@ -969,7 +997,7 @@ footer {
     .cta-section { padding: 60px 24px; }
     .cta-section h2 { font-size: 30px; }
     .cta-section p { font-size: 13px; }
-    .cta-section .btn-primary { padding: 10px 24px; font-size: 14px; }
+    .cta-section .btn-primary { padding: 0 24px; font-size: 14px; }
 
     footer { padding: 40px 24px; }
     .footer-inner { flex-direction: column; gap: 28px; }
