@@ -1741,7 +1741,11 @@ window.edSaveDates = async function(bookingId) {
         dateTimes[iso] = raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : [];
     });
     try {
-        await updateDoc(doc(db, 'bookings', bookingId), { dateTimes });
+        const b = allBookings.find(x => x.id === bookingId);
+        const updatedB = b ? { ...b, dateTimes } : { dateTimes };
+        const newTotal = b ? calcBaseTotal(updatedB) : null;
+        const updateData = newTotal != null ? { dateTimes, total: newTotal } : { dateTimes };
+        await updateDoc(doc(db, 'bookings', bookingId), updateData);
         document.getElementById('editDatesOverlay').remove();
     } catch(e) {
         errEl.textContent = 'Save failed: ' + e.message;
