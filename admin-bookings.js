@@ -1639,7 +1639,7 @@ function copyPaymentMessage(bookingId) {
         : dates.length === 1 ? fmtMD(dates[0])
         : `${fmtMD(dates[0])} - ${fmtMD(dates[dates.length - 1])}`;
 
-    const total = b.finalTotal != null ? b.finalTotal : (b.total != null ? b.total : 0);
+    const total = b.finalTotal != null ? b.finalTotal : (calcBaseTotal(b) || b.total || 0);
     const deposit = total / 2;
     const fmt$ = n => Number.isInteger(n) ? String(n) : n.toFixed(2);
 
