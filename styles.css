@@ -80,7 +80,7 @@ a { text-decoration: none; color: inherit; }
 }
 .btn-secondary:hover { background: var(--cream-2); }
 
-.btn-large { padding: 18px 44px; font-size: 18px; }
+.btn-large { height: 56px; line-height: 56px; padding: 0 44px; font-size: 18px; }
 
 /* ================================
    SECTION COMMON
