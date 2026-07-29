@@ -309,7 +309,7 @@ input, select, textarea {
     border: none;
     border-radius: 9px;
     padding: 9px 22px;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     font-family: 'DM Sans', sans-serif;
     color: var(--brown-mid);
