@@ -2327,3 +2327,16 @@ input, select, textarea {
     align-self: flex-start;
 }
 .cl-copy-btn:hover { background: #2c1a10; }
+
+/* Checklist drag-and-drop */
+.cl-drag-handle {
+    color: #ccc;
+    cursor: grab;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+}
+.cl-drag-handle:hover { color: var(--brown-mid); }
+.cl-item-row.cl-dragging { opacity: 0.4; }
+.cl-item-row.cl-drag-over { border-top: 2px solid var(--pink); }

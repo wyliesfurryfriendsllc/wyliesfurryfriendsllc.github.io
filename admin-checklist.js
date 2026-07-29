@@ -1,6 +1,7 @@
 const LS_KEY = 'wff_checklist_items';
 
 let clItems = [];
+let _dragSrcId = null;
 
 function genId() { return Math.random().toString(36).slice(2, 10); }
 
@@ -31,6 +32,10 @@ function updatePreview() {
         : '(Select items above to preview the message)';
 }
 
+const DRAG_HANDLE = `<span class="cl-drag-handle" title="Drag to reorder">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
+</span>`;
+
 function renderList() {
     const list = document.getElementById('clItemsList');
     if (!list) return;
@@ -39,7 +44,12 @@ function renderList() {
         return;
     }
     list.innerHTML = clItems.map(item => `
-        <div class="cl-item-row" id="clRow_${item.id}">
+        <div class="cl-item-row" id="clRow_${item.id}" draggable="true"
+            ondragstart="AdminChecklist.onDragStart(event,'${item.id}')"
+            ondragover="AdminChecklist.onDragOver(event)"
+            ondrop="AdminChecklist.onDrop(event,'${item.id}')"
+            ondragend="AdminChecklist.onDragEnd()">
+            ${DRAG_HANDLE}
             <label class="cl-item-label">
                 <input type="checkbox" class="cl-checkbox" data-id="${item.id}" onchange="AdminChecklist.onCheck()">
                 <span class="cl-item-text" id="clText_${item.id}">${escHtml(item.label)}</span>
@@ -162,6 +172,38 @@ window.AdminChecklist = {
     clearAll() {
         document.querySelectorAll('.cl-checkbox').forEach(cb => cb.checked = false);
         updatePreview();
+    },
+
+    onDragStart(e, id) {
+        _dragSrcId = id;
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => document.getElementById(`clRow_${id}`)?.classList.add('cl-dragging'), 0);
+    },
+
+    onDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const row = e.currentTarget;
+        document.querySelectorAll('.cl-item-row').forEach(r => r.classList.remove('cl-drag-over'));
+        if (row.id !== `clRow_${_dragSrcId}`) row.classList.add('cl-drag-over');
+    },
+
+    onDrop(e, targetId) {
+        e.preventDefault();
+        if (!_dragSrcId || _dragSrcId === targetId) return;
+        const srcIdx = clItems.findIndex(i => i.id === _dragSrcId);
+        const tgtIdx = clItems.findIndex(i => i.id === targetId);
+        if (srcIdx === -1 || tgtIdx === -1) return;
+        const [moved] = clItems.splice(srcIdx, 1);
+        clItems.splice(tgtIdx, 0, moved);
+        saveItems();
+        renderList();
+        updatePreview();
+    },
+
+    onDragEnd() {
+        _dragSrcId = null;
+        document.querySelectorAll('.cl-item-row').forEach(r => r.classList.remove('cl-dragging', 'cl-drag-over'));
     },
 
     copyMessage() {
