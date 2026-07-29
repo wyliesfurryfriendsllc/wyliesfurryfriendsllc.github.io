@@ -1,4 +1,4 @@
-import { db, doc, getDoc, setDoc } from './firebase.js';
+const LS_KEY = 'wff_checklist_items';
 
 let clItems = [];
 
@@ -8,8 +8,12 @@ function escHtml(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-async function saveItems() {
-    await setDoc(doc(db, 'settings', 'checklist'), { items: clItems });
+function saveItems() {
+    localStorage.setItem(LS_KEY, JSON.stringify(clItems));
+}
+
+function loadItems() {
+    try { clItems = JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { clItems = []; }
 }
 
 function getChecked() {
@@ -87,13 +91,8 @@ function render() {
 }
 
 window.AdminChecklist = {
-    async init() {
-        try {
-            const snap = await getDoc(doc(db, 'settings', 'checklist'));
-            clItems = snap.exists() ? (snap.data().items || []) : [];
-        } catch (e) {
-            clItems = [];
-        }
+    init() {
+        loadItems();
         render();
     },
 
@@ -109,12 +108,12 @@ window.AdminChecklist = {
         if (row) { row.style.display = 'none'; const inp = document.getElementById('clAddInput'); if (inp) inp.value = ''; }
     },
 
-    async confirmAdd() {
+    confirmAdd() {
         const inp = document.getElementById('clAddInput');
         const label = inp?.value.trim();
         if (!label) { inp?.focus(); return; }
         clItems.push({ id: genId(), label });
-        await saveItems();
+        saveItems();
         this.hideAddRow();
         renderList();
         updatePreview();
@@ -134,23 +133,23 @@ window.AdminChecklist = {
         document.getElementById(`clEditInp_${id}`)?.focus();
     },
 
-    async saveEdit(id) {
+    saveEdit(id) {
         const inp = document.getElementById(`clEditInp_${id}`);
         const label = inp?.value.trim();
         if (!label) return;
         const item = clItems.find(i => i.id === id);
         if (item) item.label = label;
-        await saveItems();
+        saveItems();
         renderList();
         updatePreview();
     },
 
-    cancelEdit(id) { renderList(); },
+    cancelEdit() { renderList(); },
 
-    async deleteItem(id) {
+    deleteItem(id) {
         if (!confirm('Delete this item?')) return;
         clItems = clItems.filter(i => i.id !== id);
-        await saveItems();
+        saveItems();
         renderList();
         updatePreview();
     },
