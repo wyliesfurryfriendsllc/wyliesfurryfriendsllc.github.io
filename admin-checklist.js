@@ -17,13 +17,28 @@ function loadItems() {
     try { clItems = JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { clItems = []; }
 }
 
+function todayISO() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+}
+
 function updatePreview() {
     const pre = document.getElementById('clPreview');
     if (!pre) return;
     const checked = checkedOrder.map(id => clItems.find(i => i.id === id)).filter(Boolean);
-    pre.textContent = checked.length
-        ? checked.map(i => `☑️ ${i.label}`).join('\n')
-        : '(Select items above to preview the message)';
+    const dateVal = document.getElementById('clDateInput')?.value || '';
+    const dateLine = dateVal ? fmtDate(dateVal) : '';
+    if (!checked.length && !dateLine) { pre.textContent = '(Select items above to preview the message)'; return; }
+    const lines = [];
+    if (dateLine) lines.push(dateLine);
+    checked.forEach(i => lines.push(`☑️ ${i.label}`));
+    pre.textContent = lines.join('\n');
 }
 
 function restoreChecked() {
@@ -86,6 +101,7 @@ function render() {
                         <button class="cl-sel-btn" onclick="AdminChecklist.clearAll()">Clear All</button>
                     </div>
                 </div>
+                <input type="date" id="clDateInput" value="${todayISO()}" class="cl-date-input" onchange="AdminChecklist.onDateChange()">
                 <pre id="clPreview" class="cl-preview">(Select items on the left to preview)</pre>
                 <button class="cl-copy-btn" onclick="AdminChecklist.copyMessage()">📋 Copy Message</button>
             </div>
@@ -99,6 +115,8 @@ window.AdminChecklist = {
         checkedOrder = [];
         render();
     },
+
+    onDateChange() { updatePreview(); },
 
     onCheck(cb) {
         const id = cb.dataset.id;

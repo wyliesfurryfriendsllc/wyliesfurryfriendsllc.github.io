@@ -2332,3 +2332,15 @@ input, select, textarea {
     align-self: flex-start;
 }
 .cl-copy-btn:hover { background: #2c1a10; }
+
+.cl-date-input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 14px;
+    color: var(--brown);
+    box-sizing: border-box;
+    background: #fff;
+}
+.cl-date-input:focus { outline: none; border-color: var(--pink); }
