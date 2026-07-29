@@ -2148,6 +2148,8 @@ input, select, textarea {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .cl-panel-header {
@@ -2335,6 +2337,7 @@ input, select, textarea {
 
 .cl-date-input {
     width: 100%;
+    max-width: 100%;
     border: 1.5px solid var(--border);
     border-radius: 8px;
     padding: 7px 10px;
@@ -2342,5 +2345,6 @@ input, select, textarea {
     color: var(--brown);
     box-sizing: border-box;
     background: #fff;
+    display: block;
 }
 .cl-date-input:focus { outline: none; border-color: var(--pink); }
