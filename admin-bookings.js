@@ -1156,6 +1156,13 @@ function renderDetail(b, panel) {
         <div class="detail-actions">
             ${!b.isRover ? `<div class="deposit-action-wrap">
                 <div class="deposit-action-label">Record deposit payment:</div>
+                <div class="deposit-method-row">
+                    <button class="dep-method-pill active" data-val="Zelle" onclick="AdminBookings.selectDepositMethod(this)">Zelle</button>
+                    <button class="dep-method-pill" data-val="Cash" onclick="AdminBookings.selectDepositMethod(this)">Cash</button>
+                    <button class="dep-method-pill" data-val="Venmo" onclick="AdminBookings.selectDepositMethod(this)">Venmo</button>
+                    <button class="dep-method-pill" data-val="Other" onclick="AdminBookings.selectDepositMethod(this)">Other</button>
+                    <input type="text" id="depositMethodOther" class="deposit-other-input" placeholder="Method name" style="display:none">
+                </div>
                 <div class="deposit-action-row">
                     <input type="date" id="depositDateInput" value="${todayISO}">
                     <input type="number" id="depositAmountInput" class="deposit-amount-input" placeholder="$ Amount" step="0.01" min="0">
@@ -1246,13 +1253,25 @@ async function markCompleted(bookingId) {
     await updateDoc(doc(db, 'bookings', bookingId), { status: 'completed' });
 }
 
+function selectDepositMethod(btn) {
+    btn.closest('.deposit-method-row').querySelectorAll('.dep-method-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const other = document.getElementById('depositMethodOther');
+    if (other) other.style.display = btn.dataset.val === 'Other' ? '' : 'none';
+}
+
 async function markDepositReceived(bookingId) {
-    const dateInput = document.getElementById('depositDateInput');
-    const amtInput  = document.getElementById('depositAmountInput');
+    const dateInput  = document.getElementById('depositDateInput');
+    const amtInput   = document.getElementById('depositAmountInput');
+    const methodPill = document.querySelector('.dep-method-pill.active');
+    const methodVal  = methodPill?.dataset.val || 'Zelle';
+    const depositMethod = methodVal === 'Other'
+        ? (document.getElementById('depositMethodOther')?.value.trim() || 'Other')
+        : methodVal;
     const depositDate   = dateInput ? dateInput.value : new Date().toISOString().slice(0, 10);
     const depositAmount = amtInput && amtInput.value !== '' ? parseFloat(amtInput.value) : null;
-    if (!confirm(`Mark deposit received${depositAmount != null ? ' ($' + depositAmount + ')' : ''} on ${depositDate}?`)) return;
-    const data = { status: 'deposit_received', depositDate };
+    if (!confirm(`Mark deposit received via ${depositMethod}${depositAmount != null ? ' ($' + depositAmount + ')' : ''} on ${depositDate}?`)) return;
+    const data = { status: 'deposit_received', depositDate, depositMethod };
     if (depositAmount != null) data.depositAmount = depositAmount;
     await updateDoc(doc(db, 'bookings', bookingId), data);
 }
@@ -2116,7 +2135,7 @@ window.AdminBookings = {
     onTvcDragStart, onTvcDragOver, onTvcDragEnter, onTvcDrop, onTvcDragEnd,
     openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
-    markDepositReceived, markPaidInFull, markInService, markRoverConfirmed,
+    selectDepositMethod, markDepositReceived, markPaidInFull, markInService, markRoverConfirmed,
     addAdjustment, removeAdjustment, toggleAdjVisits,
     deleteBooking, permanentlyDeleteBooking, sendAdminMessage, exportImage, copyPaymentMessage,
     openEditDatesModal, openEditPaymentModal,
