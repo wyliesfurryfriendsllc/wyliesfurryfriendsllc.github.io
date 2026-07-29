@@ -1,7 +1,7 @@
 const LS_KEY = 'wff_checklist_items';
 
 let clItems = [];
-let _dragSrcId = null;
+let checkedOrder = [];
 
 function genId() { return Math.random().toString(36).slice(2, 10); }
 
@@ -17,24 +17,21 @@ function loadItems() {
     try { clItems = JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { clItems = []; }
 }
 
-function getChecked() {
-    return Array.from(document.querySelectorAll('.cl-checkbox:checked'))
-        .map(cb => clItems.find(i => i.id === cb.dataset.id))
-        .filter(Boolean);
-}
-
 function updatePreview() {
     const pre = document.getElementById('clPreview');
     if (!pre) return;
-    const checked = getChecked();
+    const checked = checkedOrder.map(id => clItems.find(i => i.id === id)).filter(Boolean);
     pre.textContent = checked.length
         ? checked.map(i => `☑️ ${i.label}`).join('\n')
         : '(Select items above to preview the message)';
 }
 
-const DRAG_HANDLE = `<span class="cl-drag-handle" title="Drag to reorder">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
-</span>`;
+function restoreChecked() {
+    checkedOrder.forEach(id => {
+        const cb = document.querySelector(`.cl-checkbox[data-id="${id}"]`);
+        if (cb) cb.checked = true;
+    });
+}
 
 function renderList() {
     const list = document.getElementById('clItemsList');
@@ -44,14 +41,9 @@ function renderList() {
         return;
     }
     list.innerHTML = clItems.map(item => `
-        <div class="cl-item-row" id="clRow_${item.id}" draggable="true"
-            ondragstart="AdminChecklist.onDragStart(event,'${item.id}')"
-            ondragover="AdminChecklist.onDragOver(event)"
-            ondrop="AdminChecklist.onDrop(event,'${item.id}')"
-            ondragend="AdminChecklist.onDragEnd()">
-            ${DRAG_HANDLE}
+        <div class="cl-item-row" id="clRow_${item.id}">
             <label class="cl-item-label">
-                <input type="checkbox" class="cl-checkbox" data-id="${item.id}" onchange="AdminChecklist.onCheck()">
+                <input type="checkbox" class="cl-checkbox" data-id="${item.id}" onchange="AdminChecklist.onCheck(this)">
                 <span class="cl-item-text" id="clText_${item.id}">${escHtml(item.label)}</span>
             </label>
             <div class="cl-item-actions">
@@ -59,6 +51,7 @@ function renderList() {
                 <button class="cl-btn-delete" onclick="AdminChecklist.deleteItem('${item.id}')">Delete</button>
             </div>
         </div>`).join('');
+    restoreChecked();
 }
 
 function render() {
@@ -103,10 +96,19 @@ function render() {
 window.AdminChecklist = {
     init() {
         loadItems();
+        checkedOrder = [];
         render();
     },
 
-    onCheck() { updatePreview(); },
+    onCheck(cb) {
+        const id = cb.dataset.id;
+        if (cb.checked) {
+            if (!checkedOrder.includes(id)) checkedOrder.push(id);
+        } else {
+            checkedOrder = checkedOrder.filter(x => x !== id);
+        }
+        updatePreview();
+    },
 
     showAddRow() {
         const row = document.getElementById('clAddRow');
@@ -135,11 +137,11 @@ window.AdminChecklist = {
         if (!span || !row) return;
         const current = clItems.find(i => i.id === id)?.label || '';
         span.outerHTML = `<input type="text" class="cl-edit-input" id="clEditInp_${id}" value="${escHtml(current)}"
-            onkeydown="if(event.key==='Enter')AdminChecklist.saveEdit('${id}');if(event.key==='Escape')AdminChecklist.cancelEdit('${id}')">`;
+            onkeydown="if(event.key==='Enter')AdminChecklist.saveEdit('${id}');if(event.key==='Escape')AdminChecklist.cancelEdit()">`;
         const actionsDiv = row.querySelector('.cl-item-actions');
         if (actionsDiv) actionsDiv.innerHTML = `
             <button class="cl-btn-save" onclick="AdminChecklist.saveEdit('${id}')">Save</button>
-            <button class="cl-btn-cancel" onclick="AdminChecklist.cancelEdit('${id}')">Cancel</button>`;
+            <button class="cl-btn-cancel" onclick="AdminChecklist.cancelEdit()">Cancel</button>`;
         document.getElementById(`clEditInp_${id}`)?.focus();
     },
 
@@ -154,56 +156,27 @@ window.AdminChecklist = {
         updatePreview();
     },
 
-    cancelEdit() { renderList(); },
+    cancelEdit() { renderList(); updatePreview(); },
 
     deleteItem(id) {
         if (!confirm('Delete this item?')) return;
         clItems = clItems.filter(i => i.id !== id);
+        checkedOrder = checkedOrder.filter(x => x !== id);
         saveItems();
         renderList();
         updatePreview();
     },
 
     selectAll() {
+        checkedOrder = clItems.map(i => i.id);
         document.querySelectorAll('.cl-checkbox').forEach(cb => cb.checked = true);
         updatePreview();
     },
 
     clearAll() {
+        checkedOrder = [];
         document.querySelectorAll('.cl-checkbox').forEach(cb => cb.checked = false);
         updatePreview();
-    },
-
-    onDragStart(e, id) {
-        _dragSrcId = id;
-        e.dataTransfer.effectAllowed = 'move';
-        setTimeout(() => document.getElementById(`clRow_${id}`)?.classList.add('cl-dragging'), 0);
-    },
-
-    onDragOver(e) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        const row = e.currentTarget;
-        document.querySelectorAll('.cl-item-row').forEach(r => r.classList.remove('cl-drag-over'));
-        if (row.id !== `clRow_${_dragSrcId}`) row.classList.add('cl-drag-over');
-    },
-
-    onDrop(e, targetId) {
-        e.preventDefault();
-        if (!_dragSrcId || _dragSrcId === targetId) return;
-        const srcIdx = clItems.findIndex(i => i.id === _dragSrcId);
-        const tgtIdx = clItems.findIndex(i => i.id === targetId);
-        if (srcIdx === -1 || tgtIdx === -1) return;
-        const [moved] = clItems.splice(srcIdx, 1);
-        clItems.splice(tgtIdx, 0, moved);
-        saveItems();
-        renderList();
-        updatePreview();
-    },
-
-    onDragEnd() {
-        _dragSrcId = null;
-        document.querySelectorAll('.cl-item-row').forEach(r => r.classList.remove('cl-dragging', 'cl-drag-over'));
     },
 
     copyMessage() {
