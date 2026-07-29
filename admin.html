@@ -61,6 +61,7 @@
             <button class="admin-tab-btn"         data-tab="calendar"  onclick="showAdminTab('calendar')">Calendar</button>
             <button class="admin-tab-btn"         data-tab="gallery"   onclick="showAdminTab('gallery')">Gallery</button>
             <button class="admin-tab-btn"         data-tab="reviews"   onclick="showAdminTab('reviews')">Reviews</button>
+            <button class="admin-tab-btn"         data-tab="checklist" onclick="showAdminTab('checklist')">Checklist</button>
         </div>
 
         <!-- ── BOOKINGS TAB ── -->
@@ -182,6 +183,11 @@
         <!-- ── REVIEWS TAB ── -->
         <div id="adminTabReviews" style="display:none">
             <div id="arContent"></div>
+        </div>
+
+        <!-- ── CHECKLIST TAB ── -->
+        <div id="adminTabChecklist" style="display:none">
+            <div id="clContent"></div>
         </div>
     </main>
 </div>
@@ -374,5 +380,6 @@
 <script src="gallery.js"></script>
 <script src="admin.js"></script>
 <script type="module" src="admin-reviews.js"></script>
+<script type="module" src="admin-checklist.js"></script>
 </body>
 </html>

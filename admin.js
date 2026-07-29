@@ -37,13 +37,14 @@ function showAdminPanel() {
 }
 
 function showAdminTab(tab) {
-    ['bookings','clients','calendar','gallery','reviews'].forEach(t => {
+    ['bookings','clients','calendar','gallery','reviews','checklist'].forEach(t => {
         const el = document.getElementById('adminTab' + t.charAt(0).toUpperCase() + t.slice(1));
         if (el) el.style.display = t === tab ? '' : 'none';
     });
     document.querySelectorAll('.admin-tab-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tab === tab);
     });
+    if (tab === 'checklist') window.AdminChecklist?.init();
     if (tab === 'clients')  window.AdminClients?.init();
     if (tab === 'calendar') window.AdminCalendar?.init();
     if (tab === 'reviews') {

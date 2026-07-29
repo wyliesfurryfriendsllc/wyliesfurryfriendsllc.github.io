@@ -2125,3 +2125,205 @@ input, select, textarea {
 }
 
 .detail-linked-badge { font-size: 13px; color:#2e7d32; }
+
+/* ══ CHECKLIST TAB ══════════════════════════════════════════ */
+.cl-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 900px;
+}
+@media (max-width: 700px) { .cl-layout { grid-template-columns: 1fr; } }
+
+.cl-panel {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cl-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.cl-panel-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--pink);
+}
+
+.cl-add-btn {
+    background: var(--pink);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.cl-add-btn:hover { background: #b0667a; }
+
+.cl-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+}
+.cl-item-row:last-child { border-bottom: none; }
+
+.cl-item-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    cursor: pointer;
+    min-width: 0;
+}
+
+.cl-checkbox {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--pink);
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.cl-item-text {
+    font-size: 14px;
+    color: var(--brown);
+    word-break: break-word;
+}
+
+.cl-item-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.cl-btn-edit {
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--brown-mid);
+    cursor: pointer;
+}
+.cl-btn-edit:hover { border-color: var(--brown); color: var(--brown); }
+
+.cl-btn-delete {
+    background: none;
+    border: 1.5px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #c0392b;
+    cursor: pointer;
+}
+.cl-btn-delete:hover { background: #fdf0f0; }
+
+.cl-add-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+}
+
+.cl-input, .cl-edit-input {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 14px;
+    color: var(--brown);
+    outline: none;
+}
+.cl-input:focus, .cl-edit-input:focus { border-color: var(--pink); }
+.cl-edit-input { width: 100%; box-sizing: border-box; }
+
+.cl-btn-save {
+    background: var(--pink);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.cl-btn-save:hover { background: #b0667a; }
+
+.cl-btn-cancel {
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--brown-mid);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.cl-empty {
+    font-size: 13px;
+    color: var(--brown-mid);
+    padding: 16px 0;
+    text-align: center;
+}
+
+.cl-export-panel { gap: 14px; }
+
+.cl-sel-btn {
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--brown-mid);
+    cursor: pointer;
+}
+.cl-sel-btn:hover { border-color: var(--brown); color: var(--brown); }
+
+.cl-preview {
+    flex: 1;
+    background: var(--cream);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--brown);
+    font-family: Inter, sans-serif;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 100px;
+    margin: 0;
+}
+
+.cl-copy-btn {
+    background: var(--brown);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    align-self: flex-start;
+}
+.cl-copy-btn:hover { background: #2c1a10; }
