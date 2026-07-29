@@ -714,6 +714,13 @@ function renderBookingDetail(b, panel) {
             ${!(b.hasReview && b.tip != null) ? `<button class="review-submit-btn feedback-submit-btn" id="submitAllBtn_${b.id}" onclick="submitAll('${b.id}')">Submit</button>` : ''}
         </div>`;
         })() : ''}
+        ${b.status !== 'cancelled' ? `
+        <div class="detail-section">
+            <button class="acct-copy-btn" onclick="openCopyBookingModal('${b.id}')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy to New Dates
+            </button>
+        </div>` : ''}
         <div class="detail-section">
             <div class="detail-section-label">Messages with Wylie</div>
             <div class="messages-thread" id="messagesThread"></div>
@@ -1759,6 +1766,9 @@ window.selectTip            = selectTip;
 window.confirmTip           = confirmTip;
 window.searchProfileAddress = searchProfileAddress;
 window.submitAll            = submitAll;
+window.openCopyBookingModal = openCopyBookingModal;
+window.previewCopyDates     = previewCopyDates;
+window.saveCopyBooking      = saveCopyBooking;
 window.markTipSent = function(bookingId, btn) {
     btn.textContent = 'Tip sent ✓';
     btn.classList.add('tip-sent-confirmed');
@@ -1781,6 +1791,143 @@ window.copyZelleEmail       = function(el) {
 
 // ─── YEAR / MONTH SELECTS (pet modal) ────────────────────
 
+
+// ─── COPY BOOKING ─────────────────────────────────────────
+function _acctShiftedDateTimes(dateTimes, offsetDays) {
+    const result = {};
+    Object.keys(dateTimes).forEach(iso => {
+        const d = new Date(iso + 'T12:00:00');
+        d.setDate(d.getDate() + offsetDays);
+        result[d.toISOString().slice(0, 10)] = dateTimes[iso];
+    });
+    return result;
+}
+
+function previewCopyDates(bookingId) {
+    const b = allBookings.find(x => x.id === bookingId);
+    const input = document.getElementById('acctCopyDateInput');
+    const preview = document.getElementById('acctCopyPreview');
+    if (!b || !input || !preview) return;
+
+    const newStart = input.value;
+    if (!newStart) { preview.innerHTML = ''; return; }
+
+    const origDates = b.dateTimes ? Object.keys(b.dateTimes).sort() : (b.dates || []).slice().sort();
+    const firstISO = origDates[0] || '';
+    if (!firstISO) { preview.innerHTML = ''; return; }
+
+    const offsetDays = Math.round((new Date(newStart + 'T12:00:00') - new Date(firstISO + 'T12:00:00')) / 86400000);
+    if (offsetDays === 0) {
+        preview.innerHTML = '<p style="color:#c0392b;margin:0;font-size:13px">New start date must be different from the original.</p>';
+        return;
+    }
+
+    const newDT = _acctShiftedDateTimes(b.dateTimes || {}, offsetDays);
+    const rows = Object.keys(newDT).sort().map(iso => {
+        const label = new Date(iso + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        return `<div style="padding:4px 0;border-bottom:1px solid #f0e8e0;color:#3a2a1a;font-size:13px">${escHtml(label)}</div>`;
+    }).join('');
+    preview.innerHTML = `<div style="font-size:11px;font-weight:700;color:#8a6a5a;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">New Dates Preview</div>${rows}`;
+}
+
+function openCopyBookingModal(bookingId) {
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b) return;
+
+    const origDates = b.dateTimes ? Object.keys(b.dateTimes).sort() : (b.dates || []).slice().sort();
+    const firstISO = origDates[0] || '';
+    let defaultStart = '';
+    if (firstISO) {
+        const d = new Date(firstISO + 'T12:00:00');
+        d.setDate(d.getDate() + 7);
+        defaultStart = d.toISOString().slice(0, 10);
+    }
+
+    const existing = document.getElementById('acctCopyModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'acctCopyModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box';
+    modal.innerHTML = `
+        <div style="background:#fff;border-radius:18px;padding:24px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;box-sizing:border-box;font-family:Inter,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <h3 style="margin:0;font-size:17px;font-weight:700;color:#3a2a1a">Copy to New Dates</h3>
+                <button onclick="document.getElementById('acctCopyModal').remove()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#aaa;line-height:1;padding:0 6px">×</button>
+            </div>
+            <p style="margin:0 0 14px;font-size:13px;color:#888;line-height:1.5">Choose a new start date. All visits will shift by the same number of days.</p>
+            <div style="margin-bottom:14px">
+                <label style="font-size:13px;font-weight:600;color:#5a3e2b;display:block;margin-bottom:6px">New Start Date</label>
+                <input type="date" id="acctCopyDateInput" value="${defaultStart}" min="${new Date().toISOString().slice(0,10)}"
+                    style="width:100%;padding:10px;border:1.5px solid #e0d0c0;border-radius:10px;font-size:14px;box-sizing:border-box"
+                    onchange="previewCopyDates('${bookingId}')">
+            </div>
+            <div id="acctCopyPreview" style="margin-bottom:16px"></div>
+            <div style="display:flex;gap:10px">
+                <button onclick="document.getElementById('acctCopyModal').remove()" style="flex:1;padding:11px;border:1.5px solid #e0d0c0;border-radius:10px;background:#fff;font-size:14px;font-weight:600;cursor:pointer;color:#8a6a5a">Cancel</button>
+                <button id="acctCopySaveBtn" onclick="saveCopyBooking('${bookingId}')" style="flex:2;padding:11px;border:none;border-radius:10px;background:var(--pink);color:#fff;font-size:14px;font-weight:700;cursor:pointer">Create Copy</button>
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
+    previewCopyDates(bookingId);
+}
+
+async function saveCopyBooking(bookingId) {
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b) return;
+
+    const input = document.getElementById('acctCopyDateInput');
+    const newStart = input?.value;
+    if (!newStart) { alert('Please select a new start date.'); return; }
+
+    const origDates = b.dateTimes ? Object.keys(b.dateTimes).sort() : (b.dates || []).slice().sort();
+    const firstISO = origDates[0] || '';
+    if (!firstISO) { alert('Could not determine original dates.'); return; }
+
+    const offsetDays = Math.round((new Date(newStart + 'T12:00:00') - new Date(firstISO + 'T12:00:00')) / 86400000);
+    if (offsetDays === 0) { alert('New start date must be different from the original.'); return; }
+
+    const newDT = _acctShiftedDateTimes(b.dateTimes || {}, offsetDays);
+    const sortedDates = Object.keys(newDT).sort();
+    const datesText = sortedDates.map(iso => {
+        const label = new Date(iso + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const slots = newDT[iso] || [];
+        return slots.length ? `${label}: ${slots.join(', ')}` : label;
+    }).join('\n');
+
+    const btn = document.getElementById('acctCopySaveBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Creating...'; }
+
+    try {
+        await addDoc(collection(db, 'bookings'), {
+            clientName:  b.clientName  || '',
+            clientPhone: b.clientPhone || '',
+            clientEmail: b.clientEmail || '',
+            clientId:    b.clientId    || null,
+            service:     b.service     || 'Drop-In Visit',
+            duration:    b.duration    || 30,
+            dateTimes:   newDT,
+            dates:       sortedDates,
+            datesText,
+            pets:        b.pets        || [],
+            notes:       b.notes       || '',
+            total:       b.total       || 0,
+            isRover:     false,
+            status:      'pending',
+            adminAccepted: false,
+            source:      'client',
+            ...(b.customBasePrice != null ? { customBasePrice: b.customBasePrice } : {}),
+            ...(b.priceBreakdown  != null ? { priceBreakdown:  b.priceBreakdown  } : {}),
+            createdAt:   serverTimestamp()
+        });
+        document.getElementById('acctCopyModal')?.remove();
+        alert("Booking request submitted! We'll review and confirm it shortly. 🐾");
+    } catch (err) {
+        console.error('saveCopyBooking:', err);
+        if (btn) { btn.disabled = false; btn.textContent = 'Create Copy'; }
+        alert('Failed to create copy: ' + (err.code || err.message || 'unknown error'));
+    }
+}
 
 // On resize to wide screen, restore booking detail panel to its original grid position
 window.addEventListener('resize', () => {

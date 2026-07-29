@@ -597,6 +597,24 @@
 .detail-deposit-policy-body ul { padding-left: 16px; margin: 0; }
 .detail-deposit-policy-body li { font-size: 12px; color: #2d6a2d; line-height: 1.6; }
 
+/* Copy Booking Button */
+.acct-copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1.5px solid var(--pink);
+    color: var(--pink);
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: Inter, sans-serif;
+    transition: background 0.2s;
+}
+.acct-copy-btn:hover { background: var(--cream); }
+
 /* Messages */
 .messages-thread {
     max-height: 260px;
