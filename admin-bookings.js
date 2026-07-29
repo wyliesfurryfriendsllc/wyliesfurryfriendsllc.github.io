@@ -1179,6 +1179,13 @@ function renderDetail(b, panel) {
             ${paymentRecordsHtml(b)}
             ${!b.isRover ? `<div class="deposit-action-wrap">
                 <div class="deposit-action-label">Record final payment:</div>
+                <div class="deposit-method-row">
+                    <button class="fin-method-pill active" data-val="Zelle" onclick="AdminBookings.selectFinalMethod(this)">Zelle</button>
+                    <button class="fin-method-pill" data-val="Cash" onclick="AdminBookings.selectFinalMethod(this)">Cash</button>
+                    <button class="fin-method-pill" data-val="Venmo" onclick="AdminBookings.selectFinalMethod(this)">Venmo</button>
+                    <button class="fin-method-pill" data-val="Other" onclick="AdminBookings.selectFinalMethod(this)">Other</button>
+                    <input type="text" id="finalPayMethodOther" class="deposit-other-input" placeholder="Method name" style="display:none">
+                </div>
                 <div class="deposit-action-row">
                     <input type="date" id="finalPayDateInput" value="${todayISO}">
                     <input type="number" id="finalPayAmountInput" class="deposit-amount-input" placeholder="$ Amount" step="0.01" min="0">
@@ -1276,13 +1283,25 @@ async function markDepositReceived(bookingId) {
     await updateDoc(doc(db, 'bookings', bookingId), data);
 }
 
+function selectFinalMethod(btn) {
+    btn.closest('.deposit-method-row').querySelectorAll('.fin-method-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const other = document.getElementById('finalPayMethodOther');
+    if (other) other.style.display = btn.dataset.val === 'Other' ? '' : 'none';
+}
+
 async function markPaidInFull(bookingId) {
-    const dateInput = document.getElementById('finalPayDateInput');
-    const amtInput  = document.getElementById('finalPayAmountInput');
+    const dateInput  = document.getElementById('finalPayDateInput');
+    const amtInput   = document.getElementById('finalPayAmountInput');
+    const methodPill = document.querySelector('.fin-method-pill.active');
+    const methodVal  = methodPill?.dataset.val || 'Zelle';
+    const finalPaymentMethod = methodVal === 'Other'
+        ? (document.getElementById('finalPayMethodOther')?.value.trim() || 'Other')
+        : methodVal;
     const finalPaymentDate   = dateInput ? dateInput.value : new Date().toISOString().slice(0, 10);
     const finalPaymentAmount = amtInput && amtInput.value !== '' ? parseFloat(amtInput.value) : null;
-    if (!confirm(`Mark paid in full${finalPaymentAmount != null ? ' ($' + finalPaymentAmount + ')' : ''} on ${finalPaymentDate}?`)) return;
-    const data = { status: 'paid', finalPaymentDate };
+    if (!confirm(`Mark paid in full via ${finalPaymentMethod}${finalPaymentAmount != null ? ' ($' + finalPaymentAmount + ')' : ''} on ${finalPaymentDate}?`)) return;
+    const data = { status: 'paid', finalPaymentDate, finalPaymentMethod };
     if (finalPaymentAmount != null) data.finalPaymentAmount = finalPaymentAmount;
     await updateDoc(doc(db, 'bookings', bookingId), data);
 }
@@ -2135,7 +2154,7 @@ window.AdminBookings = {
     onTvcDragStart, onTvcDragOver, onTvcDragEnter, onTvcDrop, onTvcDragEnd,
     openDetail, closeDetail,
     acceptBooking, rejectBooking, markCompleted,
-    selectDepositMethod, markDepositReceived, markPaidInFull, markInService, markRoverConfirmed,
+    selectDepositMethod, selectFinalMethod, markDepositReceived, markPaidInFull, markInService, markRoverConfirmed,
     addAdjustment, removeAdjustment, toggleAdjVisits,
     deleteBooking, permanentlyDeleteBooking, sendAdminMessage, exportImage, copyPaymentMessage,
     openEditDatesModal, openEditPaymentModal,
