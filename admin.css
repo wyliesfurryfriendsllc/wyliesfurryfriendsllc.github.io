@@ -297,7 +297,12 @@ input, select, textarea {
     padding: 4px;
     margin-bottom: 32px;
     width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
 }
+.admin-tab-bar::-webkit-scrollbar { display: none; }
 
 .admin-tab-btn {
     background: none;
