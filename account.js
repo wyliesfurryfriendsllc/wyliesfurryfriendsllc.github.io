@@ -125,7 +125,7 @@ async function doForgotPassword() {
         } catch (_) { /* fall through to normal reset flow */ }
 
         await sendPasswordResetEmail(auth, email);
-        msg.textContent = 'Reset email sent! Check your inbox.';
+        msg.textContent = 'Reset email sent! Check your inbox (and spam/junk folder).';
         msg.style.color = '#2e7d32';
         msg.style.display = '';
     } catch (err) {
