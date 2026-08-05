@@ -928,9 +928,6 @@ footer {
         justify-content: flex-start;
         gap: 12px;
     }
-    /* Home page: restore original Logo-center-BookNow layout */
-    .home-page nav { justify-content: space-between; gap: 0; }
-
     body { padding-top: 100px; }
 
     /* Other pages: hamburger left, Book Now right, no logo */
@@ -938,10 +935,10 @@ footer {
     .nav-book-btn { order: 2; }
     .nav-logo { display: none; }
 
-    /* Home page: reset order, show logo */
-    .home-page .nav-logo { display: flex; order: unset; margin-left: 0; }
-    .home-page .hamburger { order: unset; }
-    .home-page .nav-book-btn { order: unset; }
+    /* Home page: hamburger + Book Now grouped left, logo pushed right */
+    .home-page .nav-logo { display: flex; order: 3; margin-left: auto; }
+    .home-page .hamburger { order: 1; }
+    .home-page .nav-book-btn { order: 2; }
 
     .nav-links {
         display: none;
